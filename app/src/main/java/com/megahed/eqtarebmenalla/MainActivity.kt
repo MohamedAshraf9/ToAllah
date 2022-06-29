@@ -72,7 +72,6 @@ class MainActivity : AppCompatActivity() {
                                 Log.d("MyTag", "cityName : $cityName   addressesNum= ${addresses.size}")
                                 Toast.makeText(this,"cityName : $cityName   addressesNum= ${addresses.size}",Toast.LENGTH_LONG).show()
                             }
-
                         }
                     fusedLocationClient.locationAvailability
                 }
