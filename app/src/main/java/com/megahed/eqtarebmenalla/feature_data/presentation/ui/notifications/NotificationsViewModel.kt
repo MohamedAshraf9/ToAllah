@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.ui.notifications
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.notifications
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

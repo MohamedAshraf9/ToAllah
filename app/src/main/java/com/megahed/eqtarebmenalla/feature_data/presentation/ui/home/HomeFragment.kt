@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.ui.home
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.home
 
 import android.graphics.Color
 import android.graphics.Typeface

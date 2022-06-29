@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.ui.dashboard
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater

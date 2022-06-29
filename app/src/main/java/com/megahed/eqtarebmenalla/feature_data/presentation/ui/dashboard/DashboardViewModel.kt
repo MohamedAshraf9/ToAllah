@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.ui.dashboard
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.dashboard
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.ui.notifications
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.notifications
 
 import android.os.Bundle
 import android.view.LayoutInflater
