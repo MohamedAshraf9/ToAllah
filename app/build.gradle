@@ -83,11 +83,17 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:1.0.0"
    // implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
 
+    //kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.4.2")
+
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.3"
     implementation "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3"
+
+    //Location
+    implementation 'com.google.android.gms:play-services-location:20.0.0'
+
 
 
 

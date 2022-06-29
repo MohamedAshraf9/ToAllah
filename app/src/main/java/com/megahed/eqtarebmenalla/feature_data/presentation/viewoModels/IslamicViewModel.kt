@@ -1,14 +1,10 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Resource
-import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.AzanInfoDto
-import com.megahed.eqtarebmenalla.feature_data.domain.model.DataMaps
-import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.GetAzanDataUsesCase
-import com.megahed.eqtarebmenalla.feature_data.presentation.AzanListState
+import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.GetIslamicDataUsesCase
+import com.megahed.eqtarebmenalla.feature_data.presentation.IslamicListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,27 +13,31 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
-class AzanViewModel @Inject constructor(
-    private val usesCase: GetAzanDataUsesCase
+class IslamicViewModel @Inject constructor(
+    private val usesCase: GetIslamicDataUsesCase
 ):ViewModel(){
 
 
-    private val _state= MutableStateFlow(AzanListState())
-    val state :StateFlow<AzanListState> =_state
+    private val _state= MutableStateFlow(IslamicListState())
+    val state :StateFlow<IslamicListState> =_state
 
+
+    //private val _state1= MutableStateFlow(IslamicInfo(1,"dsdsd", DataDto()))
+    //val state1 :StateFlow<IslamicInfo> =_state1
 
 
     fun getAzanData(city:String,country:String){
         usesCase(city,country).onEach {
             when(it){
                 is Resource.Success ->{
-                    _state.value= AzanListState(azanInfoDto = it.data?: emptyList())
+                    _state.value= it.data?.let { it1 -> IslamicListState(islamicInfo = it1) }!!
+
                 }
                 is Resource.Loading ->{
-                    _state.value= AzanListState(isLoading = true)
+                    _state.value= IslamicListState(isLoading = true)
                 }
                 is Resource.Error ->{
-                    _state.value=AzanListState(error = it.message?:"error")
+                    _state.value=IslamicListState(error = it.message?:"error")
                 }
             }
         }.launchIn(viewModelScope)

@@ -1,13 +1,13 @@
 package com.megahed.eqtarebmenalla.feature_data.data.remote.dto
 
 data class Offset(
-    val Asr: Int,
-    val Dhuhr: Int,
-    val Fajr: Int,
-    val Imsak: Int,
-    val Isha: Int,
-    val Maghrib: Int,
-    val Midnight: Int,
-    val Sunrise: Int,
-    val Sunset: Int
+    val Asr: Int=0,
+    val Dhuhr: Int=0,
+    val Fajr: Int=0,
+    val Imsak: Int=0,
+    val Isha: Int=0,
+    val Maghrib: Int=0,
+    val Midnight: Int=0,
+    val Sunrise: Int=0,
+    val Sunset: Int=0
 )
