@@ -3,6 +3,8 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.home
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -15,7 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
-import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DateFormat
 import java.util.*
@@ -24,27 +26,94 @@ import java.util.regex.Pattern
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
 
+
+    private lateinit var binding: FragmentHomeBinding
+    private var timeStarted : Long = 0
+    private var timeElapsed : Long = 0
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val mainViewModel =
-            ViewModelProvider(this).get(IslamicViewModel::class.java)
+            ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
 
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
        binding.dayDetails.text= DateFormat.getDateInstance(DateFormat.FULL).format(Date())
 
-        mainViewModel.getAzanData("Cairo","Egypt")
+
+
         lifecycleScope.launchWhenStarted {
+            mainViewModel.getPrayerTimeById()?.let {
+                binding.fajrTime.text=Constants.convertSalahTime(it.Fajr)
+                binding.sunriseTime.text=Constants.convertSalahTime(it.Sunrise)
+                binding.dhuhrTime.text=Constants.convertSalahTime(it.Dhuhr)
+                binding.asrTime.text=Constants.convertSalahTime(it.Asr)
+                binding.maghribTime.text=Constants.convertSalahTime(it.Maghrib)
+                binding.ishaTime.text=Constants.convertSalahTime(it.Isha)
+
+
+                val currentTime=Constants.getCurrentTime()
+                if (Constants.getTimeLong(it.Fajr,false)>=Constants.getTimeLong(currentTime,true)){
+
+                    setDataView(getString(R.string.fajr),Constants.convertSalahTime(it.Fajr),
+                        Constants.getTimeLong(it.Fajr,false)-Constants.getTimeLong(currentTime,true),true)
+
+                } else if (Constants.getTimeLong(it.Sunrise,false)>=Constants.getTimeLong(currentTime,true)){
+                    setDataView(getString(R.string.sunrise),Constants.convertSalahTime(it.Sunrise),
+                        Constants.getTimeLong(it.Sunrise,false)-Constants.getTimeLong(currentTime,true),true)
+
+                } else if (Constants.getTimeLong(it.Dhuhr,false)>=Constants.getTimeLong(currentTime,true)){
+
+                    setDataView(getString(R.string.duhr),Constants.convertSalahTime(it.Dhuhr),
+                        Constants.getTimeLong(it.Dhuhr,false)-Constants.getTimeLong(currentTime,true),true)
+
+                } else if (Constants.getTimeLong(it.Asr,false)>=Constants.getTimeLong(currentTime,true)){
+
+                    setDataView(getString(R.string.asr),Constants.convertSalahTime(it.Asr),
+                        Constants.getTimeLong(it.Asr,false)-Constants.getTimeLong(currentTime,true),true)
+
+                } else if (Constants.getTimeLong(it.Maghrib,false)>=Constants.getTimeLong(currentTime,true)){
+                    setDataView(getString(R.string.maghreb),Constants.convertSalahTime(it.Maghrib),
+                        Constants.getTimeLong(it.Maghrib,false)-Constants.getTimeLong(currentTime,true),true)
+
+
+                } else if (Constants.getTimeLong(it.Isha,false)>=Constants.getTimeLong(currentTime,true)) {
+                    setDataView(getString(R.string.isha),Constants.convertSalahTime(it.Isha),
+                        Constants.getTimeLong(it.Isha,false)-Constants.getTimeLong(currentTime,true),true)
+                }
+                else{
+                    setDataView(getString(R.string.isha),Constants.convertSalahTime(it.Isha),
+                        0,false)
+
+                    timeStarted=Constants.getTimeLong(it.Isha,false)
+                    startCoroutineTimer()
+
+                }
+
+
+
+            }?:run{
+                binding.fajrTime.text = getString(R.string.error)
+                binding.sunriseTime.text = getString(R.string.error)
+                binding.dhuhrTime.text = getString(R.string.error)
+                binding.asrTime.text = getString(R.string.error)
+                binding.maghribTime.text = getString(R.string.error)
+                binding.ishaTime.text = getString(R.string.error)
+                binding.salahName.text = getString(R.string.error)
+                binding.prayerTime.text = getString(R.string.error)
+                binding.prayerCountdown.text = getString(R.string.error)
+            }
+        }
+
+
+
+
+        /*lifecycleScope.launchWhenStarted {
             mainViewModel.state.collect{ islamicListState ->
                 islamicListState.let { islamicInfo ->
                     islamicInfo.error.let {
@@ -61,7 +130,6 @@ class HomeFragment : Fragment() {
                         }
                     }
                    islamicInfo.islamicInfo.data?.let {
-                       binding.dayDetailsHijri.text="${it.date.hijri.day} ${it.date.hijri.month.ar} ${it.date.hijri.year} "
                        val currentTime=Constants.getCurrentTime()
                            if (Constants.getTimeLong(it.timings.Fajr,false)>=Constants.getTimeLong(currentTime,true)){
                                binding.salahName.text= getString(R.string.fajr)
@@ -86,9 +154,9 @@ class HomeFragment : Fragment() {
                            } else if (Constants.getTimeLong(it.timings.Maghrib,false)>=Constants.getTimeLong(currentTime,true)){
                                binding.salahName.text=getString(R.string.maghreb)
                                binding.prayerTime.text= Constants.convertSalahTime(it.timings.Maghrib)
-                              /* binding.prayerCountdown.text=Constants.updateCountDownText(
+                              *//* binding.prayerCountdown.text=Constants.updateCountDownText(
                                    Constants.getTimeLong(it.timings.Maghrib)-Constants.getTimeLong(currentTime))
-*/
+*//*
                                val timer = object: CountDownTimer(
                                    Constants.getTimeLong(it.timings.Maghrib,false)-Constants.getTimeLong(currentTime,true)
                                    , 1000) {
@@ -123,7 +191,7 @@ class HomeFragment : Fragment() {
             }
 
 
-        }
+        }*/
 
 
 
@@ -190,6 +258,48 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
     }
+
+
+
+    fun setDataView(prayerName: String, prayerTime: String, time:Long,countDown:Boolean) {
+        binding.salahName.text= prayerName
+        binding.prayerTime.text= prayerTime
+
+
+        if (countDown) {
+            val timer = object : CountDownTimer(
+                time, 1000
+            ) {
+                override fun onTick(millisUntilFinished: Long) {
+                    binding.prayerCountdown.text = "- ${Constants.updateCountDownText(millisUntilFinished)}"
+                }
+
+                override fun onFinish() {
+
+                }
+
+
+            }
+            timer.start()
+        }
+    }
+
+
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var runnable: Runnable = object : Runnable {
+        override fun run() {
+            timeElapsed = Constants.getTimeLong(Constants.getCurrentTime(),true) - timeStarted
+            binding.prayerCountdown.text="+ ${Constants.updateCountDownText(timeElapsed)}"
+            // Repeat every 1 second
+            handler.postDelayed(this, 1000)
+        }
+    }
+
+    private fun startCoroutineTimer() {
+        handler.post(runnable)
+    }
+
+
 }

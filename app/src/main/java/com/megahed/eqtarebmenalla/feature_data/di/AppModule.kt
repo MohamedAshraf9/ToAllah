@@ -1,6 +1,11 @@
 package com.megahed.eqtarebmenalla.feature_data.di
 
+import android.app.Application
+import androidx.room.Room
 import com.megahed.eqtarebmenalla.common.Constants
+import com.megahed.eqtarebmenalla.db.MyDatabase
+import com.megahed.eqtarebmenalla.db.repository.PrayerTimeRepository
+import com.megahed.eqtarebmenalla.db.repositoryImp.PrayerTimeRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.data.remote.IslamicApi
 import com.megahed.eqtarebmenalla.feature_data.data.repository.IslamicRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
@@ -31,5 +36,24 @@ object AppModule {
     fun provideIslamicRepository(api: IslamicApi): IslamicRepository {
         return IslamicRepositoryImp(api)
     }
+
+
+    @Provides
+    @Singleton
+    fun provideDatabase(app: Application): MyDatabase {
+        return Room.databaseBuilder(
+            app,
+            MyDatabase::class.java,
+            MyDatabase.DATABASE_NAME
+        ).build()
+
+    }
+
+    @Provides
+    @Singleton
+    fun providePrayerTimeRepository(db: MyDatabase): PrayerTimeRepository {
+        return PrayerTimeRepositoryImp(db.prayerTime)
+    }
+
 
 }

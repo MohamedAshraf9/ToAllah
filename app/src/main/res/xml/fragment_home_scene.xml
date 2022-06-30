@@ -22,7 +22,7 @@
             android:id="@+id/iv_prayer_widget"
             motion:layout_constraintEnd_toEndOf="parent"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_85sdp"
+            android:layout_height="@dimen/_80sdp"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintStart_toStartOf="parent" />
     </ConstraintSet>

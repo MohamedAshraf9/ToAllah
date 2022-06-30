@@ -5,6 +5,7 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,8 +19,11 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.ActivityMainBinding
+import com.megahed.eqtarebmenalla.db.model.PrayerTime
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -28,7 +32,6 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var mainViewModel: IslamicViewModel
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 
@@ -38,7 +41,32 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        mainViewModel=  ViewModelProvider(this).get(IslamicViewModel::class.java)
+        val mainViewModel = ViewModelProvider(this).get(IslamicViewModel::class.java)
+        val prayerTimeViewModel = ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
+
+        mainViewModel.getAzanData("Cairo","Egypt")
+        lifecycleScope.launchWhenStarted {
+            mainViewModel.state.collect{ islamicListState ->
+                islamicListState.let { islamicInfo ->
+                    islamicInfo.islamicInfo.data?.let {
+                        val prayerTime=PrayerTime(1,it.date.gregorian.date,it.timings.Asr,it.timings.Dhuhr,
+                            it.timings.Fajr,it.timings.Isha,it.timings.Maghrib,it.timings.Sunrise)
+                        prayerTimeViewModel.insertPrayerTime(prayerTime)
+
+                    }
+                }
+            }
+
+
+        }
+
+
+
+
+
+
+
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         fusedLocationClient.lastLocation
@@ -96,30 +124,6 @@ class MainActivity : AppCompatActivity() {
 
         val navView: BottomNavigationView = binding.navView
 
-
-        mainViewModel.getAzanData("Cairo","Egypt")
-        lifecycleScope.launchWhenCreated {
-
-            mainViewModel.state.collect{
-                it.let { it1 ->
-                    //Log.d("MyTag", "$it1")
-                    if (it1.isLoading) {
-                        Log.d("MyTag", "loading")
-                    }
-                    if (it1.error.isNotBlank()) {
-                        Log.d("MyTag", it1.error)
-                    }
-
-                    it1.islamicInfo.let {
-                        //Toast.makeText(App.getInstance(),"$it",Toast.LENGTH_LONG).show()
-                        Log.d("MyTag", "code  $it")
-
-
-                    }
-                }
-
-            }
-        }
 
 
 

@@ -114,6 +114,14 @@
                         android:orientation="vertical">
 
 
+                        <TextView
+                            android:id="@+id/dayDetails"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/_3sdp"
+                            android:text="@string/loading"
+                            android:layout_gravity="center"
+                            android:textSize="@dimen/_12ssp" />
 
 
 
@@ -124,27 +132,6 @@
                             android:layout_margin="@dimen/_3sdp"
                             android:padding="@dimen/_3sdp"
                             android:stretchColumns="1">
-                            <TableRow android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:padding="@dimen/_3sdp">
-                                <TextView
-                                    android:id="@+id/dayDetails"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_margin="@dimen/_3sdp"
-                                    android:text="@string/loading"
-                                    android:layout_gravity="start|center"
-                                    android:textSize="@dimen/_12ssp" />
-
-                                <TextView
-                                    android:id="@+id/dayDetailsHijri"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_margin="@dimen/_3sdp"
-                                    android:text="@string/loading"
-                                    android:layout_gravity="end|center"
-                                    android:textSize="@dimen/_12ssp" />
-                            </TableRow>
 
                             <TableRow
                                 android:layout_width="match_parent"
