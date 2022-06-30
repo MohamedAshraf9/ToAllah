@@ -1,23 +1,342 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.motion.widget.MotionLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".feature_data.presentation.ui.home.HomeFragment">
+    tools:context=".feature_data.presentation.ui.home.HomeFragment"
+    app:layoutDescription="@xml/fragment_home_scene">
 
-    <TextView
-        android:id="@+id/text_home"
+
+    <ImageView
+        android:id="@+id/iv_prayer_widget"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        android:textIsSelectable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="@dimen/_180sdp"
+        android:background="@color/grey"
+        android:backgroundTint="@color/grey"
+        android:contentDescription="@string/islamicAzan"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_asr"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <TextView
+        android:id="@+id/currentLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_3sdp"
+        android:text="@string/loading"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_12ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/salahName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_5sdp"
+        android:text="@string/loading"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_16ssp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/prayer_time"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/prayer_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:text="@string/loading"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_13ssp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_prayer_widget"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/prayer_countdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:text="@string/loading"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_13ssp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_prayer_widget"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <LinearLayout
+        android:id="@+id/ll_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_prayer_widget">
+
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="ScrollViewCount">
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_2sdp"
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/thumbnail_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:layout_marginTop="@dimen/_2sdp"
+                    android:layout_marginBottom="@dimen/_2sdp"
+                    app:cardCornerRadius="@dimen/_8sdp"
+                    app:cardElevation="@dimen/_2sdp"
+                    app:cardUseCompatPadding="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:padding="@dimen/_5sdp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+
+
+
+
+
+                        <TableLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/_3sdp"
+                            android:padding="@dimen/_3sdp"
+                            android:stretchColumns="1">
+                            <TableRow android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/_3sdp">
+                                <TextView
+                                    android:id="@+id/dayDetails"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="@dimen/_3sdp"
+                                    android:text="@string/loading"
+                                    android:layout_gravity="start|center"
+                                    android:textSize="@dimen/_12ssp" />
+
+                                <TextView
+                                    android:id="@+id/dayDetailsHijri"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="@dimen/_3sdp"
+                                    android:text="@string/loading"
+                                    android:layout_gravity="end|center"
+                                    android:textSize="@dimen/_12ssp" />
+                            </TableRow>
+
+                            <TableRow
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/_3sdp">
+
+                                <ImageView
+                                    android:layout_width="@dimen/_25sdp"
+                                    android:layout_height="@dimen/_25sdp"
+                                    android:layout_gravity="start"
+                                    android:layout_marginStart="@dimen/_3sdp"
+                                    android:src="@drawable/ic_notifications_black_24dp" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginStart="@dimen/_1sdp"
+                                    android:text="@string/prayer_name"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="@dimen/_10sdp"
+                                    android:gravity="center"
+                                    android:text="@string/time"
+                                    android:textStyle="bold" />
+
+                            </TableRow>
+
+                            <!--Fajr-->
+                            <TableRow>
+
+                                <CheckBox android:id="@+id/cb_fajr"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginStart="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/fajr"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/fajr_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/loading"
+                                    android:textStyle="bold" />
+
+                            </TableRow>
+
+                            <!--Sunrise-->
+                            <TableRow>
+
+                                <CheckBox android:id="@+id/sunrise"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/sunrise"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/sunriseTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/loading"
+                                    android:textStyle="bold" />
+
+                            </TableRow>
+
+                            <!--Dhuhur-->
+                            <TableRow>
+
+                                <CheckBox
+                                    android:id="@+id/cb_dhuhr"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/duhr"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/dhuhr_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/loading"
+                                    android:textStyle="bold" />
+
+                            </TableRow>
+
+                            <!--Asr-->
+                            <TableRow>
+
+                                <CheckBox
+                                    android:id="@+id/cb_asr"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/asr"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/asr_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/loading"
+                                    android:textStyle="bold" />
+                            </TableRow>
+
+                            <!--Maghrib-->
+                            <TableRow>
+
+                                <CheckBox android:id="@+id/cb_maghrib" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/maghreb"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/maghrib_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/loading"
+                                    android:textStyle="bold" />
+                            </TableRow>
+
+                            <!--Isha-->
+                            <TableRow>
+
+                                <CheckBox android:id="@+id/cb_isha" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/isha"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/isha_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="@dimen/_1sdp"
+                                    android:gravity="center"
+                                    android:text="@string/loading"
+                                    android:textStyle="bold" />
+                            </TableRow>
+                        </TableLayout>
+                        
+                        
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.motion.widget.MotionLayout>

@@ -3,4 +3,15 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="islamicAzan">islamicAzan</string>
+    <string name="loading">جارى التحميل</string>
+    <string name="prayer_name">الصلاه</string>
+    <string name="fajr">الفجر</string>
+    <string name="sunrise">الشروق</string>
+    <string name="duhr">الظهر</string>
+    <string name="asr">العصر</string>
+    <string name="maghreb">المغرب</string>
+    <string name="isha">العشاء</string>
+    <string name="time">الوقت</string>
+    <string name="error">حدث خطأ</string>
 </resources>
