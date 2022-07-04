@@ -52,7 +52,6 @@ class QuranFragment : Fragment() {
         })
 
         binding.recyclerView.adapter = quranTextAdapter
-
         lifecycleScope.launchWhenStarted {
 
             soraViewModel.getAllSora().collect{
