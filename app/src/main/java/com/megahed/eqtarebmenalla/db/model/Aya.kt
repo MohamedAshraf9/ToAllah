@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.Ayah
 
 @Entity(
     foreignKeys = [ForeignKey(

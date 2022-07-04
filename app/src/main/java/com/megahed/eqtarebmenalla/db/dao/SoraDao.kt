@@ -2,6 +2,7 @@ package com.megahed.eqtarebmenalla.db.dao
 
 import androidx.room.*
 import com.megahed.eqtarebmenalla.db.model.Sora
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SoraDao {
@@ -14,6 +15,10 @@ interface SoraDao {
 
     @Delete
     suspend fun deleteSora(sora: Sora)
+
+
+    @Query("SELECT * FROM sora ")
+    fun getAllSora():Flow<List<Sora>>
 
 
     @Query("SELECT * FROM sora WHERE soraId =:id ")

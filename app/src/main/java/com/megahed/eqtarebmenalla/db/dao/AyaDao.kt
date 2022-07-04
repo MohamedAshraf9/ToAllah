@@ -2,6 +2,8 @@ package com.megahed.eqtarebmenalla.db.dao
 
 import androidx.room.*
 import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.db.model.Sora
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AyaDao {
@@ -20,6 +22,6 @@ interface AyaDao {
     suspend fun getAyaById(id:Int): Aya?
 
     @Query("SELECT * FROM aya WHERE soraId =:id ")
-    suspend fun getAyaOfSoraId(id:Int): Aya?
+     fun getAyaOfSoraId(id:Int): Flow<List<Aya>>
 
 }

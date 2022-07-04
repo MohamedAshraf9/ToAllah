@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.repositoryImp
 import com.megahed.eqtarebmenalla.db.dao.SoraDao
 import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.db.repository.SoraRepository
+import kotlinx.coroutines.flow.Flow
 
 class SoraRepositoryImp(
     private val soraDao: SoraDao
@@ -21,6 +22,10 @@ class SoraRepositoryImp(
     }
 
     override suspend fun getSoraById(id: Int): Sora? {
-        return getSoraById(id)
+        return soraDao.getSoraById(id)
+    }
+
+    override fun getAllSora(): Flow<List<Sora>> {
+        return soraDao.getAllSora()
     }
 }

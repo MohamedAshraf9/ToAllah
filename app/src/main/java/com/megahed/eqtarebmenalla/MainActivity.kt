@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MyTagData", data.surahs[i].name)
         }*/
 
-        val fileInString: String =
+       /* val fileInString: String =
             applicationContext.assets.open("surah.json").bufferedReader().use {
                 //Log.d("MyTagData",it.readText())
                 it.readText()
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MyTagData", data[i].titleAr)
         }
 
-
+*/
 
 
 

@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.repositoryImp
 import com.megahed.eqtarebmenalla.db.dao.AyaDao
 import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.db.repository.AyaRepository
+import kotlinx.coroutines.flow.Flow
 
 class AyaRepositoryImp(
     private val ayaDao: AyaDao
@@ -24,7 +25,7 @@ class AyaRepositoryImp(
        return ayaDao.getAyaById(id)
     }
 
-    override suspend fun getAyaOfSoraId(id: Int): Aya? {
+    override fun getAyaOfSoraId(id: Int): Flow<List<Aya>> {
         return ayaDao.getAyaOfSoraId(id)
     }
 }

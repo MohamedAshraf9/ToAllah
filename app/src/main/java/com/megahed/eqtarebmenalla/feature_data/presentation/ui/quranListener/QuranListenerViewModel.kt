@@ -1,10 +1,10 @@
-package com.megahed.eqtarebmenalla.feature_data.presentation.ui.notifications
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class NotificationsViewModel : ViewModel() {
+class QuranListenerViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is notifications Fragment"

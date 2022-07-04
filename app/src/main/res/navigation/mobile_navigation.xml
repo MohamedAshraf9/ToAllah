@@ -13,15 +13,15 @@
 
     <fragment
         android:id="@+id/navigation_quran"
-        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.dashboard.DashboardFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran.QuranFragment"
         android:label="@string/quran"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_quran" />
 
     <fragment
         android:id="@+id/navigation_listener"
-        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.notifications.NotificationsFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerFragment"
         android:label="@string/listener"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_quran_listener" />
 
 
 

@@ -9,6 +9,8 @@ import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.db.MyDatabase
+import com.megahed.eqtarebmenalla.db.model.PrayerTime
+import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.db.repository.AyaRepository
 import com.megahed.eqtarebmenalla.db.repository.PrayerTimeRepository
 import com.megahed.eqtarebmenalla.db.repository.SoraRepository
@@ -16,6 +18,8 @@ import com.megahed.eqtarebmenalla.db.repositoryImp.AyaRepositoryImp
 import com.megahed.eqtarebmenalla.db.repositoryImp.PrayerTimeRepositoryImp
 import com.megahed.eqtarebmenalla.db.repositoryImp.SoraRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.AllQuran
+import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.toAya
+import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.toSora
 import com.megahed.eqtarebmenalla.feature_data.data.remote.IslamicApi
 import com.megahed.eqtarebmenalla.feature_data.data.repository.IslamicRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
@@ -28,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -53,7 +58,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(app: Application,trainDBLazy: Lazy<MyDatabase>): MyDatabase {
+    fun provideDatabase(app: Application,trainDBLazy: Provider<MyDatabase>): MyDatabase {
         return Room.databaseBuilder(
             app,
             MyDatabase::class.java,
@@ -66,11 +71,23 @@ object AppModule {
                 */
                 CoroutineScope(Dispatchers.IO).launch {
 
+
                     val fileInString: String =
                         App.getInstance().assets.open("quran.json").bufferedReader().use { it.readText() }
                     val data= Gson().fromJson(fileInString,AllQuran::class.java)
                     for (i in 0 until data.surahs.size){
-                        Log.d("MyTagData", data.surahs[i].name)
+                        trainDBLazy.get().soraDao.insertSora(
+                           data.surahs[i].toSora()
+                        )
+
+                        //Log.d("MyTagData ", data.surahs[i].name)
+                        //Log.d("MyTagData ", "=============================================")
+                        for (j in 0 until data.surahs[i].ayahs.size){
+                           // Log.d("MyTagData ", data.surahs[i].ayahs[j].text)
+                            trainDBLazy.get().ayaDao.insertAya(
+                                data.surahs[i].ayahs[j].toAya(i+1)
+                            )
+                        }
                     }
 
 
