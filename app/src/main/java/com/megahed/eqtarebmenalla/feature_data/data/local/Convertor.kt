@@ -3,7 +3,7 @@ package com.megahed.eqtarebmenalla.feature_data.data.local
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.google.gson.reflect.TypeToken
-import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.Data
+import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.Data
 import com.megahed.eqtarebmenalla.feature_data.data.util.JsonParser
 
 @ProvidedTypeConverter

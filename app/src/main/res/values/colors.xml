@@ -8,4 +8,21 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#737373</color>
+
+
+
+    <color name="red_200">#ff7b56</color>
+    <color name="red_500">#ef472a</color>
+    <color name="red_500_trans">#99ef472a</color>
+    <color name="red_700">#b50000</color>
+    <color name="blue_200">#feffff</color>
+    <color name="blue_500">#cbdee2</color>
+    <color name="dark_200">#525252</color>
+    <color name="dark_500">#414141</color>
+    <color name="dark_700">#313131</color>
+    <color name="purple_100">#fff5ff</color>
+
+    <color name="halfTransparentBackground">#aacccccc</color>
+
+
 </resources>

@@ -3,12 +3,11 @@ package com.megahed.eqtarebmenalla.feature_data.domain.use_cases
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Resource
-import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.IslamicInfo
+import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.IslamicInfo
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
-import retrofit2.Response.error
 import java.io.IOException
 import javax.inject.Inject
 

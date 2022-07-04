@@ -1,8 +1,11 @@
 <resources>
     <string name="app_name">EqtarebMenAlla</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_home">الرئيسيه</string>
+    <string name="quran">القران</string>
+    <string name="listener">استماع</string>
+    <string name="azkar">الأذكار</string>
+    <string name="tasbeh">التسبح</string>
+    <string name="more">المزيد</string>
     <string name="islamicAzan">islamicAzan</string>
     <string name="loading">جارى التحميل</string>
     <string name="prayer_name">الصلاه</string>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_margin="@dimen/_3sdp"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/soraNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minWidth="@dimen/_30sdp"
+        android:text="114"
+        android:textSize="@dimen/_14ssp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:gravity="start"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/soraNumber"
+        app:layout_constraintEnd_toStartOf="@+id/soraNameAr"
+        app:layout_constraintStart_toEndOf="@+id/soraNumber"
+        app:layout_constraintTop_toTopOf="@+id/soraNumber">
+
+        <TextView
+            android:id="@+id/soraNameEn"
+            android:textSize="@dimen/_14ssp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Al-Fatihah" />
+
+        <TextView
+            android:id="@+id/soraInfo"
+            android:textSize="@dimen/_12ssp"
+            android:textStyle="normal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="Mecca - 7 Ayah" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/soraNameAr"
+        android:textSize="@dimen/_14ssp"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/kemenag"
+        android:text="سُورَةُ ٱلْفَاتِحَةِ"
+        app:layout_constraintBottom_toBottomOf="@+id/linearLayout1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/linearLayout1" />
+
+    <TextView
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="20dp"
+        android:background="#B5B5B5"
+        android:fontFamily="@font/kemenag"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout1" />
+</androidx.constraintlayout.widget.ConstraintLayout>

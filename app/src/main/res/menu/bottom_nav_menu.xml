@@ -7,13 +7,29 @@
         android:title="@string/title_home" />
 
     <item
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_quran"
         android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/title_dashboard" />
+        android:title="@string/quran" />
 
     <item
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_listener"
         android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/title_notifications" />
+        android:title="@string/listener" />
+
+    <!--<item
+        android:id="@+id/navigation_azkar"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/azkar" />
+
+    <item
+        android:id="@+id/navigation_tasbeh"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/tasbeh" />
+
+    <item
+        android:id="@+id/navigation_more"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/more" />-->
+
 
 </menu>
