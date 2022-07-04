@@ -50,7 +50,6 @@ class QuranFragment : Fragment() {
             override fun onItemLongClick(itemObject: Sora, view: View?) {
             }
         })
-
         binding.recyclerView.adapter = quranTextAdapter
         lifecycleScope.launchWhenStarted {
 
