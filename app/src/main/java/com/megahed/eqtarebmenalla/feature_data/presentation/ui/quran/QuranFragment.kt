@@ -57,7 +57,6 @@ class QuranFragment : Fragment() {
         lifecycleScope.launchWhenStarted {
 
             soraViewModel.getAllSora().collect{
-
                 quranTextAdapter.setData(it)
 
             }
