@@ -48,7 +48,6 @@ class QuranFragment : Fragment() {
             }
 
             override fun onItemLongClick(itemObject: Sora, view: View?) {
-
             }
         })
 
