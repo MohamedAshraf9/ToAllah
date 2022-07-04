@@ -60,7 +60,6 @@ class QuranFragment : Fragment() {
         }
 
 
-
         return root
     }
 
