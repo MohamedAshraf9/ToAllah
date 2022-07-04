@@ -1,14 +1,28 @@
 package com.megahed.eqtarebmenalla.db.model
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(
+    foreignKeys = [ForeignKey(
+        entity = Sora::class,
+        parentColumns = ["soraId"],
+        childColumns = ["soraId"],
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.CASCADE
+    )]
+)
 data class Aya(
-    var soraId:Int,
-    var ayaText:String
-){
-
-    @PrimaryKey(autoGenerate = true)
-    var id:Int=0
-}
+    @PrimaryKey
+    val ayaId: Int,//number
+    val hizbQuarter: Int,
+    val juz: Int,
+    val manzil: Int,
+    val numberInSurah: Int,
+    val page: Int,
+    val ruku: Int,
+    val sajda: Boolean,
+    val text: String,
+    val soraId:Int
+)
