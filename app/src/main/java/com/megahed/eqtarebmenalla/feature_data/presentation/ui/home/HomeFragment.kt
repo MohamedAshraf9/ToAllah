@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.megahed.eqtarebmenalla.R
+import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
@@ -49,48 +50,48 @@ class HomeFragment : Fragment() {
 
         lifecycleScope.launchWhenStarted {
             mainViewModel.getPrayerTimeById()?.let {
-                binding.fajrTime.text=Constants.convertSalahTime(it.Fajr)
-                binding.sunriseTime.text=Constants.convertSalahTime(it.Sunrise)
-                binding.dhuhrTime.text=Constants.convertSalahTime(it.Dhuhr)
-                binding.asrTime.text=Constants.convertSalahTime(it.Asr)
-                binding.maghribTime.text=Constants.convertSalahTime(it.Maghrib)
-                binding.ishaTime.text=Constants.convertSalahTime(it.Isha)
+                binding.fajrTime.text=CommonUtils.convertSalahTime(it.Fajr)
+                binding.sunriseTime.text=CommonUtils.convertSalahTime(it.Sunrise)
+                binding.dhuhrTime.text=CommonUtils.convertSalahTime(it.Dhuhr)
+                binding.asrTime.text=CommonUtils.convertSalahTime(it.Asr)
+                binding.maghribTime.text=CommonUtils.convertSalahTime(it.Maghrib)
+                binding.ishaTime.text=CommonUtils.convertSalahTime(it.Isha)
 
 
-                val currentTime=Constants.getCurrentTime()
-                if (Constants.getTimeLong(it.Fajr,false)>=Constants.getTimeLong(currentTime,true)){
+                val currentTime=CommonUtils.getCurrentTime()
+                if (CommonUtils.getTimeLong(it.Fajr,false)>=CommonUtils.getTimeLong(currentTime,true)){
 
-                    setDataView(getString(R.string.fajr),Constants.convertSalahTime(it.Fajr),
-                        Constants.getTimeLong(it.Fajr,false)-Constants.getTimeLong(currentTime,true),true)
+                    setDataView(getString(R.string.fajr),CommonUtils.convertSalahTime(it.Fajr),
+                        CommonUtils.getTimeLong(it.Fajr,false)-CommonUtils.getTimeLong(currentTime,true),true)
 
-                } else if (Constants.getTimeLong(it.Sunrise,false)>=Constants.getTimeLong(currentTime,true)){
-                    setDataView(getString(R.string.sunrise),Constants.convertSalahTime(it.Sunrise),
-                        Constants.getTimeLong(it.Sunrise,false)-Constants.getTimeLong(currentTime,true),true)
+                } else if (CommonUtils.getTimeLong(it.Sunrise,false)>=CommonUtils.getTimeLong(currentTime,true)){
+                    setDataView(getString(R.string.sunrise),CommonUtils.convertSalahTime(it.Sunrise),
+                        CommonUtils.getTimeLong(it.Sunrise,false)-CommonUtils.getTimeLong(currentTime,true),true)
 
-                } else if (Constants.getTimeLong(it.Dhuhr,false)>=Constants.getTimeLong(currentTime,true)){
+                } else if (CommonUtils.getTimeLong(it.Dhuhr,false)>=CommonUtils.getTimeLong(currentTime,true)){
 
-                    setDataView(getString(R.string.duhr),Constants.convertSalahTime(it.Dhuhr),
-                        Constants.getTimeLong(it.Dhuhr,false)-Constants.getTimeLong(currentTime,true),true)
+                    setDataView(getString(R.string.duhr),CommonUtils.convertSalahTime(it.Dhuhr),
+                        CommonUtils.getTimeLong(it.Dhuhr,false)-CommonUtils.getTimeLong(currentTime,true),true)
 
-                } else if (Constants.getTimeLong(it.Asr,false)>=Constants.getTimeLong(currentTime,true)){
+                } else if (CommonUtils.getTimeLong(it.Asr,false)>=CommonUtils.getTimeLong(currentTime,true)){
 
-                    setDataView(getString(R.string.asr),Constants.convertSalahTime(it.Asr),
-                        Constants.getTimeLong(it.Asr,false)-Constants.getTimeLong(currentTime,true),true)
+                    setDataView(getString(R.string.asr),CommonUtils.convertSalahTime(it.Asr),
+                        CommonUtils.getTimeLong(it.Asr,false)-CommonUtils.getTimeLong(currentTime,true),true)
 
-                } else if (Constants.getTimeLong(it.Maghrib,false)>=Constants.getTimeLong(currentTime,true)){
-                    setDataView(getString(R.string.maghreb),Constants.convertSalahTime(it.Maghrib),
-                        Constants.getTimeLong(it.Maghrib,false)-Constants.getTimeLong(currentTime,true),true)
+                } else if (CommonUtils.getTimeLong(it.Maghrib,false)>=CommonUtils.getTimeLong(currentTime,true)){
+                    setDataView(getString(R.string.maghreb),CommonUtils.convertSalahTime(it.Maghrib),
+                        CommonUtils.getTimeLong(it.Maghrib,false)-CommonUtils.getTimeLong(currentTime,true),true)
 
 
-                } else if (Constants.getTimeLong(it.Isha,false)>=Constants.getTimeLong(currentTime,true)) {
-                    setDataView(getString(R.string.isha),Constants.convertSalahTime(it.Isha),
-                        Constants.getTimeLong(it.Isha,false)-Constants.getTimeLong(currentTime,true),true)
+                } else if (CommonUtils.getTimeLong(it.Isha,false)>=CommonUtils.getTimeLong(currentTime,true)) {
+                    setDataView(getString(R.string.isha),CommonUtils.convertSalahTime(it.Isha),
+                        CommonUtils.getTimeLong(it.Isha,false)-CommonUtils.getTimeLong(currentTime,true),true)
                 }
                 else{
-                    setDataView(getString(R.string.isha),Constants.convertSalahTime(it.Isha),
+                    setDataView(getString(R.string.isha),CommonUtils.convertSalahTime(it.Isha),
                         0,false)
 
-                    timeStarted=Constants.getTimeLong(it.Isha,false)
+                    timeStarted=CommonUtils.getTimeLong(it.Isha,false)
                     startCoroutineTimer()
 
                 }
@@ -272,7 +273,7 @@ class HomeFragment : Fragment() {
                 time, 1000
             ) {
                 override fun onTick(millisUntilFinished: Long) {
-                    binding.prayerCountdown.text = "- ${Constants.updateCountDownText(millisUntilFinished)}"
+                    binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
                 }
 
                 override fun onFinish() {
@@ -290,8 +291,8 @@ class HomeFragment : Fragment() {
     private val handler = Handler(Looper.getMainLooper())
     private var runnable: Runnable = object : Runnable {
         override fun run() {
-            timeElapsed = Constants.getTimeLong(Constants.getCurrentTime(),true) - timeStarted
-            binding.prayerCountdown.text="+ ${Constants.updateCountDownText(timeElapsed)}"
+            timeElapsed = CommonUtils.getTimeLong(CommonUtils.getCurrentTime(),true) - timeStarted
+            binding.prayerCountdown.text="+ ${CommonUtils.updateCountDownText(timeElapsed)}"
             // Repeat every 1 second
             handler.postDelayed(this, 1000)
         }

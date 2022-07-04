@@ -17,8 +17,10 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.databinding.ActivityMainBinding
 import com.megahed.eqtarebmenalla.db.model.PrayerTime
+import com.megahed.eqtarebmenalla.feature_data.data.local.dto.quran.QuranData
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,6 +61,60 @@ class MainActivity : AppCompatActivity() {
 
 
 
+       /* val fileInString1: String =
+            applicationContext.assets.open("ar_translation_2.json").bufferedReader().use {
+                //Log.d("MyTagData",it.readText())
+                it.readText()
+            }
+        val jsonObject=JSONObject(fileInString1)
+        val jsonArray=jsonObject.getJSONObject("verse")
+        val jsonArray1=jsonObject.getInt("count")
+        for (i in 0 until jsonArray1) {
+            val s="verse_${i+1}"
+            Log.d("MyTagData", jsonArray.get(s).toString())
+        }*/
+
+
+       /* val fileInString1: String =
+            applicationContext.assets.open("quran.json").bufferedReader().use {
+                //Log.d("MyTagData",it.readText())
+                it.readText()
+            }
+        val jsonObject=JSONObject(fileInString1)
+        val jsonArray=jsonObject.getJSONArray("surahs")
+        for (i in 0 until jsonArray.length()){
+            Log.d("MyTagData", jsonArray.getJSONObject(i).getString("name"))
+            val ayat=jsonArray.getJSONObject(i).getJSONArray("ayahs")
+            for (j in 0 until ayat.length()){
+                Log.d("MyTagData", ayat.getJSONObject(j).getString("text"))
+            }
+
+            //Toast.makeText(this,jsonArray.getJSONObject(i).getString("name"),Toast.LENGTH_LONG).show()
+        }*/
+
+
+
+     /*   val fileInString: String =
+            applicationContext.assets.open("quran.json").bufferedReader().use {
+                //Log.d("MyTagData",it.readText())
+                it.readText()
+            }
+       val data= Gson().fromJson(fileInString,QuranTextDto::class.java)
+        for (i in 0 until data.surahs.size){
+            Log.d("MyTagData", data.surahs[i].name)
+        }*/
+
+        val fileInString: String =
+            applicationContext.assets.open("surah.json").bufferedReader().use {
+                //Log.d("MyTagData",it.readText())
+                it.readText()
+            }
+        val data= Gson().fromJson(fileInString,QuranData::class.java)
+        Log.d("MyTagData",""+ data.size)
+        for (i in 0 until data.size){
+            Log.d("MyTagData", data[i].title)
+            Log.d("MyTagData", data[i].titleAr)
+        }
 
 
 
