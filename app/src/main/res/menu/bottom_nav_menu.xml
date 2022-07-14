@@ -8,18 +8,20 @@
 
     <item
         android:id="@+id/navigation_quran"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/quran_icon"
         android:title="@string/quran" />
 
     <item
         android:id="@+id/navigation_listener"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_baseline_queue_music_24"
         android:title="@string/listener" />
 
-    <!--<item
+    <item
         android:id="@+id/navigation_azkar"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/prayer_icon"
         android:title="@string/azkar" />
+
+    <!--
 
     <item
         android:id="@+id/navigation_tasbeh"

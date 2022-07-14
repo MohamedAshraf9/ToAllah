@@ -6,27 +6,36 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.databinding.AyaItemBinding
+import com.megahed.eqtarebmenalla.databinding.AzkarCategoryItemBinding
+import com.megahed.eqtarebmenalla.databinding.ElzekrItemBinding
+import com.megahed.eqtarebmenalla.databinding.SoraItemBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.db.model.AzkarCategory
+import com.megahed.eqtarebmenalla.db.model.ElZekr
+import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 
-class AyaAdapter (private val context: Context,
-                  private val onMyItemClickListener: OnMyItemClickListener<Aya>
-) : RecyclerView.Adapter<AyaAdapter.MyHolder>() {
+class ElzekrAdapter (private val context: Context,
+                     private val onMyItemClickListener: OnMyItemClickListener<ElZekr>
+) : RecyclerView.Adapter<ElzekrAdapter.MyHolder>() {
 
-    private var listData= mutableListOf<Aya>()
+    private var listData= mutableListOf<ElZekr>()
 
-    fun setData(data:List<Aya>){
+    fun setData(data:List<ElZekr>){
         listData.clear()
         listData.addAll(data)
         notifyDataSetChanged()
     }
 
 
-    class MyHolder(binding: AyaItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    class MyHolder(binding: ElzekrItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        val ayaTitle=binding.ayaTitle
-        val ayaNumber=binding.ayaNumber
+        val zekr=binding.zekr
+        val description=binding.description
+        val referenceAndCount=binding.referenceAndCount
         val fav=binding.fav
+
+
 
         val root = binding.root
 
@@ -38,18 +47,19 @@ class AyaAdapter (private val context: Context,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
 
-        return MyHolder(AyaItemBinding.inflate(LayoutInflater.from(context), parent, false))
+        return MyHolder(ElzekrItemBinding.inflate(LayoutInflater.from(context), parent, false))
 
 
     }
 
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
 
-        val aya= listData[position]
+        val zakarCat= listData[position]
 
-        holder.ayaTitle.text=aya.text
-        holder.ayaNumber.text="${aya.numberInSurah}"
-        if (aya.isVaForte){
+        holder.zekr.text=zakarCat.zekr
+
+
+        if (zakarCat.isVaForte){
             holder.fav.setImageResource(R.drawable.ic_favorite_red_24)
         }
         else{

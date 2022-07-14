@@ -42,6 +42,31 @@
             android:name="soraName"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/navigation_azkar"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.azkar.AzkarFragment"
+        android:label="@string/azkar"
+        tools:layout="@layout/fragment_azkar" >
+        <action
+            android:id="@+id/action_navigation_azkar_to_elzekrFragment"
+            app:destination="@id/elzekrFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+    <fragment
+        android:id="@+id/elzekrFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr.ElzekrFragment"
+        android:label="fragment_elzekr"
+        tools:layout="@layout/fragment_elzekr" >
+        <argument
+            android:name="azkarCatId"
+            app:argType="integer" />
+        <argument
+            android:name="azkarName"
+            app:argType="string" />
+    </fragment>
 
 
 </navigation>

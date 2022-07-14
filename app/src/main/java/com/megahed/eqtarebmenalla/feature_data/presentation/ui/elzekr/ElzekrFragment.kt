@@ -1,36 +1,35 @@
-package com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat
+package com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr
 
 import android.os.Bundle
 import android.view.*
+import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.megahed.eqtarebmenalla.adapter.AyaAdapter
-import com.megahed.eqtarebmenalla.databinding.FragmentAyatBinding
-import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.adapter.ElzekrAdapter
+import com.megahed.eqtarebmenalla.databinding.FragmentElzekrBinding
+import com.megahed.eqtarebmenalla.db.model.ElZekr
+import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyatFragmentArgs
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
-import dagger.hilt.android.AndroidEntryPoint
 
+class ElzekrFragment : Fragment(), MenuProvider {
 
-@AndroidEntryPoint
-class AyatFragment : Fragment(),MenuProvider {
-    private lateinit var binding: FragmentAyatBinding
-    private lateinit var quranTextAdapter : AyaAdapter
-    private var soraId:Int?=null
-    private var soraName:String?=null
-
+    private lateinit var binding: FragmentElzekrBinding
+    private lateinit var elzekrAdapter: ElzekrAdapter
+    private var azkarCatId:Int?=null
+    private var azkarName:String?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        soraId = arguments?.let { AyatFragmentArgs.fromBundle(it).soraId }
-        soraName = arguments?.let { AyatFragmentArgs.fromBundle(it).soraName }
+        azkarCatId = arguments?.let { ElzekrFragmentArgs.fromBundle(it).azkarCatId }
+        azkarName = arguments?.let { ElzekrFragmentArgs.fromBundle(it).azkarName }
+
     }
 
     override fun onCreateView(
@@ -38,10 +37,10 @@ class AyatFragment : Fragment(),MenuProvider {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val ayaViewModel =
-            ViewModelProvider(this).get(AyaViewModel::class.java)
+        val elzekrViewModel =
+            ViewModelProvider(this).get(ElzekrViewModel::class.java)
 
-        binding = FragmentAyatBinding.inflate(inflater, container, false)
+        binding = FragmentElzekrBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         val toolbar: Toolbar = binding.toolbar.toolbar
@@ -49,30 +48,30 @@ class AyatFragment : Fragment(),MenuProvider {
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        toolbar.title = soraName
+        toolbar.title = azkarName
 
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = verticalLayoutManager
         binding.recyclerView.setHasFixedSize(true)
 
-        quranTextAdapter= AyaAdapter(requireContext(), object : OnMyItemClickListener<Aya> {
+        elzekrAdapter= ElzekrAdapter(requireContext(), object : OnMyItemClickListener<ElZekr> {
 
-            override fun onItemClick(itemObject: Aya, view: View?) {
+            override fun onItemClick(itemObject: ElZekr, view: View?) {
                 //fav icon click
                 itemObject.isVaForte=!itemObject.isVaForte
-                ayaViewModel.updateAya(itemObject)
+                elzekrViewModel.updateElZekr(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: Aya, view: View?) {
+            override fun onItemLongClick(itemObject: ElZekr, view: View?) {
             }
         })
-        binding.recyclerView.adapter = quranTextAdapter
+        binding.recyclerView.adapter = elzekrAdapter
         lifecycleScope.launchWhenStarted {
 
-            soraId?.let { it ->
-                ayaViewModel.getAyaOfSoraId(it).collect{it1 ->
-                    quranTextAdapter.setData(it1)
+            azkarCatId?.let { it ->
+                elzekrViewModel.getElZekrOfCatId(it).collect{ it1 ->
+                    elzekrAdapter.setData(it1)
 
                 }
             }
@@ -96,7 +95,7 @@ class AyatFragment : Fragment(),MenuProvider {
 
         return  when (menuItem.itemId) {
             android.R.id.home -> {
-                 Navigation.findNavController(requireView()).popBackStack()
+                Navigation.findNavController(requireView()).popBackStack()
             }
             else -> false
         }

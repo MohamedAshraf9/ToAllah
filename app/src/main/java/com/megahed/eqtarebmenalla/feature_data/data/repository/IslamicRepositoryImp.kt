@@ -1,6 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.data.repository
 
-import com.megahed.eqtarebmenalla.feature_data.data.remote.IslamicApi
+import com.megahed.eqtarebmenalla.feature_data.data.remote.prayerTime.IslamicApi
 import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.IslamicInfo
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
 import javax.inject.Inject

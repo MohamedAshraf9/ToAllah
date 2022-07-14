@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/_2sdp"
+    android:layout_margin="@dimen/_1sdp"
     app:cardElevation="@dimen/_3sdp"
     android:padding="@dimen/_2sdp"
     app:cardCornerRadius="@dimen/_12sdp"
@@ -16,21 +16,36 @@
     android:layout_margin="@dimen/_1sdp">
 
     <TextView
-        android:id="@+id/ayaTitle"
+        android:id="@+id/zekr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_5sdp"
         android:fontFamily="@font/kemenag"
-        android:textSize="@dimen/_20sdp"
+        android:textSize="@dimen/_16sdp"
         android:padding="@dimen/_2sdp"
         android:textStyle="bold"
         android:layout_marginEnd="@dimen/_2sdp"
         android:layout_marginStart="@dimen/_2sdp"
+        android:layout_marginBottom="@dimen/_2sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا" />
-    
+
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:padding="@dimen/_2sdp"
+        android:textSize="@dimen/_10ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/zekr"
+        tools:text="Al - Faatiha | Ayah 1" />
+
 
     <ImageView
         android:id="@+id/fav"
@@ -43,30 +58,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ayaTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/description" />
 
     <TextView
-        android:id="@+id/ayaNumber"
+        android:id="@+id/referenceAndCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
         android:padding="@dimen/_2sdp"
-        android:textSize="@dimen/_12ssp"
-        android:textStyle="bold"
+        android:textSize="@dimen/_10ssp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ayaTitle"
+        app:layout_constraintTop_toBottomOf="@+id/description"
         tools:text="Al - Faatiha | Ayah 1" />
 
-    <View
-        android:id="@+id/view"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

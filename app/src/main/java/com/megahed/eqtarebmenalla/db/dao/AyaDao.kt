@@ -2,7 +2,6 @@ package com.megahed.eqtarebmenalla.db.dao
 
 import androidx.room.*
 import com.megahed.eqtarebmenalla.db.model.Aya
-import com.megahed.eqtarebmenalla.db.model.Sora
 import kotlinx.coroutines.flow.Flow
 
 @Dao
