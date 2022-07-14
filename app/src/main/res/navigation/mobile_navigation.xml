@@ -54,6 +54,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_navigation_azkar_to_namesOfAllahFragment"
+            app:destination="@id/namesOfAllahFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
     <fragment
         android:id="@+id/elzekrFragment"
@@ -67,6 +74,11 @@
             android:name="azkarName"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/namesOfAllahFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.azkar.NamesOfAllahFragment"
+        android:label="fragment_names_of_allah"
+        tools:layout="@layout/fragment_names_of_allah" />
 
 
 </navigation>

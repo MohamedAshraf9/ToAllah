@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.databinding.AyaItemBinding
 import com.megahed.eqtarebmenalla.databinding.AzkarCategoryItemBinding
@@ -14,6 +15,7 @@ import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.db.model.ElZekr
 import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
+import kotlin.text.Typography.times
 
 class ElzekrAdapter (private val context: Context,
                      private val onMyItemClickListener: OnMyItemClickListener<ElZekr>
@@ -57,6 +59,14 @@ class ElzekrAdapter (private val context: Context,
         val zakarCat= listData[position]
 
         holder.zekr.text=zakarCat.zekr
+        holder.description.text=zakarCat.description
+        val s=App.getInstance().getString(R.string.times)
+        if (zakarCat.reference.trim().isNotBlank()&&zakarCat.count.trim().isNotBlank())
+            holder.referenceAndCount.text="${zakarCat.reference} | ${zakarCat.count} $s"
+        else if (zakarCat.reference.trim().isNotBlank()&&zakarCat.count.trim().isBlank())
+            holder.referenceAndCount.text= zakarCat.reference
+        else if (zakarCat.reference.trim().isBlank()&&zakarCat.count.trim().isNotBlank())
+            holder.referenceAndCount.text="${zakarCat.count} $s"
 
 
         if (zakarCat.isVaForte){

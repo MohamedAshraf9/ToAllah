@@ -17,7 +17,9 @@ import com.megahed.eqtarebmenalla.databinding.FragmentElzekrBinding
 import com.megahed.eqtarebmenalla.db.model.ElZekr
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyatFragmentArgs
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ElzekrFragment : Fragment(), MenuProvider {
 
     private lateinit var binding: FragmentElzekrBinding

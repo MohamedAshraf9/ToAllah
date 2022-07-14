@@ -1,13 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_height="match_parent"
     tools:context=".feature_data.presentation.ui.azkar.AzkarFragment">
+
+    <androidx.cardview.widget.CardView
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        app:cardElevation="@dimen/_3sdp"
+        android:id="@+id/namesOfAllah"
+        android:padding="@dimen/_2sdp"
+        app:cardCornerRadius="@dimen/_12sdp"
+        android:layout_width="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:padding="@dimen/_3sdp"
+            android:layout_marginBottom="@dimen/_1sdp"
+            android:layout_marginTop="@dimen/_1sdp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:id="@+id/zakarCatName"
+                android:textSize="@dimen/_16ssp"
+                android:textStyle="bold"
+                android:layout_centerInParent="true"
+                android:layout_alignParentStart="true"
+                android:text="@string/namesOfAllah"
+                android:layout_margin="@dimen/_3sdp"
+                android:padding="@dimen/_3sdp"
+                android:layout_toStartOf="@id/allah"
+                android:layout_height="wrap_content"/>
+            <ImageView
+                android:id="@+id/allah"
+                android:layout_width="@dimen/_50sdp"
+                android:src="@drawable/allah"
+                android:layout_margin="@dimen/_3sdp"
+                android:padding="@dimen/_3sdp"
+                android:layout_alignParentEnd="true"
+                android:layout_height="@dimen/_50sdp"/>
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

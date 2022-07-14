@@ -61,6 +61,11 @@ class AzkarFragment : Fragment() {
 
         }
 
+        binding.namesOfAllah.setOnClickListener {
+            val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToNamesOfAllahFragment()
+            Navigation.findNavController(requireView()).navigate(action)
+        }
+
 
 
         return root

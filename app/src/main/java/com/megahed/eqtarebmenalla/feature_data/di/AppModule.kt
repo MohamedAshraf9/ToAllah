@@ -20,7 +20,9 @@ import com.megahed.eqtarebmenalla.feature_data.data.local.dto.azkar.toElZekr
 import com.megahed.eqtarebmenalla.feature_data.data.remote.prayerTime.IslamicApi
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.QuranListenApi
 import com.megahed.eqtarebmenalla.feature_data.data.repository.IslamicRepositoryImp
+import com.megahed.eqtarebmenalla.feature_data.data.repository.QuranListenerRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
+import com.megahed.eqtarebmenalla.feature_data.domain.repository.QuranListenerRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,6 +51,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideIslamicRepository(api: IslamicApi): IslamicRepository {
+        return IslamicRepositoryImp(api)
+    }
+
+    @Provides
+    @Singleton
     fun provideQuranApi(): QuranListenApi {
         return Retrofit.Builder()
             .baseUrl(Constants.QURAN_LISTEN_BASE_URL)
@@ -59,8 +67,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideIslamicRepository(api: IslamicApi): IslamicRepository {
-        return IslamicRepositoryImp(api)
+    fun provideQuranListenerRepository(api: QuranListenApi): QuranListenerRepository {
+        return QuranListenerRepositoryImp(api)
     }
 
 
