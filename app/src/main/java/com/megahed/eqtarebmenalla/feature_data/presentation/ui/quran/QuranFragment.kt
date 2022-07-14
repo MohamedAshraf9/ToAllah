@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.megahed.eqtarebmenalla.adapter.SoraAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranBinding
@@ -44,7 +46,9 @@ class QuranFragment : Fragment() {
         quranTextAdapter= SoraAdapter(requireContext(), object : OnMyItemClickListener<Sora>{
 
             override fun onItemClick(itemObject: Sora, view: View?) {
-                Toast.makeText(requireContext(),itemObject.name,Toast.LENGTH_LONG).show()
+                val action: NavDirections =QuranFragmentDirections.actionNavigationQuranToAyatFragment(itemObject.soraId,itemObject.name)
+                Navigation.findNavController(requireView()).navigate(action)
+                //Toast.makeText(requireContext(),itemObject.name,Toast.LENGTH_LONG).show()
             }
 
             override fun onItemLongClick(itemObject: Sora, view: View?) {

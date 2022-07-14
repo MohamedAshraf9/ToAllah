@@ -10,7 +10,8 @@ data class Sora(
     val englishName: String,
     val englishNameTranslation: String,
     val name: String,
-    val revelationType: String
+    val revelationType: String,
+    val ayatNumbers: Int
 
 ){
 

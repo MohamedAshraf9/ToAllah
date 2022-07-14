@@ -10,12 +10,13 @@ data class Surah(
     val number: Int,
     val revelationType: String
 )
-fun Surah.toSora():Sora{
+fun Surah.toSora(ayatNumbers:Int):Sora{
     return Sora(
         soraId = number,
         englishName=englishName,
         englishNameTranslation=englishNameTranslation,
         name=name,
-        revelationType=revelationType
+        revelationType=revelationType,
+        ayatNumbers =ayatNumbers
     )
 }

@@ -25,5 +25,6 @@ data class Aya(
     val ruku: Int,
     val sajda: Boolean,
     val text: String,
+    var isvaForite: Boolean=false,
     val soraId:Int
 )

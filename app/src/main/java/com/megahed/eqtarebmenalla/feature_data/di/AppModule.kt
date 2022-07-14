@@ -77,7 +77,7 @@ object AppModule {
                     val data= Gson().fromJson(fileInString,AllQuran::class.java)
                     for (i in 0 until data.surahs.size){
                         trainDBLazy.get().soraDao.insertSora(
-                           data.surahs[i].toSora()
+                           data.surahs[i].toSora(data.surahs[i].ayahs.size)
                         )
 
                         //Log.d("MyTagData ", data.surahs[i].name)

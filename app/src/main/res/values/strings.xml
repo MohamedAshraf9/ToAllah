@@ -17,4 +17,7 @@
     <string name="isha">العشاء</string>
     <string name="time">الوقت</string>
     <string name="error">حدث خطأ</string>
+    <string name="ayat">ايات</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

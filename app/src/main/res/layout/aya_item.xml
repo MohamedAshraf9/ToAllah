@@ -1,19 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/_1sdp"
+    app:cardElevation="@dimen/_3sdp"
+    android:padding="@dimen/_2sdp"
+    app:cardCornerRadius="@dimen/_12sdp"
+    android:layout_width="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/_5sdp">
+    android:padding="@dimen/_2sdp"
+    android:layout_margin="@dimen/_1sdp">
 
     <TextView
-        android:id="@+id/tv_listFav_ar"
+        android:id="@+id/ayaTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_5sdp"
         android:fontFamily="@font/kemenag"
         android:textSize="@dimen/_20sdp"
         android:padding="@dimen/_2sdp"
+        android:textStyle="bold"
+        android:layout_marginEnd="@dimen/_2sdp"
+        android:layout_marginStart="@dimen/_2sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -21,20 +33,20 @@
     
 
     <ImageView
-        android:id="@+id/tv_listFav_del"
+        android:id="@+id/fav"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
         android:padding="@dimen/_2sdp"
-        android:src="@drawable/ic_favorite_red_24"
+        android:src="@drawable/ic_baseline_favorite_border_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_listFav_ar" />
+        app:layout_constraintTop_toBottomOf="@+id/ayaTitle" />
 
     <TextView
-        android:id="@+id/tv_listFav_surahName"
+        android:id="@+id/ayaNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
@@ -45,7 +57,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_listFav_ar"
+        app:layout_constraintTop_toBottomOf="@+id/ayaTitle"
         tools:text="Al - Faatiha | Ayah 1" />
 
     <View
@@ -57,3 +69,6 @@
         app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>

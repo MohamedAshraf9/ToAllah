@@ -15,16 +15,33 @@
         android:id="@+id/navigation_quran"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran.QuranFragment"
         android:label="@string/quran"
-        tools:layout="@layout/fragment_quran" />
+        tools:layout="@layout/fragment_quran" >
+        <action
+            android:id="@+id/action_navigation_quran_to_ayatFragment"
+            app:destination="@id/ayatFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_listener"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerFragment"
         android:label="@string/listener"
         tools:layout="@layout/fragment_quran_listener" />
-
-
-
+    <fragment
+        android:id="@+id/ayatFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyatFragment"
+        android:label="fragment_ayat"
+        tools:layout="@layout/fragment_ayat" >
+        <argument
+            android:name="soraId"
+            app:argType="integer" />
+        <argument
+            android:name="soraName"
+            app:argType="string" />
+    </fragment>
 
 
 </navigation>

@@ -4,6 +4,8 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.megahed.eqtarebmenalla.App
+import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.databinding.SoraItemBinding
 import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
@@ -48,7 +50,16 @@ class SoraAdapter (private val context: Context,
 
         holder.soraNameAr.text=sora.name
         holder.soraNameEn.text=sora.englishName
-        holder.soraInfo.text=sora.revelationType
+        val ayat=App.getInstance().getString(R.string.ayat)
+        var revelationType=sora.revelationType
+        revelationType = if (revelationType == "Meccan"){
+            "مكيه"
+        }else{
+            "مدنيه"
+        }
+
+        val s="$revelationType - ${sora.ayatNumbers} $ayat"
+        holder.soraInfo.text=s
         holder.soraNumber.text="${sora.soraId}"
 
         holder.itemView.setOnClickListener {
