@@ -22,4 +22,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="times">مرات</string>
     <string name="namesOfAllah">أسماء الله الحسنى</string>
+    <string name="sora">سوره</string>
+    <string name="search">بحث</string>
 </resources>

@@ -3,7 +3,7 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Resource
-import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.GetIslamicDataUsesCase
+import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.PrayerDataUsesCase
 import com.megahed.eqtarebmenalla.feature_data.presentation.IslamicListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class IslamicViewModel @Inject constructor(
-    private val usesCase: GetIslamicDataUsesCase
+    private val usesCase: PrayerDataUsesCase
 ):ViewModel(){
 
 
