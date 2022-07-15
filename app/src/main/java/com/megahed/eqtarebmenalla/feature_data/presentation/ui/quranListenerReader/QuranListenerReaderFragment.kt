@@ -62,7 +62,6 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         binding = FragmentQuranListenerReaderBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-
         val toolbar: Toolbar = binding.toolbar
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
