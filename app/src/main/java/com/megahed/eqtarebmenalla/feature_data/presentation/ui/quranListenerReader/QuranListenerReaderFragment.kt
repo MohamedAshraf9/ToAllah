@@ -74,6 +74,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         binding.readerChar.text=letter
 
 
+
         var isShow = true
         var scrollRange = -1
         binding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { barLayout, verticalOffset ->
