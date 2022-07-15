@@ -12,6 +12,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerAdapter
@@ -51,14 +53,25 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnMyItemClickListener<Reciter> {
 
             override fun onItemClick(itemObject: Reciter, view: View?) {
-                //val action: NavDirections = QuranFragmentDirections.actionNavigationQuranToAyatFragment(itemObject.soraId,itemObject.name)
-                //Navigation.findNavController(requireView()).navigate(action)
+                val action: NavDirections = QuranListenerFragmentDirections.
+                actionNavigationListenerToQuranListenerReaderFragment(
+                    readerName = itemObject.name,
+                    suras = itemObject.suras,
+                    letter = itemObject.letter,
+                    count = itemObject.count,
+                    rewaya = itemObject.rewaya,
+                    server = itemObject.server
+                )
+                Navigation.findNavController(requireView()).navigate(action)
             }
 
             override fun onItemLongClick(itemObject: Reciter, view: View?) {
             }
         })
         binding.recyclerView.adapter = quranListenerAdapter
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         quranListenerViewModel.getQuranData()
         lifecycleScope.launchWhenStarted {
@@ -70,9 +83,7 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         }
 
-        val menuHost: MenuHost = requireActivity()
 
-        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
 
 

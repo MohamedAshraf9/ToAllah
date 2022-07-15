@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
@@ -64,11 +65,16 @@ class QuranFragment : Fragment(), MenuProvider {
             override fun onItemLongClick(itemObject: Sora, view: View?) {
             }
         })
+        var string:StringBuilder= StringBuilder()
         binding.recyclerView.adapter = quranTextAdapter
         lifecycleScope.launchWhenStarted {
 
             soraViewModel.getAllSora().collect{
                 quranTextAdapter.setData(it)
+                for (i in it.indices){
+                    string.append("\"${it.get(i).name}\",")
+                }
+                Log.d("MyLogTag",string.toString())
 
             }
         }

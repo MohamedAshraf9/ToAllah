@@ -29,7 +29,15 @@
         android:id="@+id/navigation_listener"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerFragment"
         android:label="@string/listener"
-        tools:layout="@layout/fragment_quran_listener" />
+        tools:layout="@layout/fragment_quran_listener" >
+        <action
+            android:id="@+id/action_navigation_listener_to_quranListenerReaderFragment"
+            app:destination="@id/quranListenerReaderFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
     <fragment
         android:id="@+id/ayatFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyatFragment"
@@ -79,6 +87,30 @@
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.azkar.NamesOfAllahFragment"
         android:label="fragment_names_of_allah"
         tools:layout="@layout/fragment_names_of_allah" />
+    <fragment
+        android:id="@+id/quranListenerReaderFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.QuranListenerReaderFragment"
+        android:label="fragment_quran_listener_reader"
+        tools:layout="@layout/fragment_quran_listener_reader" >
+        <argument
+            android:name="readerName"
+            app:argType="string" />
+        <argument
+            android:name="server"
+            app:argType="string" />
+        <argument
+            android:name="rewaya"
+            app:argType="string" />
+        <argument
+            android:name="count"
+            app:argType="string" />
+        <argument
+            android:name="letter"
+            app:argType="string" />
+        <argument
+            android:name="suras"
+            app:argType="string" />
+    </fragment>
 
 
 </navigation>

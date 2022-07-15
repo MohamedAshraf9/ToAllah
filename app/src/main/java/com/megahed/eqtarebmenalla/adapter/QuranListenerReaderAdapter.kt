@@ -8,6 +8,7 @@ import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.QuranListenerItemBinding
 import com.megahed.eqtarebmenalla.databinding.SoraListenerItemBinding
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.Reciter
@@ -15,13 +16,13 @@ import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import java.util.*
 
 class QuranListenerReaderAdapter (private val context: Context,
-                                  private val onMyItemClickListener: OnMyItemClickListener<String>
+                                  private val onMyItemClickListener: OnMyItemClickListener<Int>
 ) : RecyclerView.Adapter<QuranListenerReaderAdapter.MyHolder>(), Filterable {
 
-    private var listData= mutableListOf<String>()
-    private var listDataSearch= mutableListOf<String>()
+    private var listData= mutableListOf<Int>()
+    private var listDataSearch= mutableListOf<Int>()
 
-    fun setData(data:List<String>){
+    fun setData(data:List<Int>){
         listData.clear()
         listData.addAll(data)
         listDataSearch.addAll(data)
@@ -31,10 +32,11 @@ class QuranListenerReaderAdapter (private val context: Context,
 
     class MyHolder(binding: SoraListenerItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        val count=binding.count
-        val letter=binding.letter
-        val readerName=binding.readerName
-        val rewayaInfo=binding.rewayaInfo
+        val soraName=binding.soraName
+        val soraNumber=binding.soraNumber
+        val addPlayList=binding.addPlayList
+        val fav=binding.fav
+        val download=binding.download
 
         val root = binding.root
 
@@ -54,7 +56,8 @@ class QuranListenerReaderAdapter (private val context: Context,
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
 
         val quranListener= listData[position]
-
+        holder.soraName.text=Constants.SORA_OF_QURAN[quranListener]
+        holder.soraNumber.text="$quranListener"
 
 
         holder.itemView.setOnClickListener {
@@ -72,14 +75,14 @@ class QuranListenerReaderAdapter (private val context: Context,
 
     private val examplefilter: Filter = object : Filter() {
         override fun performFiltering(charSequence: CharSequence): FilterResults {
-            val filterlist = mutableListOf<String>()
+            val filterlist = mutableListOf<Int>()
             if (charSequence.isEmpty()) {
                 filterlist.addAll(listDataSearch)
             } else {
                 val filterPattern =
                     charSequence.toString().lowercase(Locale.getDefault()).trim { it <= ' ' }
                 for (item in listDataSearch) {
-                    if (item.name.lowercase().contains(filterPattern)) {
+                    if (Constants.SORA_OF_QURAN[item].lowercase().contains(filterPattern)) {
                         filterlist.add(item)
                     }
                 }
@@ -92,7 +95,7 @@ class QuranListenerReaderAdapter (private val context: Context,
         override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
             if (filterResults.values != null) {
                 listData.clear()
-                listData.addAll(filterResults.values as MutableList<String>)
+                listData.addAll(filterResults.values as MutableList<Int>)
                 notifyDataSetChanged()
             }
         }

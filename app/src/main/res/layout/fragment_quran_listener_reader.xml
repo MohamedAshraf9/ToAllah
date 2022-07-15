@@ -115,11 +115,10 @@
                                      android:textStyle="bold"
                                      android:id="@+id/favorite"
                                      android:src="@drawable/ic_baseline_favorite_border_24"
-                                     app:layout_constraintEnd_toStartOf="@+id/pointsNum"
+                                     app:layout_constraintEnd_toStartOf="@+id/download"
                                      app:layout_constraintStart_toEndOf="@+id/soraNumbers"
                                      app:layout_constraintTop_toBottomOf="@id/rewaya"
-                                     android:textColor="@color/text_color"
-                                     android:text="22"/>
+                                     android:textColor="@color/text_color" />
                                  <ImageView
                                      android:layout_width="0dp"
                                      android:layout_height="wrap_content"
@@ -127,13 +126,12 @@
                                      android:gravity="center"
                                      android:textSize="@dimen/_14ssp"
                                      android:textStyle="bold"
-                                     android:id="@+id/pointsNum"
+                                     android:id="@+id/download"
                                      android:src="@drawable/ic_baseline_arrow_circle_down_24"
                                      app:layout_constraintEnd_toEndOf="parent"
                                      app:layout_constraintStart_toEndOf="@id/favorite"
                                      app:layout_constraintTop_toBottomOf="@id/rewaya"
-                                     android:textColor="@color/text_color"
-                                     android:text="55"/>
+                                     android:textColor="@color/text_color" />
                                  <TextView
                                      android:layout_width="0dp"
                                      android:layout_height="wrap_content"
@@ -171,9 +169,9 @@
                                      android:textSize="@dimen/_12ssp"
                                      android:id="@+id/points"
                                      app:layout_constraintBottom_toBottomOf="parent"
-                                     app:layout_constraintEnd_toEndOf="@+id/pointsNum"
-                                     app:layout_constraintStart_toStartOf="@+id/pointsNum"
-                                     app:layout_constraintTop_toBottomOf="@id/pointsNum"
+                                     app:layout_constraintEnd_toEndOf="@+id/download"
+                                     app:layout_constraintStart_toStartOf="@+id/download"
+                                     app:layout_constraintTop_toBottomOf="@id/download"
                                      android:textColor="@color/text_color"
                                      android:text="@string/download"/>
 

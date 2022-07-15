@@ -68,6 +68,10 @@ class AyatFragment : Fragment(),MenuProvider {
             }
         })
         binding.recyclerView.adapter = quranTextAdapter
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
         lifecycleScope.launchWhenStarted {
 
             soraId?.let { it ->
@@ -79,9 +83,7 @@ class AyatFragment : Fragment(),MenuProvider {
         }
 
 
-        val menuHost: MenuHost = requireActivity()
 
-        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
 
 
