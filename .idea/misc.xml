@@ -13,6 +13,7 @@
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/drawable/prayer_icon.xml" value="0.1475" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/drawable/quran_icon.xml" value="0.1475" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/drawable/rounded_textview.xml" value="0.1475" />
+        <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/drawable/shape_toolbar01.xml" value="0.1475" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/drawable/thumb.xml" value="0.1475" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/drawable/thumb_drawable.xml" value="0.1" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/activity_main.xml" value="0.17074275362318841" />
@@ -30,8 +31,10 @@
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/fragment_names_of_allah.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/fragment_quran.xml" value="0.2" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/fragment_quran_listener.xml" value="0.25" />
+        <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/fragment_quran_listener_reader.xml" value="0.22" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/quran_listener_item.xml" value="0.25" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/sora_item.xml" value="0.25" />
+        <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/layout/sora_listener_item.xml" value="0.25" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/menu/bottom_nav_menu.xml" value="0.14444444444444443" />
         <entry key="..\:/Users/ELesnawy/AndroidStudioProjects/EqtarebMenAlla/app/src/main/res/menu/quran_listener_menu.xml" value="0.20416666666666666" />
       </map>

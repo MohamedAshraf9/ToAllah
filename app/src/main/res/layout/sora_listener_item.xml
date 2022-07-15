@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/_2sdp"
+    app:cardElevation="@dimen/_3sdp"
+    android:padding="@dimen/_2sdp"
+    app:cardCornerRadius="@dimen/_12sdp"
+    android:layout_width="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/_3sdp"
+        android:padding="@dimen/_3sdp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/soraNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="أ"
+            android:textSize="@dimen/_14ssp"
+            android:background="@drawable/circle"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:layout_margin="@dimen/_1sdp"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:gravity="start"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="@+id/soraNumber"
+            app:layout_constraintEnd_toStartOf="@+id/relative"
+            app:layout_constraintStart_toEndOf="@+id/soraNumber"
+            app:layout_constraintTop_toTopOf="@+id/soraNumber">
+
+            <TextView
+                android:id="@+id/soraName"
+                android:textSize="@dimen/_14ssp"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Al-Fatihah" />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/relative"
+            android:layout_width="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@+id/linearLayout1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/linearLayout1"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/fav"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_margin="@dimen/_5sdp"
+                android:padding="@dimen/_2sdp"
+                android:src="@drawable/ic_baseline_favorite_border_24" />
+
+            <ImageView
+                android:id="@+id/addPlayList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_margin="@dimen/_5sdp"
+                android:padding="@dimen/_2sdp"
+                android:src="@drawable/ic_baseline_playlist_add_24" />
+
+            <ImageView
+                android:id="@+id/download"
+                android:textSize="@dimen/_12ssp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/kemenag"
+                android:text="@string/sora"
+                android:textAlignment="center"
+                android:layout_margin="@dimen/_1sdp"
+                android:src="@drawable/ic_baseline_arrow_circle_down_24"
+                android:padding="@dimen/_1sdp" />
+
+
+        </LinearLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>
