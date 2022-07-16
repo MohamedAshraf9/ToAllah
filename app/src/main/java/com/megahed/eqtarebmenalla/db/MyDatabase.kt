@@ -2,6 +2,7 @@ package com.megahed.eqtarebmenalla.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.megahed.eqtarebmenalla.db.dao.*
 import com.megahed.eqtarebmenalla.db.model.*
 
@@ -12,10 +13,13 @@ import com.megahed.eqtarebmenalla.db.model.*
         Aya::class,
         AzkarCategory::class,
         ElZekr::class,
+        Tasbeh::class,
+        TasbehData::class,
     ],
     version = 1,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class MyDatabase : RoomDatabase() {
 
     companion object{
@@ -27,5 +31,9 @@ abstract class MyDatabase : RoomDatabase() {
     abstract val ayaDao:AyaDao
     abstract val azkarCategoryDao:AzkarCategoryDao
     abstract val elZekrDao:ElZekrDao
+
+    abstract val tasbehDao:TasbehDao
+    abstract val tasbehDataDao:TasbehDataDao
+
 
 }

@@ -23,6 +23,7 @@ class QuranListenerAdapter (private val context: Context,
     fun setData(data:List<Reciter>){
         listData.clear()
         listData.addAll(data)
+        listDataSearch.clear()
         listDataSearch.addAll(data)
         notifyDataSetChanged()
     }

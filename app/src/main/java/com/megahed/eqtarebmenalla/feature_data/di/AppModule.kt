@@ -7,9 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
+import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.db.MyDatabase
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
+import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.repository.*
 import com.megahed.eqtarebmenalla.db.repositoryImp.*
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.AllQuran
@@ -131,6 +133,14 @@ object AppModule {
                     }
 
                 }
+                CoroutineScope(Dispatchers.IO).launch {
+                    val tasbeh=App.getInstance().resources.getStringArray(R.array.tasbeh)
+                    for (i in tasbeh.indices){
+                        trainDBLazy.get().tasbehDao.insertTasbeh(
+                            Tasbeh(tasbeh[i],100)
+                        )
+                    }
+                }
 
             }
         }).build()
@@ -165,6 +175,19 @@ object AppModule {
     @Singleton
     fun provideElZekrRepository(db: MyDatabase): ElZekrRepository {
         return ElZekrRepositoryImp(db.elZekrDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTasbehRepository(db: MyDatabase): TasbehRepository {
+        return TasbehRepositoryImp(db.tasbehDao)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideTasbehDataRepository(db: MyDatabase): TasbehDataRepository {
+        return TasbehDataRepositoryImp(db.tasbehDataDao)
     }
 
 

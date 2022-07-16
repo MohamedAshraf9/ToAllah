@@ -111,6 +111,11 @@
             android:name="suras"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/navigation_tasbeh"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.TasbehFragment"
+        android:label="@string/tasbeh"
+        tools:layout="@layout/fragment_tasbeh" />
 
 
 </navigation>

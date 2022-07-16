@@ -24,6 +24,7 @@ class SoraAdapter (private val context: Context,
     fun setData(data:List<Sora>){
         listData.clear()
         listData.addAll(data)
+        listDataSearch.clear()
         listDataSearch.addAll(data)
         notifyDataSetChanged()
     }
