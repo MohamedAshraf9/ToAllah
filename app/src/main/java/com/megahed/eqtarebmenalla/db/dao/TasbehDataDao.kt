@@ -1,8 +1,10 @@
 package com.megahed.eqtarebmenalla.db.dao
 
 import androidx.room.*
+import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.db.model.TasbehData
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 @Dao
 interface TasbehDataDao {
@@ -19,4 +21,7 @@ interface TasbehDataDao {
 
     @Query("SELECT * FROM tasbehdata")
     fun getAllTasbehData(): Flow<List<TasbehData>>
+
+    @Query("SELECT * FROM tasbehdata WHERE time between :str and :end ")
+    suspend fun getTasbehDataToday(str:Date,end:Date): TasbehData?
 }

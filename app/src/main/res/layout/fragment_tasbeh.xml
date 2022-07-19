@@ -19,7 +19,7 @@
 
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/units"
+                android:id="@+id/tasbehSpinner"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_margin="@dimen/_8sdp"
@@ -37,6 +37,7 @@
 
             <include layout="@layout/tasbeh_counter"
                 android:layout_width="match_parent"
+                android:id="@+id/tasbeh_counter"
                 android:layout_height="match_parent"/>
 
         </LinearLayout>

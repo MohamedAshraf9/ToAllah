@@ -5,6 +5,7 @@ import com.megahed.eqtarebmenalla.db.dao.TasbehDataDao
 import com.megahed.eqtarebmenalla.db.model.TasbehData
 import com.megahed.eqtarebmenalla.db.repository.TasbehDataRepository
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 class TasbehDataRepositoryImp(
 private val tasbehDataDao: TasbehDataDao
@@ -24,5 +25,9 @@ private val tasbehDataDao: TasbehDataDao
 
     override fun getAllTasbehData(): Flow<List<TasbehData>> {
         return tasbehDataDao.getAllTasbehData()
+    }
+
+    override suspend fun getTasbehDataToday(str: Date, end: Date): TasbehData? {
+        return tasbehDataDao.getTasbehDataToday(str,end)
     }
 }

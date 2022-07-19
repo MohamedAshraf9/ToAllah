@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/back"
+    android:layoutDirection="ltr"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
@@ -22,7 +23,7 @@
         android:layout_height="@dimen/_40sdp"
         android:layout_marginBottom="@dimen/_50sdp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="start"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="@+id/tasbehImage"
         app:layout_constraintTop_toTopOf="@+id/tasbehImage"
         app:layout_constraintStart_toStartOf="parent">
@@ -32,11 +33,10 @@
             android:id="@+id/textCountar"
             android:text="0"
             android:layout_marginTop="@dimen/_2sdp"
-            android:maxLength="1000000"
             android:layout_marginStart="@dimen/_3sdp"
             android:textColor="@color/black"
-            android:layout_gravity="center_vertical"
-            android:textSize="@dimen/_40ssp"
+            android:layout_gravity="center_vertical|end"
+            android:textSize="@dimen/_36ssp"
             android:fontFamily="@font/digital"
             android:layout_height="wrap_content"/>
 
