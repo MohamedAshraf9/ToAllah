@@ -27,6 +27,11 @@
     <string name="favorite">مفضله</string>
     <string name="download">تحميل</string>
     <string name="chooseTasbeh">اختر تسبيحك</string>
+    <string name="addTasbeh">أضف تسبيح</string>
+    <string name="analyze">احصائيات</string>
+    <string name="edit">تعديل</string>
+    <string name="cancle">إلغاء</string>
+    <string name="ok">حسنا</string>
 
 
     <string-array name="tasbeh">

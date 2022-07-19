@@ -16,7 +16,7 @@ import java.util.*
 )
 data class TasbehData(
     var time:Date,
-    var target:Int,
+    var target:Int=0,
     var tasbehId:Int
 ){
     @PrimaryKey(autoGenerate = true)

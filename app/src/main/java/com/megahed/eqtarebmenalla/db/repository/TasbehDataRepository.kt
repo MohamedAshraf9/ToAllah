@@ -15,6 +15,6 @@ interface TasbehDataRepository {
 
     fun getAllTasbehData(): Flow<List<TasbehData>>
 
-    suspend fun getTasbehDataToday(str: Date, end: Date): TasbehData?
+    suspend fun getTasbehDataToday(id:Int,str:Date,end:Date): TasbehData?
 
 }

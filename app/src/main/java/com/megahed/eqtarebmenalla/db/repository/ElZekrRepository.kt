@@ -12,7 +12,7 @@ interface ElZekrRepository {
 
     suspend fun deleteElZekr(elZekr: ElZekr)
 
-
     fun getElZekrOfCatId(id:Int): Flow<List<ElZekr>>
 
+    fun getFavoriteElZekr(): Flow<List<ElZekr>>
 }

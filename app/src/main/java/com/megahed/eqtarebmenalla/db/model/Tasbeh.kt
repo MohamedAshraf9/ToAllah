@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Tasbeh(
     var tasbehName:String,
-    var target: Int=100
+    var target: Int=0
 
 ){
     @PrimaryKey(autoGenerate = true)

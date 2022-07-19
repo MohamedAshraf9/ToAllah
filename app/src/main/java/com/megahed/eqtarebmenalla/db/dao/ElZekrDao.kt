@@ -21,5 +21,9 @@ interface ElZekrDao {
     fun getElZekrOfCatId(id:Int): Flow<List<ElZekr>>
 
 
+    @Query("SELECT * FROM elzekr WHERE isVaForte=1 ")
+    fun getFavoriteElZekr(): Flow<List<ElZekr>>
+
+
 
 }

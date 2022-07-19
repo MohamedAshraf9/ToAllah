@@ -27,7 +27,7 @@ private val tasbehDataDao: TasbehDataDao
         return tasbehDataDao.getAllTasbehData()
     }
 
-    override suspend fun getTasbehDataToday(str: Date, end: Date): TasbehData? {
-        return tasbehDataDao.getTasbehDataToday(str,end)
+    override suspend fun getTasbehDataToday(id:Int,str: Date, end: Date): TasbehData? {
+        return tasbehDataDao.getTasbehDataToday(id,str,end)
     }
 }

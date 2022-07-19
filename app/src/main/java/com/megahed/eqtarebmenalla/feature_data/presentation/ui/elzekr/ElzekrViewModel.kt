@@ -41,5 +41,9 @@ class ElzekrViewModel@Inject constructor(
         return elZekrRepository.getElZekrOfCatId(id)
     }
 
+    fun getFavoriteElZekr(): Flow<List<ElZekr>>{
+        return elZekrRepository.getFavoriteElZekr()
+    }
+
 
 }

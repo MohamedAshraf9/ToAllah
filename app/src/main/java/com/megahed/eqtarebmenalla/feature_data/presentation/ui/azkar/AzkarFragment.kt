@@ -45,7 +45,7 @@ class AzkarFragment : Fragment() {
         azkarCategoryAdapter= AzkarCategoryAdapter(requireContext(), object : OnMyItemClickListener<AzkarCategory> {
 
             override fun onItemClick(itemObject: AzkarCategory, view: View?) {
-                val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(itemObject.id,itemObject.catName)
+                val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(itemObject.id,itemObject.catName,false)
                 Navigation.findNavController(requireView()).navigate(action)
             }
 
@@ -63,6 +63,11 @@ class AzkarFragment : Fragment() {
 
         binding.namesOfAllah.setOnClickListener {
             val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToNamesOfAllahFragment()
+            Navigation.findNavController(requireView()).navigate(action)
+        }
+
+        binding.fabFavorite.setOnClickListener {
+            val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(0,"",true)
             Navigation.findNavController(requireView()).navigate(action)
         }
 

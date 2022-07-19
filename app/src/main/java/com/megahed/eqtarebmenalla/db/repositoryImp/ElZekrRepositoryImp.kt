@@ -24,4 +24,8 @@ class ElZekrRepositoryImp (
     override fun getElZekrOfCatId(id: Int): Flow<List<ElZekr>> {
         return elZekrDao.getElZekrOfCatId(id)
     }
+
+    override fun getFavoriteElZekr(): Flow<List<ElZekr>> {
+        return elZekrDao.getFavoriteElZekr()
+    }
 }

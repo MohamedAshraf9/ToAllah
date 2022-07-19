@@ -7,44 +7,85 @@
     android:layout_height="match_parent"
     tools:context=".feature_data.presentation.ui.azkar.AzkarFragment">
 
-    <androidx.cardview.widget.CardView
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_5sdp"
-        app:cardElevation="@dimen/_3sdp"
-        android:id="@+id/namesOfAllah"
-        android:padding="@dimen/_2sdp"
-        app:cardCornerRadius="@dimen/_12sdp"
-        android:layout_width="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:padding="@dimen/_3sdp"
-            android:layout_marginBottom="@dimen/_1sdp"
-            android:layout_marginTop="@dimen/_1sdp"
-            android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_2sdp"
+            android:id="@+id/favorites"
+            android:layout_centerInParent="true"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabFavorite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/blue_500"
+                android:elevation="@dimen/_5sdp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                app:fabSize="mini"
+                app:tint="@color/red_200"
+                android:src="@drawable/ic_favorite_red_24"
+                android:transitionName="fab" />
+
             <TextView
                 android:layout_width="wrap_content"
-                android:id="@+id/zakarCatName"
-                android:textSize="@dimen/_16ssp"
+                android:text="@string/favorite"
+                android:textSize="@dimen/_12ssp"
                 android:textStyle="bold"
-                android:layout_centerInParent="true"
-                android:layout_alignParentStart="true"
-                android:text="@string/namesOfAllah"
-                android:layout_margin="@dimen/_3sdp"
-                android:padding="@dimen/_3sdp"
-                android:layout_toStartOf="@id/allah"
+                android:textAlignment="center"
+                android:layout_gravity="center"
+                android:gravity="center"
                 android:layout_height="wrap_content"/>
-            <ImageView
-                android:id="@+id/allah"
-                android:layout_width="@dimen/_50sdp"
-                android:src="@drawable/allah"
-                android:layout_margin="@dimen/_3sdp"
-                android:padding="@dimen/_3sdp"
-                android:layout_alignParentEnd="true"
-                android:layout_height="@dimen/_50sdp"/>
-        </RelativeLayout>
 
-    </androidx.cardview.widget.CardView>
+        </LinearLayout>
+        <androidx.cardview.widget.CardView
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_5sdp"
+            app:cardElevation="@dimen/_3sdp"
+            android:layout_toEndOf="@+id/favorites"
+            android:id="@+id/namesOfAllah"
+            android:padding="@dimen/_2sdp"
+            app:cardCornerRadius="@dimen/_12sdp"
+            android:layout_width="match_parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:padding="@dimen/_3sdp"
+                android:layout_marginBottom="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_1sdp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:id="@+id/zakarCatName"
+                    android:textSize="@dimen/_16ssp"
+                    android:textStyle="bold"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/namesOfAllah"
+                    android:layout_margin="@dimen/_3sdp"
+                    android:padding="@dimen/_3sdp"
+                    android:layout_toStartOf="@id/allah"
+                    android:layout_height="wrap_content"/>
+                <ImageView
+                    android:id="@+id/allah"
+                    android:layout_width="@dimen/_50sdp"
+                    android:src="@drawable/allah"
+                    android:layout_margin="@dimen/_3sdp"
+                    android:padding="@dimen/_3sdp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_height="@dimen/_50sdp"/>
+            </RelativeLayout>
+
+        </androidx.cardview.widget.CardView>
+    </RelativeLayout>
+
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

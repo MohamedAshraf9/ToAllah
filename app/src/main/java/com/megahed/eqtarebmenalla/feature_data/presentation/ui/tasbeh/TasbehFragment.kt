@@ -1,24 +1,33 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.databinding.FragmentTasbehBinding
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
+import com.megahed.eqtarebmenalla.db.model.TasbehData
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.*
 
 @AndroidEntryPoint
 class TasbehFragment : Fragment() {
 
     private lateinit var binding: FragmentTasbehBinding
+    private lateinit var tasbehViewModel :TasbehViewModel
     private var listData= mutableListOf<Tasbeh>()
     private var counter:Int=0
     private var tasbehCounter:Tasbeh?=null
@@ -31,7 +40,7 @@ class TasbehFragment : Fragment() {
         binding = FragmentTasbehBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val tasbehViewModel =
+         tasbehViewModel =
             ViewModelProvider(this).get(TasbehViewModel::class.java)
 
         val unitsArrayAdapter: ArrayAdapter<Tasbeh> =
@@ -48,21 +57,68 @@ class TasbehFragment : Fragment() {
             }
         }
 
+        val str = Calendar.getInstance()
+        str.set(Calendar.HOUR_OF_DAY, 0)
+        str.set(Calendar.MINUTE, 0)
+        str.set(Calendar.SECOND, 0)
+
+        val end = Calendar.getInstance()
+        end.set(Calendar.HOUR_OF_DAY, 23)
+        end.set(Calendar.MINUTE, 59)
+        end.set(Calendar.SECOND, 59)
+
         (binding.tasbehSpinner.editText as MaterialAutoCompleteTextView).onItemClickListener =
             OnItemClickListener { parent, view, position, id ->
                 tasbehCounter = parent.getItemAtPosition(position) as Tasbeh
+                tasbehCounter?.let {tasbeh ->
+                    lifecycleScope.launchWhenStarted {
+                        tasbehViewModel.getTasbehDataToday(tasbeh.id,str.time,end.time)?.let {
+                                counter=it.target
+                                binding.tasbehCounter.textCountar.text="${it.target}"
+
+                        }?:run {
+                            counter=0
+                                val now = Calendar.getInstance()
+                                val tasbehData = TasbehData(now.time, counter, tasbeh.id)
+                                tasbehViewModel.insertTasbehData(tasbehData)
+                                //Log.d("MyLogD", "no")
+                                /*withContext(Dispatchers.Main){
+                                    Toast.makeText(requireContext(),"Hi No",Toast.LENGTH_LONG).show()
+                                }*/
+                            binding.tasbehCounter.textCountar.text="$counter"
+                            }
+
+
+                    }
+
+                }
 
             }
 
 
         binding.tasbehCounter.increaseButton.setOnClickListener {
-            counter+=10000
+            ++counter
             if (counter>=100000)
                 binding.tasbehCounter.textCountar.textSize=38f
-            binding.tasbehCounter.textCountar.text="$counter"
-            tasbehCounter?.let {
+            tasbehCounter?.let {tasbeh ->
+                lifecycleScope.launchWhenStarted {
+                    tasbehViewModel.getTasbehDataToday(tasbeh.id,str.time,end.time)?.let {
+                        it.target+=1
+                        tasbehViewModel.updateTasbehData(it)
+                        binding.tasbehCounter.textCountar.text="${it.target}"
+
+                    }?:run {
+                        val now = Calendar.getInstance()
+                        val tasbehData = TasbehData(now.time, counter, tasbeh.id)
+                        tasbehViewModel.insertTasbehData(tasbehData)
+                        binding.tasbehCounter.textCountar.text="$counter"
+
+
+                    }
+                }
 
             }
+
 
         }
         binding.tasbehCounter.resetButton.setOnClickListener {
@@ -70,7 +126,61 @@ class TasbehFragment : Fragment() {
             binding.tasbehCounter.textCountar.text="$counter"
         }
 
+        binding.fabAddTasbeh.setOnClickListener {
+
+
+
+            val view: View = LayoutInflater.from(requireContext()).inflate(R.layout.add_tasbeh, null)
+            val addTasbehText=view.findViewById<TextInputLayout>(R.id.addTasbehText)
+            MaterialAlertDialogBuilder(requireContext(),
+                com.google.android.material.R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_Centered)
+                .setMessage(R.string.addTasbeh)
+                .setView(view)
+                .setNegativeButton(resources.getString(R.string.cancle)) { dialog, which ->
+                    // Respond to negative button press
+                    dialog.cancel()
+                }
+                .setPositiveButton(resources.getString(R.string.ok)) { dialog, which ->
+                    // Respond to positive button press
+                    tasbehViewModel.insertTasbeh(
+                        Tasbeh(addTasbehText.editText?.text.toString(),0)
+                    )
+
+                }.show()
+
+        }
+
         return root
+    }
+
+    private fun getCounterData(str: Calendar, end: Calendar,show:Boolean) {
+        tasbehCounter?.let {tasbeh ->
+            lifecycleScope.launchWhenStarted {
+                tasbehViewModel.getTasbehDataToday(tasbeh.id,str.time,end.time)?.let {
+                    if (!show){
+                        it.target+=1
+                        tasbehViewModel.updateTasbehData(it)
+                    }
+                    else{
+                        counter=it.target
+                        binding.tasbehCounter.textCountar.text="${it.target}"
+                    }
+
+                }?:run {
+                    if (!show) {
+                        val now = Calendar.getInstance()
+                        val tasbehData = TasbehData(now.time, counter, tasbeh.id)
+                        tasbehViewModel.insertTasbehData(tasbehData)
+                        //Log.d("MyLogD", "no")
+                        /*withContext(Dispatchers.Main){
+                            Toast.makeText(requireContext(),"Hi No",Toast.LENGTH_LONG).show()
+                        }*/
+                    }
+                    binding.tasbehCounter.textCountar.text="$counter"
+                }
+            }
+
+        }
     }
 
 }

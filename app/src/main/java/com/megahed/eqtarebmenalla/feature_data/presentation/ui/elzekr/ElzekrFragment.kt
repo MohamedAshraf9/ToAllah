@@ -2,6 +2,7 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -12,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.ElzekrAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentElzekrBinding
 import com.megahed.eqtarebmenalla.db.model.ElZekr
@@ -26,11 +28,13 @@ class ElzekrFragment : Fragment(), MenuProvider {
     private lateinit var elzekrAdapter: ElzekrAdapter
     private var azkarCatId:Int?=null
     private var azkarName:String?=null
+    private var fromFavorite:Boolean=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         azkarCatId = arguments?.let { ElzekrFragmentArgs.fromBundle(it).azkarCatId }
         azkarName = arguments?.let { ElzekrFragmentArgs.fromBundle(it).azkarName }
+        fromFavorite = arguments?.let { ElzekrFragmentArgs.fromBundle(it).fromFavorite }!!
 
     }
 
@@ -50,7 +54,6 @@ class ElzekrFragment : Fragment(), MenuProvider {
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        toolbar.title = azkarName
 
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -68,20 +71,33 @@ class ElzekrFragment : Fragment(), MenuProvider {
             override fun onItemLongClick(itemObject: ElZekr, view: View?) {
             }
         })
+
         binding.recyclerView.adapter = elzekrAdapter
-        lifecycleScope.launchWhenStarted {
 
-            azkarCatId?.let { it ->
-                elzekrViewModel.getElZekrOfCatId(it).collect{ it1 ->
-                    elzekrAdapter.setData(it1)
+            if (!fromFavorite){
+                toolbar.title = azkarName
+                lifecycleScope.launchWhenStarted {
+                    azkarCatId?.let { it ->
+                        elzekrViewModel.getElZekrOfCatId(it).collect{ it1 ->
+                            elzekrAdapter.setData(it1)
 
+                        }
+                    }
+                }
+            }else{
+                toolbar.title = getString(R.string.favorite)
+                lifecycleScope.launchWhenStarted {
+                    elzekrViewModel.getFavoriteElZekr().collect{
+                        elzekrAdapter.setData(it)
+                    }
                 }
             }
-        }
+
+
+
 
 
         val menuHost: MenuHost = requireActivity()
-
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
 

@@ -22,6 +22,6 @@ interface TasbehDataDao {
     @Query("SELECT * FROM tasbehdata")
     fun getAllTasbehData(): Flow<List<TasbehData>>
 
-    @Query("SELECT * FROM tasbehdata WHERE time between :str and :end ")
-    suspend fun getTasbehDataToday(str:Date,end:Date): TasbehData?
+    @Query("SELECT * FROM tasbehdata WHERE tasbehId=:id and time between :str and :end ")
+    suspend fun getTasbehDataToday(id:Int,str:Date,end:Date): TasbehData?
 }

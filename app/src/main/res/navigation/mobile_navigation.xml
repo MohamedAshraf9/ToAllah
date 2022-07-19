@@ -81,6 +81,9 @@
         <argument
             android:name="azkarName"
             app:argType="string" />
+        <argument
+            android:name="fromFavorite"
+            app:argType="boolean" />
     </fragment>
     <fragment
         android:id="@+id/namesOfAllahFragment"
