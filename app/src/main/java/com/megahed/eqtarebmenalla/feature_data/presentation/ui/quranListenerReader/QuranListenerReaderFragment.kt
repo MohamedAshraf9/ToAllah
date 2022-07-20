@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerRea
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -11,18 +12,13 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
-import com.megahed.eqtarebmenalla.adapter.SoraAdapter
-import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
-import com.megahed.eqtarebmenalla.db.model.Sora
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyatFragmentArgs
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran.QuranFragmentDirections
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 
 class QuranListenerReaderFragment : Fragment() , MenuProvider {
@@ -123,7 +119,11 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.quran_listener_menu,menu)
+        menuInflater.inflate(R.menu.search_menu,menu)
+
+
+        menu.getItem(1).isVisible = false
+
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
 

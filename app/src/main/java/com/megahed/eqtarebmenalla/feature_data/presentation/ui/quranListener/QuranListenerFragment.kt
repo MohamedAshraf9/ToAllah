@@ -3,9 +3,12 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -15,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerBinding
@@ -94,7 +98,7 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.quran_listener_menu,menu)
+        menuInflater.inflate(R.menu.search_menu,menu)
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
 
@@ -116,10 +120,49 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
 
-        return false
+        return  when (menuItem.itemId) {
+            R.id.moreOptions ->{
+              showBottomSheet()
+                false
+            }
+            else -> false
+        }
 
     }
 
+
+    private fun showBottomSheet(){
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val bottomSheetView: View = LayoutInflater.from(
+            requireActivity()
+        ).inflate(
+            R.layout.bottom_sheet_listener,
+            requireView().findViewById<ConstraintLayout>(R.id.container2)
+        )
+
+        val readerFav= bottomSheetView.findViewById<ImageView>(R.id.readerFav)
+        val soraFav= bottomSheetView.findViewById<ImageView>(R.id.soraFav)
+        val listeningToSave= bottomSheetView.findViewById<ImageView>(R.id.listeningToSave)
+
+        readerFav.setOnClickListener {
+
+        }
+        soraFav.setOnClickListener {
+
+        }
+        listeningToSave.setOnClickListener {
+
+        }
+
+
+        //code
+        bottomSheetDialog.setContentView(bottomSheetView)
+        bottomSheetDialog.dismissWithAnimation = true
+        bottomSheetDialog.window?.attributes?.windowAnimations =
+            R.style.DialogAnimation
+
+        bottomSheetDialog.show()
+    }
 
 
 }

@@ -1,13 +1,12 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh
 
+import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -19,9 +18,8 @@ import com.megahed.eqtarebmenalla.databinding.FragmentTasbehBinding
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.model.TasbehData
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.util.*
+
 
 @AndroidEntryPoint
 class TasbehFragment : Fragment() {
@@ -129,7 +127,7 @@ class TasbehFragment : Fragment() {
         binding.fabAddTasbeh.setOnClickListener {
 
 
-
+            val d = resources.getDrawable(R.drawable.dialog_bg,requireContext().theme)
             val view: View = LayoutInflater.from(requireContext()).inflate(R.layout.add_tasbeh, null)
             val addTasbehText=view.findViewById<TextInputLayout>(R.id.addTasbehText)
             MaterialAlertDialogBuilder(requireContext(),
@@ -146,7 +144,8 @@ class TasbehFragment : Fragment() {
                         Tasbeh(addTasbehText.editText?.text.toString(),0)
                     )
 
-                }.show()
+                }.setBackground(d)
+                .show()
 
         }
 

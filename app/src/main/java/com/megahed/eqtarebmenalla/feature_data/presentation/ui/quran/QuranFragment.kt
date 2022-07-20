@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -23,9 +21,7 @@ import com.megahed.eqtarebmenalla.adapter.SoraAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranBinding
 import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
-import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class QuranFragment : Fragment(), MenuProvider {
@@ -91,7 +87,7 @@ class QuranFragment : Fragment(), MenuProvider {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.quran_listener_menu,menu)
+        menuInflater.inflate(R.menu.search_menu,menu)
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
 

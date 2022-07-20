@@ -32,7 +32,14 @@
     <string name="edit">تعديل</string>
     <string name="cancle">إلغاء</string>
     <string name="ok">حسنا</string>
+    <string name="chooseWhatYouNeed">أختر ما تريد</string>
+    <string name="readerFav">القُرَّاء المفضلين</string>
+    <string name="soraFav">السور المفضله</string>
+    <string name="listeningToSave">مساعدتك على الحفظ</string>
 
+
+    <string name="notification_channel_name">Music Channel</string>
+    <string name="notification_channel_description">Shows the currently playing music</string>
 
     <string-array name="tasbeh">
         <item>أستغفر الله</item>

@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.di
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -14,6 +15,7 @@ import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.repository.*
 import com.megahed.eqtarebmenalla.db.repositoryImp.*
+import com.megahed.eqtarebmenalla.exoplayer.MusicServiceConnection
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.AllQuran
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.toAya
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.toSora
@@ -28,6 +30,7 @@ import com.megahed.eqtarebmenalla.feature_data.domain.repository.QuranListenerRe
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -190,5 +193,12 @@ object AppModule {
         return TasbehDataRepositoryImp(db.tasbehDataDao)
     }
 
+
+    //for music
+    @Singleton
+    @Provides
+    fun provideMusicServiceConnection(
+        @ApplicationContext context: Context
+    ) = MusicServiceConnection(context)
 
 }
