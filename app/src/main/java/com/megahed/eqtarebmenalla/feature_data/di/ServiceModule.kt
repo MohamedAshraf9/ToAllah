@@ -3,13 +3,9 @@ package com.megahed.eqtarebmenalla.feature_data.di
 import android.content.Context
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.upstream.DefaultDataSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
-import com.megahed.eqtarebmenalla.App
-import com.megahed.eqtarebmenalla.R
+import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,26 +20,39 @@ object ServiceModule {
 
     @ServiceScoped
     @Provides
-    fun provideAudioAttribute()=AudioAttributes.Builder()
-        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-        .setUsage(C.USAGE_MEDIA)
-        .build()
+    fun provideAudioAttribute(): AudioAttributes {
+       return AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
+    }
 
 
     @ServiceScoped
     @Provides
     fun provideExoPlayer(
         @ApplicationContext context: Context,
-        audioAttributes: AudioAttributes
-    ) =  ExoPlayer.Builder(context).apply {
-        setAudioAttributes(audioAttributes, true)
-        setHandleAudioBecomingNoisy(true)
+        audioAttributes: AudioAttributes): ExoPlayer {
+       return ExoPlayer.Builder(context).apply {
+            setAudioAttributes(audioAttributes, true)
+            setHandleAudioBecomingNoisy(true)
+        }.build()
     }
 
     @ServiceScoped
     @Provides
     fun provideDataSourceFactory(
-        @ApplicationContext context: Context
-    ) = DefaultDataSource.Factory (context)
+        @ApplicationContext context: Context): DefaultDataSource.Factory {
+        return DefaultDataSource.Factory(context)
+    }
+
+    @ServiceScoped
+    @Provides
+    fun provideFirebaseMusicSource(
+        @ApplicationContext context: Context):FirebaseMusicSource {
+        return FirebaseMusicSource()
+    }
+
+
 
 }

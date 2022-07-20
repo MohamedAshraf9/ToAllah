@@ -6,6 +6,10 @@ import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
@@ -198,7 +202,22 @@ object AppModule {
     @Singleton
     @Provides
     fun provideMusicServiceConnection(
-        @ApplicationContext context: Context
-    ) = MusicServiceConnection(context)
+        @ApplicationContext context: Context): MusicServiceConnection {
+        return MusicServiceConnection(context)
+    }
+
+
+    @Singleton
+    @Provides
+    fun provideGlideInstance(
+        @ApplicationContext context: Context): RequestManager {
+        return Glide.with(context).setDefaultRequestOptions(
+            RequestOptions()
+                .placeholder(R.drawable.ic_image)
+                .error(R.drawable.ic_image)
+                .diskCacheStrategy(DiskCacheStrategy.DATA)
+        )
+    }
+
 
 }

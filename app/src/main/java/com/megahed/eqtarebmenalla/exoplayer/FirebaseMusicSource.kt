@@ -10,20 +10,21 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.exoplayer.State.*
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class FirebaseMusicSource(
-    private val musicDatabase: List<Song>
-) {
+class FirebaseMusicSource{
+
 
     var songs = emptyList<MediaMetadataCompat>()
 
     suspend fun fetchMediaData() = withContext(Dispatchers.IO) {
         state = STATE_INITIALIZING
-        val allSongs = musicDatabase
+        val allSongs = Constants.songs
         songs = allSongs.map { song ->
             MediaMetadataCompat.Builder()
                 .putString(METADATA_KEY_ARTIST, song.subtitle)
