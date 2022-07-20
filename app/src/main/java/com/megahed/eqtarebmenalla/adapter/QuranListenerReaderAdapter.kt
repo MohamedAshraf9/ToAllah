@@ -11,18 +11,19 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.QuranListenerItemBinding
 import com.megahed.eqtarebmenalla.databinding.SoraListenerItemBinding
+import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.Reciter
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import java.util.*
 
 class QuranListenerReaderAdapter (private val context: Context,
-                                  private val onMyItemClickListener: OnMyItemClickListener<Int>
+                                  private val onMyItemClickListener: OnMyItemClickListener<Song>
 ) : RecyclerView.Adapter<QuranListenerReaderAdapter.MyHolder>(), Filterable {
 
-    private var listData= mutableListOf<Int>()
-    private var listDataSearch= mutableListOf<Int>()
+    private var listData= mutableListOf<Song>()
+    private var listDataSearch= mutableListOf<Song>()
 
-    fun setData(data:List<Int>){
+    fun setData(data:List<Song>){
         listData.clear()
         listData.addAll(data)
         listDataSearch.clear()
@@ -57,8 +58,9 @@ class QuranListenerReaderAdapter (private val context: Context,
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
 
         val quranListener= listData[position]
-        holder.soraName.text=Constants.SORA_OF_QURAN[quranListener]
-        holder.soraNumber.text="$quranListener"
+        holder.soraName.text=quranListener.title
+       // holder.soraName.text=Constants.SORA_OF_QURAN[quranListener]
+        holder.soraNumber.text= quranListener.mediaId
 
 
         holder.itemView.setOnClickListener {
@@ -76,14 +78,14 @@ class QuranListenerReaderAdapter (private val context: Context,
 
     private val examplefilter: Filter = object : Filter() {
         override fun performFiltering(charSequence: CharSequence): FilterResults {
-            val filterlist = mutableListOf<Int>()
+            val filterlist = mutableListOf<Song>()
             if (charSequence.isEmpty()) {
                 filterlist.addAll(listDataSearch)
             } else {
                 val filterPattern =
                     charSequence.toString().lowercase(Locale.getDefault()).trim { it <= ' ' }
                 for (item in listDataSearch) {
-                    if (Constants.SORA_OF_QURAN[item].lowercase().contains(filterPattern)) {
+                    if (item.title.lowercase().contains(filterPattern)) {
                         filterlist.add(item)
                     }
                 }
@@ -96,7 +98,7 @@ class QuranListenerReaderAdapter (private val context: Context,
         override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
             if (filterResults.values != null) {
                 listData.clear()
-                listData.addAll(filterResults.values as MutableList<Int>)
+                listData.addAll(filterResults.values as MutableList<Song>)
                 notifyDataSetChanged()
             }
         }

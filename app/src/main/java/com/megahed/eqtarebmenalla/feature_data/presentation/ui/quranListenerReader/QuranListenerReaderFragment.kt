@@ -18,7 +18,9 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
+import com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
+import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 
 class QuranListenerReaderFragment : Fragment() , MenuProvider {
@@ -92,20 +94,30 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         binding.recyclerView.layoutManager = verticalLayoutManager
         binding.recyclerView.setHasFixedSize(true)
 
-        quranListenerReaderAdapter= QuranListenerReaderAdapter(requireContext(), object : OnMyItemClickListener<Int> {
+        quranListenerReaderAdapter= QuranListenerReaderAdapter(requireContext(), object : OnMyItemClickListener<Song> {
 
-            override fun onItemClick(itemObject: Int, view: View?) {
+            override fun onItemClick(itemObject: Song, view: View?) {
 
             }
 
-            override fun onItemLongClick(itemObject: Int, view: View?) {
+            override fun onItemLongClick(itemObject: Song, view: View?) {
             }
         })
         binding.recyclerView.adapter = quranListenerReaderAdapter
 
         val arr= suras?.split(",")
         val ints= arr?.map { it.toInt() }
-        ints?.let { quranListenerReaderAdapter.setData(it) }
+        var songs=mutableListOf<Song>()
+        ints?.let {
+           it.forEach {
+               songs.add(Song(
+                   it.toString(),
+                   SORA_OF_QURAN[it],
+                   readerName?:"",
+
+               ))
+           }
+        }
 
         val menuHost: MenuHost = requireActivity()
 
