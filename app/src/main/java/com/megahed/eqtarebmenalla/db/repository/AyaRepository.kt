@@ -16,4 +16,7 @@ interface AyaRepository {
     suspend fun getAyaById(id:Int): Aya?
 
      fun getAyaOfSoraId(id:Int): Flow<List<Aya>>
+
+    fun getFavoriteAya(): Flow<List<Aya>>
+
 }

@@ -197,6 +197,18 @@ object AppModule {
         return TasbehDataRepositoryImp(db.tasbehDataDao)
     }
 
+    @Provides
+    @Singleton
+    fun provideQuranListenerReaderRepository(db: MyDatabase): QuranListenerReaderRepository {
+        return QuranListenerReaderRepositoryImp(db.quranListenerReaderDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSoraSongRepository(db: MyDatabase): SoraSongRepository {
+        return SoraSongRepositoryImp(db.soraSongDao)
+    }
+
 
     //for music
     @Singleton

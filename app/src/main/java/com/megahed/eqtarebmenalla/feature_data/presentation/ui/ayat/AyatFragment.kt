@@ -12,9 +12,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentAyatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr.ElzekrFragmentArgs
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,12 +27,14 @@ class AyatFragment : Fragment(),MenuProvider {
     private lateinit var quranTextAdapter : AyaAdapter
     private var soraId:Int?=null
     private var soraName:String?=null
+    private var fromFavorite:Boolean=false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         soraId = arguments?.let { AyatFragmentArgs.fromBundle(it).soraId }
         soraName = arguments?.let { AyatFragmentArgs.fromBundle(it).soraName }
+        fromFavorite = arguments?.let { AyatFragmentArgs.fromBundle(it).fromFavorite }!!
     }
 
     override fun onCreateView(
@@ -49,7 +53,7 @@ class AyatFragment : Fragment(),MenuProvider {
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        toolbar.title = soraName
+
 
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -72,15 +76,35 @@ class AyatFragment : Fragment(),MenuProvider {
 
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        lifecycleScope.launchWhenStarted {
+        if (!fromFavorite){
+            toolbar.title = soraName
+            lifecycleScope.launchWhenStarted {
 
-            soraId?.let { it ->
-                ayaViewModel.getAyaOfSoraId(it).collect{it1 ->
-                    quranTextAdapter.setData(it1)
+                soraId?.let { it ->
+                    ayaViewModel.getAyaOfSoraId(it).collect{it1 ->
+                        quranTextAdapter.setData(it1)
 
+                    }
                 }
             }
+
+
+        }else{
+            toolbar.title = getString(R.string.favorite)
+
+            lifecycleScope.launchWhenStarted {
+
+                    ayaViewModel.getFavoriteAya().collect{
+                        quranTextAdapter.setData(it)
+
+                    }
+
+            }
+
+
         }
+
+
 
 
 

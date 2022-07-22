@@ -3,7 +3,6 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerRea
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -16,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
 import com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN
@@ -24,10 +22,10 @@ import com.megahed.eqtarebmenalla.common.Constants.getSoraLink
 import com.megahed.eqtarebmenalla.common.Constants.songs
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
+import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSongsViewModel
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class QuranListenerReaderFragment : Fragment() , MenuProvider {
@@ -38,22 +36,14 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
     private lateinit var mainViewModel: MainSongsViewModel
 
 
+    private var readerId:String?=null
     private var readerName:String?=null
-    private var suras:String?=null
-    private var letter:String?=null
-    private var count:String?=null
-    private var rewaya:String?=null
-    private var server:String?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        readerId = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).id }
         readerName = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).readerName }
-        suras = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).suras }
-        letter = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).letter }
-        count = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).count }
-        rewaya = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).rewaya }
-        server = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).server }
 
         //viewModel = ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
         mainViewModel = ViewModelProvider(this).get(MainSongsViewModel::class.java)
@@ -69,15 +59,15 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         binding = FragmentQuranListenerReaderBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        val quranListenerReaderViewModel =
+            ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
+
         val toolbar: Toolbar = binding.toolbar
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        binding.readerName.text=readerName
-        binding.rewaya.text=rewaya
-        binding.soraNumbers.text=count
-        binding.readerChar.text=letter
+
 
 
         var isShow = true
@@ -117,23 +107,18 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
 
         songs.clear()
 
-        val arr= suras?.split(",")
-        val ints= arr?.map { it.toInt() }
-        //val songs=mutableListOf<Song>()
-
-        //lifecycleScope.launchWhenStarted {
-            ints?.let {
-                it.forEach {
-                    songs.add(Song(
-                        it.toString(),
-                        SORA_OF_QURAN[it],
-                        readerName?:"",
-                        getSoraLink(server?:"",it)
-
-                    ))
+        lifecycleScope.launchWhenStarted {
+            readerId?.let {
+                quranListenerReaderViewModel.getQuranListenerReaderById(it)?.let {
+                    binding.readerName.text=it.name
+                    binding.rewaya.text=it.rewaya
+                    binding.soraNumbers.text=it.count
+                    binding.readerChar.text=it.letter
                 }
             }
-       // }
+        }
+
+
 
         quranListenerReaderAdapter.setData(songs)
 
@@ -147,9 +132,29 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         return root
     }
 
+    private fun getData(suras:String){
+        val arr= suras?.split(",")
+        val ints= arr?.map { it.toInt() }
+        //val songs=mutableListOf<Song>()
+
+        //lifecycleScope.launchWhenStarted {
+        ints?.let {
+            it.forEach {
+                songs.add(Song(
+                    it.toString(),
+                    SORA_OF_QURAN[it],
+                    readerName?:"",
+                    getSoraLink(server?:"",it)
+
+                ))
+            }
+        }
+        // }
+    }
+
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.search_menu,menu)
+        menuInflater.inflate(R.menu.search_with_menu_items,menu)
 
 
         menu.getItem(1).isVisible = false

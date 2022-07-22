@@ -1,7 +1,7 @@
 package com.megahed.eqtarebmenalla.exoplayer.callbacks
 
+import android.view.View
 import android.widget.Toast
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.megahed.eqtarebmenalla.exoplayer.MusicService
@@ -15,6 +15,16 @@ class MusicPlayerEventListener(
         super.onPlayWhenReadyChanged(playWhenReady, reason)
         if(reason == Player.STATE_READY && !playWhenReady) {
             musicService.stopForeground(false)
+        }
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        if (playbackState == Player.STATE_READY) {
+        }
+        if (playbackState == Player.STATE_BUFFERING) {
+
+        }
+        if (playbackState == Player.STATE_ENDED) {
         }
     }
 

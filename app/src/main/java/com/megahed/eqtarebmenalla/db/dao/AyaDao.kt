@@ -23,4 +23,7 @@ interface AyaDao {
     @Query("SELECT * FROM aya WHERE soraId =:id ")
      fun getAyaOfSoraId(id:Int): Flow<List<Aya>>
 
+    @Query("SELECT * FROM aya WHERE isVaForte=1 ")
+    fun getFavoriteAya(): Flow<List<Aya>>
+
 }

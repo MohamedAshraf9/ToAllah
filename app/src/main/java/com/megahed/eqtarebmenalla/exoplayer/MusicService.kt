@@ -101,6 +101,7 @@ class MusicService : MediaBrowserServiceCompat() {
         musicPlayerEventListener = MusicPlayerEventListener(this)
         exoPlayer.addListener(musicPlayerEventListener)
         musicNotificationManager.showNotification(exoPlayer)
+
     }
 
     private inner class MusicQueueNavigator : TimelineQueueNavigator(mediaSession) {
@@ -127,6 +128,11 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         super.onDestroy()
+         //todo delete this block
+        mediaSession.run {
+            isActive=false
+            exoPlayer.release()
+        }
         serviceScope.cancel()
 
         exoPlayer.removeListener(musicPlayerEventListener)

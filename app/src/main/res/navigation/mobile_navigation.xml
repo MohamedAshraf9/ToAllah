@@ -37,6 +37,17 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_navigation_listener_self"
+            app:destination="@id/navigation_listener"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+        <argument
+            android:name="fromFavorite"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
     <fragment
         android:id="@+id/ayatFragment"
@@ -49,6 +60,9 @@
         <argument
             android:name="soraName"
             app:argType="string" />
+        <argument
+            android:name="fromFavorite"
+            app:argType="boolean" />
     </fragment>
     <fragment
         android:id="@+id/navigation_azkar"
@@ -96,22 +110,10 @@
         android:label="fragment_quran_listener_reader"
         tools:layout="@layout/fragment_quran_listener_reader" >
         <argument
+            android:name="id"
+            app:argType="string" />
+        <argument
             android:name="readerName"
-            app:argType="string" />
-        <argument
-            android:name="server"
-            app:argType="string" />
-        <argument
-            android:name="rewaya"
-            app:argType="string" />
-        <argument
-            android:name="count"
-            app:argType="string" />
-        <argument
-            android:name="letter"
-            app:argType="string" />
-        <argument
-            android:name="suras"
             app:argType="string" />
     </fragment>
     <fragment

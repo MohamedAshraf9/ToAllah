@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.megahed.eqtarebmenalla.R
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.AyaItemBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
@@ -48,7 +49,7 @@ class AyaAdapter (private val context: Context,
         val aya= listData[position]
 
         holder.ayaTitle.text=aya.text
-        holder.ayaNumber.text="${aya.numberInSurah}"
+        holder.ayaNumber.text="${aya.numberInSurah} | ${Constants.SORA_OF_QURAN[aya.soraId]}"
         if (aya.isVaForte){
             holder.fav.setImageResource(R.drawable.ic_favorite_red_24)
         }

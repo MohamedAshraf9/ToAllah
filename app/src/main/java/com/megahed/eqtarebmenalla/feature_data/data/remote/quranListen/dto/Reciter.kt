@@ -1,5 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto
 
+import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
+
 data class Reciter(
     val count: String,
     val id: String,
@@ -9,3 +11,14 @@ data class Reciter(
     val server: String,
     val suras: String
 )
+fun Reciter.toQuranListenerReader(): QuranListenerReader {
+  return  QuranListenerReader(
+      id=id,
+      count=count,
+      letter=letter,
+      name=name,
+      rewaya=rewaya,
+      server=server,
+      suras=suras
+  )
+}

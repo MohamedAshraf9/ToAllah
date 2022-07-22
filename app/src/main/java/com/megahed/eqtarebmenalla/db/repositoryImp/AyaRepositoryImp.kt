@@ -28,4 +28,9 @@ class AyaRepositoryImp(
     override fun getAyaOfSoraId(id: Int): Flow<List<Aya>> {
         return ayaDao.getAyaOfSoraId(id)
     }
+
+
+    override fun getFavoriteAya(): Flow<List<Aya>> {
+        return ayaDao.getFavoriteAya()
+    }
 }

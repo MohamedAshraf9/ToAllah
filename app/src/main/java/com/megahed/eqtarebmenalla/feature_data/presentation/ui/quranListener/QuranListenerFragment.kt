@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -22,16 +21,23 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerBinding
+import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.Reciter
+import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
 
 @AndroidEntryPoint
 class QuranListenerFragment : Fragment() , MenuProvider {
 
     private lateinit var binding: FragmentQuranListenerBinding
     private lateinit var quranListenerAdapter : QuranListenerAdapter
+    private var fromFavorite:Boolean=false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        fromFavorite = arguments?.let { QuranListenerFragmentArgs.fromBundle(it).fromFavorite }!!
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,29 +53,30 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         val toolbar: Toolbar = binding.toolbar.toolbar
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
-        toolbar.title = getString(R.string.listener)
+
 
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = verticalLayoutManager
         binding.recyclerView.setHasFixedSize(true)
 
-        quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnMyItemClickListener<Reciter> {
+        quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnItemWithFavClickListener<QuranListenerReader> {
 
-            override fun onItemClick(itemObject: Reciter, view: View?) {
+            override fun onItemClick(itemObject: QuranListenerReader, view: View?) {
                 val action: NavDirections = QuranListenerFragmentDirections.
                 actionNavigationListenerToQuranListenerReaderFragment(
-                    readerName = itemObject.name,
-                    suras = itemObject.suras,
-                    letter = itemObject.letter,
-                    count = itemObject.count,
-                    rewaya = itemObject.rewaya,
-                    server = itemObject.server
+                  id = itemObject.id,
+                  readerName = itemObject.name
                 )
                 Navigation.findNavController(requireView()).navigate(action)
             }
 
-            override fun onItemLongClick(itemObject: Reciter, view: View?) {
+            override fun onItemFavClick(itemObject: QuranListenerReader, view: View?) {
+                itemObject.isVaForte=!itemObject.isVaForte
+                quranListenerViewModel.updateQuranListenerReader(itemObject)
+            }
+
+            override fun onItemLongClick(itemObject: QuranListenerReader, view: View?) {
             }
         })
         binding.recyclerView.adapter = quranListenerAdapter
@@ -77,14 +84,20 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        quranListenerViewModel.getQuranData()
-        lifecycleScope.launchWhenStarted {
+        if (!fromFavorite) {
+            toolbar.title = getString(R.string.listener)
 
-            quranListenerViewModel.state.collect{
-                quranListenerAdapter.setData(it.reciter)
+            lifecycleScope.launchWhenStarted {
+                quranListenerViewModel.getAllQuranListenerReader().collect {
+                    quranListenerAdapter.setData(it)
+                }
+
+
             }
-
-
+        }
+        else{
+            (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
+            (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         }
 
 
@@ -98,7 +111,11 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.search_menu,menu)
+        menuInflater.inflate(R.menu.search_with_menu_items,menu)
+
+        if (fromFavorite)
+            menu.getItem(1).isVisible = false
+
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
 
@@ -125,6 +142,9 @@ class QuranListenerFragment : Fragment() , MenuProvider {
               showBottomSheet()
                 false
             }
+            android.R.id.home -> {
+                Navigation.findNavController(requireView()).popBackStack()
+            }
             else -> false
         }
 
@@ -146,7 +166,13 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         readerFav.setOnClickListener {
 
+            bottomSheetDialog.dismiss()
+            val action: NavDirections = QuranListenerFragmentDirections.
+            actionNavigationListenerSelf(true)
+            Navigation.findNavController(requireView()).navigate(action)
+
         }
+
         soraFav.setOnClickListener {
 
         }

@@ -3,9 +3,11 @@ package com.megahed.eqtarebmenalla.exoplayer
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
+import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -14,6 +16,7 @@ import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants.NOTIFICATION_CHANNEL_ID
 import com.megahed.eqtarebmenalla.common.Constants.NOTIFICATION_ID
+
 
 class MusicNotificationManager(
     private val context: Context,
@@ -36,7 +39,24 @@ class MusicNotificationManager(
             .build().apply {
             setSmallIcon(R.drawable.ic_music)
             setMediaSessionToken(sessionToken)
+            setUseStopAction(true)
+                setColor(Color.BLACK)
+                setColorized(true)
+                setUseChronometer(false)
+                setUseNextActionInCompactView(true)
+                setBadgeIconType(NotificationCompat.BADGE_ICON_NONE)
+                setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+
+                setMediaSessionToken(mediaController.sessionToken)
+
+
+                setUsePlayPauseActions(true)
+                setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+
+                setUseChronometer(false)
+            //setColor(ContextCompat.getColor(context, R.color.red_500))
         }
+
     }
 
     fun showNotification(player: Player) {
@@ -47,16 +67,22 @@ class MusicNotificationManager(
         private val mediaController: MediaControllerCompat
     ) : PlayerNotificationManager.MediaDescriptionAdapter {
 
+
         override fun getCurrentContentTitle(player: Player): CharSequence {
             newSongCallback()
             return mediaController.metadata.description.title.toString()
+        }
+
+        //todo clear this fun
+        override fun getCurrentSubText(player: Player): CharSequence {
+            return mediaController.metadata.description.subtitle.toString()
         }
 
         override fun createCurrentContentIntent(player: Player): PendingIntent? {
             return mediaController.sessionActivity
         }
 
-        override fun getCurrentContentText(player: Player): CharSequence? {
+        override fun getCurrentContentText(player: Player): CharSequence {
             return mediaController.metadata.description.subtitle.toString()
         }
 

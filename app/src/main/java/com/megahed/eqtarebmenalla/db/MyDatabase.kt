@@ -15,6 +15,8 @@ import com.megahed.eqtarebmenalla.db.model.*
         ElZekr::class,
         Tasbeh::class,
         TasbehData::class,
+        QuranListenerReader::class,
+        SoraSong::class
     ],
     version = 1,
     exportSchema = false
@@ -34,6 +36,8 @@ abstract class MyDatabase : RoomDatabase() {
 
     abstract val tasbehDao:TasbehDao
     abstract val tasbehDataDao:TasbehDataDao
+    abstract val quranListenerReaderDao:QuranListenerReaderDao
+    abstract val soraSongDao:SoraSongDao
 
 
 }

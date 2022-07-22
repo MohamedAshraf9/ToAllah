@@ -45,4 +45,9 @@ class AyaViewModel@Inject constructor(
     }
 
 
+    fun getFavoriteAya(): Flow<List<Aya>>{
+        return ayaRepository.getFavoriteAya()
+    }
+
+
 }

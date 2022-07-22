@@ -4,11 +4,7 @@ import android.view.View
 
 interface OnMyItemClickListener<T> {
 
-    fun onItemClick(itemObject:T,view: View?){
-
-    }
-    fun onItemLongClick(itemObject:T,view: View?){
-
-    }
+    fun onItemClick(itemObject:T,view: View?)
+    fun onItemLongClick(itemObject:T,view: View?)
 
 }

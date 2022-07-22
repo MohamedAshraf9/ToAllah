@@ -53,7 +53,7 @@ class QuranFragment : Fragment(), MenuProvider {
         quranTextAdapter= SoraAdapter(requireContext(), object : OnMyItemClickListener<Sora>{
 
             override fun onItemClick(itemObject: Sora, view: View?) {
-                val action: NavDirections =QuranFragmentDirections.actionNavigationQuranToAyatFragment(itemObject.soraId,itemObject.name)
+                val action: NavDirections =QuranFragmentDirections.actionNavigationQuranToAyatFragment(itemObject.soraId,itemObject.name,false)
                 Navigation.findNavController(requireView()).navigate(action)
                 //Toast.makeText(requireContext(),itemObject.name,Toast.LENGTH_LONG).show()
             }
@@ -61,7 +61,7 @@ class QuranFragment : Fragment(), MenuProvider {
             override fun onItemLongClick(itemObject: Sora, view: View?) {
             }
         })
-        var string:StringBuilder= StringBuilder()
+        val string:StringBuilder= StringBuilder()
         binding.recyclerView.adapter = quranTextAdapter
         lifecycleScope.launchWhenStarted {
 
@@ -87,7 +87,7 @@ class QuranFragment : Fragment(), MenuProvider {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.search_menu,menu)
+        menuInflater.inflate(R.menu.search_with_favorite,menu)
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
 
@@ -109,6 +109,13 @@ class QuranFragment : Fragment(), MenuProvider {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
 
+        when (menuItem.itemId) {
+            R.id.favoriteItem ->{
+                val action: NavDirections =QuranFragmentDirections.actionNavigationQuranToAyatFragment(0,"",true)
+                Navigation.findNavController(requireView()).navigate(action)
+
+            }
+        }
         return false
 
     }
