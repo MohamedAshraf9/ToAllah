@@ -6,12 +6,12 @@ import androidx.room.PrimaryKey
 @Entity
 data class QuranListenerReader(
     @PrimaryKey
-    val id: String,
-    val count: String,
-    val letter: String,
-    val name: String,
-    val rewaya: String,
-    val server: String,
-    val suras: String,
+    var id: String,
+    var count: String,
+    var letter: String,
+    var name: String,
+    var rewaya: String,
+    var server: String,
+    var suras: String,
     var isVaForte:Boolean=false
 )

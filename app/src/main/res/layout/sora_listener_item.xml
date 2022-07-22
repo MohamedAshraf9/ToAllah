@@ -75,7 +75,7 @@
                 android:padding="@dimen/_2sdp"
                 android:src="@drawable/ic_baseline_favorite_border_24" />
 
-            <ImageView
+           <!-- <ImageView
                 android:id="@+id/addPlayList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -83,7 +83,7 @@
                 android:gravity="center"
                 android:layout_margin="@dimen/_5sdp"
                 android:padding="@dimen/_2sdp"
-                android:src="@drawable/ic_baseline_playlist_add_24" />
+                android:src="@drawable/ic_baseline_playlist_add_24" />-->
 
             <ImageView
                 android:id="@+id/download"

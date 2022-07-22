@@ -98,6 +98,15 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         else{
             (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
             (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+
+            lifecycleScope.launchWhenStarted {
+                quranListenerViewModel.getFavoriteQuranListenerReader().collect {
+                    quranListenerAdapter.setData(it)
+                }
+
+
+            }
+
         }
 
 
@@ -174,9 +183,12 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         }
 
         soraFav.setOnClickListener {
+            bottomSheetDialog.dismiss()
+
 
         }
         listeningToSave.setOnClickListener {
+            bottomSheetDialog.dismiss()
 
         }
 

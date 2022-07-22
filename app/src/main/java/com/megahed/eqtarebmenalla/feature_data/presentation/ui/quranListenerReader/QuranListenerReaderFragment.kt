@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerRea
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -21,9 +22,11 @@ import com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN
 import com.megahed.eqtarebmenalla.common.Constants.getSoraLink
 import com.megahed.eqtarebmenalla.common.Constants.songs
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
+import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
+import com.megahed.eqtarebmenalla.db.model.SoraSong
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSongsViewModel
+import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,6 +41,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
 
     private var readerId:String?=null
     private var readerName:String?=null
+    private var quranListenerReader: QuranListenerReader?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +72,19 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
 
+        lifecycleScope.launchWhenStarted {
+            readerId?.let {
+                quranListenerReaderViewModel.getQuranListenerReaderById(it)?.let {
+                    binding.readerName.text=it.name
+                    binding.rewaya.text=it.rewaya
+                    binding.soraNumbers.text=it.count
+                    binding.readerChar.text=it.letter
+                    isFav(it.isVaForte)
+                    quranListenerReader=it
+
+                }
+            }
+        }
 
 
         var isShow = true
@@ -93,34 +110,43 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         binding.recyclerView.layoutManager = verticalLayoutManager
         binding.recyclerView.setHasFixedSize(true)
 
-        quranListenerReaderAdapter= QuranListenerReaderAdapter(requireContext(), object : OnMyItemClickListener<Song> {
+        quranListenerReaderAdapter= QuranListenerReaderAdapter(requireContext(), object :
+            OnItemWithFavClickListener<SoraSong> {
 
-            override fun onItemClick(itemObject: Song, view: View?) {
-                mainViewModel.playOrToggleSong(itemObject,true)
+            override fun onItemClick(itemObject: SoraSong, view: View?) {
+                //mainViewModel.playOrToggleSong(itemObject,true)
             }
 
-            override fun onItemLongClick(itemObject: Song, view: View?) {
+            override fun onItemFavClick(itemObject: SoraSong, view: View?) {
+                itemObject.isVaForte=!itemObject.isVaForte
+                quranListenerReaderViewModel.updateSoraSong(itemObject)
+            }
+
+            override fun onItemLongClick(itemObject: SoraSong, view: View?) {
             }
         })
         binding.recyclerView.adapter = quranListenerReaderAdapter
 
 
-        songs.clear()
 
         lifecycleScope.launchWhenStarted {
             readerId?.let {
-                quranListenerReaderViewModel.getQuranListenerReaderById(it)?.let {
-                    binding.readerName.text=it.name
-                    binding.rewaya.text=it.rewaya
-                    binding.soraNumbers.text=it.count
-                    binding.readerChar.text=it.letter
+                quranListenerReaderViewModel.getSongsOfSora(it).collect{
+                    quranListenerReaderAdapter.setData(it)
                 }
             }
         }
 
+        binding.favorite.setOnClickListener {
+            quranListenerReader?.let {
+                it.isVaForte=!it.isVaForte
+                quranListenerReaderViewModel.updateQuranListenerReader(it)
+                isFav(it.isVaForte)
+            }
 
 
-        quranListenerReaderAdapter.setData(songs)
+        }
+
 
         val menuHost: MenuHost = requireActivity()
 
@@ -132,24 +158,31 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         return root
     }
 
-    private fun getData(suras:String){
-        val arr= suras?.split(",")
-        val ints= arr?.map { it.toInt() }
-        //val songs=mutableListOf<Song>()
 
-        //lifecycleScope.launchWhenStarted {
-        ints?.let {
+    private fun isFav(isVaForte:Boolean){
+        if (isVaForte){
+            binding.favorite.setImageResource(R.drawable.ic_favorite_red_24)
+        }
+        else{
+            binding.favorite.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+        }
+    }
+
+    private fun getData(suras:String,server:String){
+        val arr= suras.split(",")
+        val ints= arr.map { it.toInt() }
+        ints.let {
             it.forEach {
                 songs.add(Song(
                     it.toString(),
                     SORA_OF_QURAN[it],
                     readerName?:"",
-                    getSoraLink(server?:"",it)
+                    getSoraLink(server,it)
 
                 ))
             }
         }
-        // }
+
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

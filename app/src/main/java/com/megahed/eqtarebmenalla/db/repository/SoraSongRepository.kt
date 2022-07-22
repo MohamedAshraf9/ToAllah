@@ -17,4 +17,6 @@ interface SoraSongRepository {
 
     fun getFavoriteSoraSong(): Flow<List<SoraSong>>
 
+    fun getSongsOfSora(readerId:String): Flow<List<SoraSong>>
+
 }

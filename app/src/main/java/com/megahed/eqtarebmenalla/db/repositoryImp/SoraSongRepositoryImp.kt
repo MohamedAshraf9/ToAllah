@@ -28,4 +28,8 @@ class SoraSongRepositoryImp(
     override fun getFavoriteSoraSong(): Flow<List<SoraSong>> {
         return soraSongDao.getFavoriteSoraSong()
     }
+
+    override fun getSongsOfSora(readerId: String): Flow<List<SoraSong>> {
+        return soraSongDao.getSongsOfSora(readerId)
+    }
 }

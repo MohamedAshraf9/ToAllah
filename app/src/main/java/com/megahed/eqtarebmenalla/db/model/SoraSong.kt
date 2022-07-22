@@ -16,10 +16,11 @@ import androidx.room.PrimaryKey
     ]
 )
 data class SoraSong(
-    @PrimaryKey
-    val id:Int,
     val SoraId:Int,
-    val readerId:String,
-    val url:String,
+    var readerId:String,
+    var url:String,
     var isVaForte:Boolean=false
-)
+){
+    @PrimaryKey(autoGenerate = true)
+    var id:Int=0
+}

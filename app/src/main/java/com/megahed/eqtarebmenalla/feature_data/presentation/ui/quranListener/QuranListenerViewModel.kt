@@ -29,7 +29,18 @@ class QuranListenerViewModel @Inject constructor(
                 is Resource.Success ->{
                     it.data?.reciters?.forEach {
                         quranListenerReaderRepository.getQuranListenerReaderById(it.id)?.let {it1->
-                            quranListenerReaderRepository.updateQuranListenerReader(it.toQuranListenerReader())
+                            it1.isVaForte=false
+                           if (!it1.equals(it.toQuranListenerReader())){
+                               it1.id=it.id
+                               it1.count=it.count
+                               it1.rewaya=it.rewaya
+                               it1.server=it.server
+                               it1.name=it.name
+                               it1.letter=it.letter
+                               it1.suras=it.suras
+                               it1.isVaForte=it1.isVaForte
+                               quranListenerReaderRepository.updateQuranListenerReader(it1)
+                           }
                         }?:run {
                             quranListenerReaderRepository.insertQuranListenerReader(it.toQuranListenerReader())
                         }

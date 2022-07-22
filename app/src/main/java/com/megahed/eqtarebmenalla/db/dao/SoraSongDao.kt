@@ -25,4 +25,7 @@ interface SoraSongDao {
     @Query("SELECT * FROM sorasong WHERE isVaForte=1 ")
     fun getFavoriteSoraSong(): Flow<List<SoraSong>>
 
+    @Query("SELECT * FROM sorasong WHERE readerId=:readerId ")
+    fun getSongsOfSora(readerId:String): Flow<List<SoraSong>>
+
 }
