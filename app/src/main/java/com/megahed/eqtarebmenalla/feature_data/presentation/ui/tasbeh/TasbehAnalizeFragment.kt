@@ -95,7 +95,6 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
 
             }
         }
-
         lifecycleScope.launchWhenStarted {
             tasbehViewModel.getBestDays().collect{
                binding.dayBestCounter.text="${it.maxByOrNull{ it.count }?.count ?: getString(R.string.no_analysis)}"
