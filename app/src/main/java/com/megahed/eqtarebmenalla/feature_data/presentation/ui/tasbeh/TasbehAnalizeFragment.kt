@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.EditTasbehAdapter
 import com.megahed.eqtarebmenalla.adapter.TasbehAnalizeAdapter
+import com.megahed.eqtarebmenalla.adapter.TasbehAnalizeAdapter1
+import com.megahed.eqtarebmenalla.adapter.TasbehAnalizeAdapter2
 import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.databinding.FragmentEditTasbehBinding
 import com.megahed.eqtarebmenalla.databinding.FragmentTasbehAnalizeBinding
@@ -28,6 +30,8 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
     private lateinit var binding: FragmentTasbehAnalizeBinding
     private lateinit var tasbehViewModel :TasbehViewModel
     private lateinit var tasbehAnalizeAdapter: TasbehAnalizeAdapter
+    private lateinit var tasbehAnalizeAdapter1: TasbehAnalizeAdapter1
+    private lateinit var tasbehAnalizeAdapter2: TasbehAnalizeAdapter2
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +56,7 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
 
+        //recycler 1
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.recyclerView.layoutManager = verticalLayoutManager
@@ -60,12 +65,34 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
         tasbehAnalizeAdapter= TasbehAnalizeAdapter(requireContext())
         binding.recyclerView.adapter = tasbehAnalizeAdapter
 
+        //recycler 2
+        val verticalLayoutManager1 =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.recyclerAnalyticMonth.layoutManager = verticalLayoutManager1
+        binding.recyclerAnalyticMonth.setHasFixedSize(true)
+
+        tasbehAnalizeAdapter1= TasbehAnalizeAdapter1(requireContext())
+        binding.recyclerAnalyticMonth.adapter = tasbehAnalizeAdapter1
+
+
+        //recycler 3
+        val verticalLayoutManager2 =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.recyclerAnalyticTasbeh.layoutManager = verticalLayoutManager2
+        binding.recyclerAnalyticTasbeh.setHasFixedSize(true)
+
+        tasbehAnalizeAdapter2= TasbehAnalizeAdapter2(requireContext())
+        binding.recyclerAnalyticTasbeh.adapter = tasbehAnalizeAdapter2
+
 
         lifecycleScope.launchWhenStarted {
             tasbehViewModel.getTasbehCounter().collect{
                 tasbehAnalizeAdapter.setData(it)
+                tasbehAnalizeAdapter2.setData(it,it.sumOf { it.count })
                 binding.bestTasbehCounter.text="${it.maxByOrNull{ it.count }?.count ?: getString(R.string.no_analysis)}"
-                binding.bestTasbeh.text= it.maxByOrNull{ it.tasbehName }?.tasbehName ?: getString(R.string.no_analysis)
+                binding.bestTasbeh.text= it.maxByOrNull{ it.count }?.tasbehName ?: getString(R.string.no_analysis)
+                binding.totalTasbehNumber.text="${it.sumOf { it.count }}"
+
             }
         }
 
@@ -74,12 +101,13 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
                binding.dayBestCounter.text="${it.maxByOrNull{ it.count }?.count ?: getString(R.string.no_analysis)}"
                 val textDate= it.maxByOrNull{ it.date }?.date?.let { it1 -> CommonUtils.getDay(it1) }
                binding.dayBest.text= textDate ?: getString(R.string.no_analysis)
+                binding.daysNumber.text="${it.size}"
             }
         }
 
         lifecycleScope.launchWhenStarted {
             tasbehViewModel.getDataOfMonths().collect{
-
+                tasbehAnalizeAdapter1.setData(it,it.sumOf { it.count })
             }
         }
 

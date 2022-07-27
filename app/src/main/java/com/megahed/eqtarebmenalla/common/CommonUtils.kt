@@ -2,6 +2,8 @@ package com.megahed.eqtarebmenalla.common
 
 import android.content.Context
 import android.widget.Toast
+import com.megahed.eqtarebmenalla.App
+import com.megahed.eqtarebmenalla.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -74,6 +76,15 @@ object CommonUtils {
 
     fun getDay(date: Date): String {
         return DateFormat.getDateInstance(DateFormat.FULL).format(date.time)
+    }
+
+    fun getMonth(date: Date): String {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        calendar[Calendar.MONTH]
+        val categories: Array<String> =
+            App.getInstance().resources.getStringArray(R.array.Month)
+        return categories[calendar[Calendar.MONTH]] + " " + calendar[Calendar.YEAR]
     }
 
 }

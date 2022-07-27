@@ -11,13 +11,14 @@ import com.megahed.eqtarebmenalla.databinding.TasbehAnalizeItemBinding
 import com.megahed.eqtarebmenalla.db.customModel.HoursDate
 import com.megahed.eqtarebmenalla.db.customModel.TasbehCounter
 
-class TasbehAnalizeAdapter1 (private val context: Context
-) : RecyclerView.Adapter<TasbehAnalizeAdapter1.MyHolder>() {
+class TasbehAnalizeAdapter2 (private val context: Context
+) : RecyclerView.Adapter<TasbehAnalizeAdapter2.MyHolder>() {
 
-    private var listData= mutableListOf<HoursDate>()
+    private var listData= mutableListOf<TasbehCounter>()
+
     private var totalTasbeh=0L
 
-    fun setData(data:List<HoursDate>,totalTasbeh:Long){
+    fun setData(data:List<TasbehCounter>, totalTasbeh:Long){
         listData.clear()
         listData.addAll(data)
         this.totalTasbeh=totalTasbeh
@@ -26,6 +27,7 @@ class TasbehAnalizeAdapter1 (private val context: Context
 
 
     class MyHolder(binding: AnaliticRowBinding) : RecyclerView.ViewHolder(binding.root) {
+
         val percentPagesDone=binding.percentPagesDone
         val progressBar=binding.progressBar
         val month=binding.month
@@ -49,14 +51,14 @@ class TasbehAnalizeAdapter1 (private val context: Context
 
         val tasbeh= listData[position]
 
-        holder.month.text=CommonUtils.getMonth(tasbeh.date)
+        holder.month.text= tasbeh.tasbehName
         holder.progressBar.max=totalTasbeh.toInt()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             holder.progressBar.setProgress(tasbeh.count.toInt(),true)
         else holder.progressBar.progress = tasbeh.count.toInt()
         holder.percentPagesDone.text="${tasbeh.count}"
         val percent=(tasbeh.count.toFloat()/totalTasbeh.toFloat())*100
-        holder.percentPagesDone.text="${String.format("%.2f",percent.toFloat())}%"
+        holder.percentPagesDone.text="${String.format("%.2f",percent)}%"
 
 
     }

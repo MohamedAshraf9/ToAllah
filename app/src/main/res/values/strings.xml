@@ -52,6 +52,11 @@
     <string name="no_analysis">لا توجد بيانات بعد</string>
     <string name="best_tasbeh">أفضل تسبيح</string>
     <string name="best_tasbehDesc">أفضل عدد من التسبيح قمت به</string>
+    <string name="percentMonth">النسبه المئويه لكل شهر</string>
+    <string name="percentTasbeh">النسبه المئويه لكل تسبيح</string>
+    <string name="daysWork">عدد ايام التسبيح</string>
+    <string name="daysNumDesc">عدد الايام التى قمت فيها بالتسبيح</string>
+    <string name="unitComplete">عدد التسبيحات التى قمت بها</string>
 
     <string-array name="tasbeh">
         <item>أستغفر الله</item>
@@ -66,6 +71,24 @@
         <item>سُبْحَانَ اللهِ العَظِيمِ وَبِحَمْدِهِ</item>
         <item>سُبْحَانَ اللَّهِ وَبِحَمْدِهِ, سُبْحَانَ اللَّهِ الْعَظِيمِ</item>
         <item>لَا إلَه إلّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ, لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلُّ شَيْءِ قَدِيرِ</item>
+    </string-array>
+
+
+    <string-array name="Month">
+        <item>يناير</item>
+        <item>فبراير</item>
+        <item>مارس</item>
+        <item>ابريل</item>
+        <item>مايو</item>
+        <item>يونيو</item>
+        <item>يوليو</item>
+        <item>اغسطس</item>
+        <item>سبتمبر</item>
+        <item>اكتوبر</item>
+        <item>نوفمبر</item>
+        <item>ديسمبر</item>
+
+
     </string-array>
 
 

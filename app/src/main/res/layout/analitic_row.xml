@@ -24,7 +24,7 @@
 
 
             <TextView
-                android:id="@+id/tasbehName"
+                android:id="@+id/month"
                 android:layout_weight="2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
                 android:layout_marginRight="@dimen/_2sdp"
                 android:gravity="center_vertical"
                 android:text="project title"
-                android:textColor="@android:color/black"
+                android:textColor="@color/text_color"
                 android:textSize="@dimen/_10ssp"
                 tools:ignore="RtlCompat" />
 
@@ -46,8 +46,8 @@
                 android:id="@+id/progressBar"
                 android:progress="30"
                 android:gravity="center_vertical"
-                android:progressTint="#1E88E5"
-                android:progressBackgroundTint="#9C9B9B"
+                android:progressTint="@color/blue_500"
+                android:progressBackgroundTint="#EDEBEB"
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_height="wrap_content"/>
 
@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:text="0%"
             android:layout_below="@+id/container"
-            android:textColor="#000000"
+            android:textColor="@color/text_color"
             android:layout_marginLeft="@dimen/_6sdp"
             android:layout_marginRight="@dimen/_6sdp"
             android:layout_alignParentEnd="true"

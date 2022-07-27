@@ -62,6 +62,153 @@
 
     </androidx.cardview.widget.CardView>
 
+    <androidx.cardview.widget.CardView
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_3sdp"
+        app:cardElevation="@dimen/_3sdp"
+        android:padding="@dimen/_2sdp"
+        app:cardCornerRadius="@dimen/_12sdp"
+        android:layout_width="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_3sdp">
+
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_centerInParent="true"
+                android:layout_margin="@dimen/_5sdp"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_baseline_calendar_today_24"
+                android:padding="@dimen/_3sdp" />
+
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/imageView1"
+                android:maxLines="2"
+                android:gravity="center_vertical"
+                android:padding="@dimen/_5sdp"
+                android:text="@string/daysWork"
+                android:textSize="@dimen/_14ssp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/project_date1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/textView1"
+                android:layout_toStartOf="@+id/imageView1"
+                android:padding="@dimen/_3sdp"
+                android:text="@string/daysNumDesc"
+                android:textSize="@dimen/_12ssp" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@+id/project_date1"
+                android:layout_toStartOf="@+id/imageView1"
+                android:padding="@dimen/_3sdp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:text="Days"
+                    android:id="@+id/daysNumber"
+                    android:textSize="@dimen/_16ssp"
+                    android:padding="@dimen/_4sdp"
+                    android:textStyle="bold"
+                    android:textColor="@color/blue_500"
+                    android:layout_margin="@dimen/_3sdp"
+                    android:layout_height="wrap_content"/>
+
+
+            </LinearLayout>
+
+
+
+
+
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_3sdp"
+        app:cardElevation="@dimen/_3sdp"
+        android:padding="@dimen/_2sdp"
+        app:cardCornerRadius="@dimen/_12sdp"
+        android:layout_width="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_3sdp">
+
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="@dimen/_45sdp"
+                android:layout_height="@dimen/_45sdp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_marginStart="@dimen/_5sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:layout_marginBottom="@dimen/_5sdp"
+                android:padding="@dimen/_3sdp"
+                android:src="@drawable/strong" />
+
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/imageView3"
+                android:maxLines="2"
+                android:gravity="center_vertical"
+                android:padding="@dimen/_5sdp"
+                android:text="@string/unitComplete"
+                android:textSize="@dimen/_14ssp"
+                android:textStyle="bold" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@+id/textView3"
+                android:layout_toStartOf="@+id/imageView3"
+                android:padding="@dimen/_3sdp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:text="0"
+                    android:id="@+id/totalTasbehNumber"
+                    android:textSize="@dimen/_16ssp"
+                    android:padding="@dimen/_4sdp"
+                    android:textStyle="bold"
+                    android:textColor="@color/blue_500"
+                    android:layout_margin="@dimen/_3sdp"
+                    android:layout_height="wrap_content"/>
+
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
 
    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -93,8 +240,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_toStartOf="@id/imageView"
-                        android:maxLines="2"
                         android:gravity="center_vertical"
+                        android:maxLines="2"
                         android:padding="@dimen/_5sdp"
                         android:text="@string/best_day"
                         android:textSize="@dimen/_16ssp"
@@ -127,7 +274,7 @@
                             android:id="@+id/dayBest"
                             android:textSize="@dimen/_12ssp"
                             android:padding="@dimen/_4sdp"
-                            android:textColor="#D81B60"
+                            android:textColor="@color/blue_500"
                             android:layout_margin="@dimen/_2sdp"
                             android:textStyle="bold"
                             android:layout_height="wrap_content"/>
@@ -140,7 +287,7 @@
                             android:id="@+id/dayBestCounter"
                             android:textSize="@dimen/_12ssp"
                             android:textStyle="bold"
-                            android:textColor="#D81B60"
+                            android:textColor="@color/blue_500"
                             android:padding="@dimen/_4sdp"
                             android:layout_margin="@dimen/_2sdp"
                             android:layout_height="wrap_content"/>
@@ -218,7 +365,7 @@
                     android:id="@+id/bestTasbeh"
                     android:textSize="@dimen/_12ssp"
                     android:padding="@dimen/_4sdp"
-                    android:textColor="#D81B60"
+                    android:textColor="@color/blue_500"
                     android:layout_margin="@dimen/_2sdp"
                     android:textStyle="bold"
                     android:layout_height="wrap_content"/>
@@ -231,7 +378,7 @@
                     android:id="@+id/bestTasbehCounter"
                     android:textSize="@dimen/_12ssp"
                     android:textStyle="bold"
-                    android:textColor="#D81B60"
+                    android:textColor="@color/blue_500"
                     android:padding="@dimen/_4sdp"
                     android:layout_margin="@dimen/_2sdp"
                     android:layout_height="wrap_content"/>
@@ -241,6 +388,96 @@
 
 
         </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_3sdp"
+        app:cardElevation="@dimen/_3sdp"
+        android:padding="@dimen/_2sdp"
+        app:cardCornerRadius="@dimen/_12sdp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_marginBottom="@dimen/_3sdp"
+            android:orientation="vertical"
+            android:padding="@dimen/_3sdp"
+            android:layout_height="match_parent">
+
+
+
+            <TextView
+                android:id="@+id/textVie1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:padding="@dimen/_5sdp"
+                android:textAlignment="center"
+                android:text="@string/percentTasbeh"
+                android:layout_marginBottom="@dimen/_3sdp"
+                android:textSize="@dimen/_16ssp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/recyclerAnalyticTasbeh"/>
+
+
+
+
+
+        </LinearLayout>
+
+
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_3sdp"
+        app:cardElevation="@dimen/_3sdp"
+        android:padding="@dimen/_2sdp"
+        app:cardCornerRadius="@dimen/_12sdp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_marginBottom="@dimen/_3sdp"
+            android:orientation="vertical"
+            android:padding="@dimen/_3sdp"
+            android:layout_height="match_parent">
+
+
+
+            <TextView
+                android:id="@+id/textVie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:padding="@dimen/_5sdp"
+                android:textAlignment="center"
+                android:text="@string/percentMonth"
+                android:layout_marginBottom="@dimen/_3sdp"
+                android:textSize="@dimen/_16ssp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/recyclerAnalyticMonth"/>
+
+
+
+
+
+        </LinearLayout>
+
+
 
     </androidx.cardview.widget.CardView>
 
