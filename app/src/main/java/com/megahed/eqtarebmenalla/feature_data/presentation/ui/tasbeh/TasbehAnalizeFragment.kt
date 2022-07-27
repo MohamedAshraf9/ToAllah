@@ -84,7 +84,6 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
         tasbehAnalizeAdapter2= TasbehAnalizeAdapter2(requireContext())
         binding.recyclerAnalyticTasbeh.adapter = tasbehAnalizeAdapter2
 
-
         lifecycleScope.launchWhenStarted {
             tasbehViewModel.getTasbehCounter().collect{
                 tasbehAnalizeAdapter.setData(it)
