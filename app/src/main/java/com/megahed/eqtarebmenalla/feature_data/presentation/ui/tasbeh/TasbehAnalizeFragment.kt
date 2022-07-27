@@ -77,6 +77,11 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
             }
         }
 
+        lifecycleScope.launchWhenStarted {
+            tasbehViewModel.getDataOfMonths().collect{
+
+            }
+        }
 
 
         return root
