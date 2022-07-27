@@ -40,6 +40,9 @@
 
     <string name="notification_channel_name">Music Channel</string>
     <string name="notification_channel_description">Shows the currently playing music</string>
+    <string name="editTasbeh">تعديل التسبيح</string>
+    <string name="update">تحديث</string>
+    <string name="delete">حذف</string>
 
     <string-array name="tasbeh">
         <item>أستغفر الله</item>

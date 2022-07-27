@@ -144,7 +144,7 @@ object AppModule {
                     val tasbeh=App.getInstance().resources.getStringArray(R.array.tasbeh)
                     for (i in tasbeh.indices){
                         trainDBLazy.get().tasbehDao.insertTasbeh(
-                            Tasbeh(tasbeh[i],100)
+                            Tasbeh(tasbeh[i])
                         )
                     }
                 }

@@ -141,7 +141,7 @@ class TasbehFragment : Fragment() {
                 .setPositiveButton(resources.getString(R.string.ok)) { dialog, which ->
                     // Respond to positive button press
                     tasbehViewModel.insertTasbeh(
-                        Tasbeh(addTasbehText.editText?.text.toString(),0)
+                        Tasbeh(addTasbehText.editText?.text.toString())
                     )
 
                 }.setBackground(d)
