@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PrayerTimeDao{
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPrayerTime(prayerTime: PrayerTime)
 
@@ -16,6 +17,6 @@ interface PrayerTimeDao{
     suspend fun deletePrayerTime(prayerTime: PrayerTime)
 
 
-    @Query("SELECT * FROM prayertime WHERE id = 1 ")
-    suspend fun getPrayerTimeById(): PrayerTime?
+    @Query("SELECT * FROM prayertime WHERE id =:id ")
+    suspend fun getPrayerTimeById(id:Int): PrayerTime?
 }

@@ -1,5 +1,8 @@
 package com.megahed.eqtarebmenalla.common
 
+import android.content.Context
+import android.widget.Toast
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -63,6 +66,14 @@ object CommonUtils {
     fun convertSoraPart(soraId:Int,ayaNumber:Int):String{
 
         return ""
+    }
+
+    fun showMessage(context:Context,message:String){
+        Toast.makeText(context,message,Toast.LENGTH_LONG).show()
+    }
+
+    fun getDay(date: Date): String {
+        return DateFormat.getDateInstance(DateFormat.FULL).format(date.time)
     }
 
 }

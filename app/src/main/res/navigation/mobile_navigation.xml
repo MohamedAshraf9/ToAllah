@@ -120,7 +120,32 @@
         android:id="@+id/navigation_tasbeh"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.TasbehFragment"
         android:label="@string/tasbeh"
-        tools:layout="@layout/fragment_tasbeh" />
+        tools:layout="@layout/fragment_tasbeh" >
+        <action
+            android:id="@+id/action_navigation_tasbeh_to_editTasbehFragment"
+            app:destination="@id/editTasbehFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_navigation_tasbeh_to_tasbehAnalizeFragment"
+            app:destination="@id/tasbehAnalizeFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+    <fragment
+        android:id="@+id/editTasbehFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.EditTasbehFragment"
+        android:label="fragment_edit_tasbeh"
+        tools:layout="@layout/fragment_edit_tasbeh" />
+    <fragment
+        android:id="@+id/tasbehAnalizeFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.TasbehAnalizeFragment"
+        android:label="fragment_tasbeh_analize"
+        tools:layout="@layout/fragment_tasbeh_analize" />
 
 
 </navigation>

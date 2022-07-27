@@ -2,6 +2,8 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.megahed.eqtarebmenalla.db.customModel.HoursDate
+import com.megahed.eqtarebmenalla.db.customModel.TasbehCounter
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.model.TasbehData
 import com.megahed.eqtarebmenalla.db.model.TasbehWithData
@@ -44,6 +46,18 @@ class TasbehViewModel @Inject constructor(
 
     fun TasbehWithData(): Flow<List<TasbehWithData>>{
         return tasbehRepository.TasbehWithData()
+    }
+
+    fun getTasbehCounter(): Flow<List<TasbehCounter>> {
+        return tasbehRepository.getTasbehCounter()
+    }
+
+    fun getBestDays():Flow<List<HoursDate>>{
+        return tasbehRepository.getBestDays()
+    }
+
+    fun getDataOfMonths(): Flow<List<HoursDate>> {
+        return tasbehRepository.getDataOfMonths()
     }
 
 

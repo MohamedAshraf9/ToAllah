@@ -20,7 +20,7 @@ class PrayerTimeRepositoryImp(
         prayerTimeDao.deletePrayerTime(prayerTime)
     }
 
-    override suspend fun getPrayerTimeById(): PrayerTime? {
-        return prayerTimeDao.getPrayerTimeById()
+    override suspend fun getPrayerTimeById(id:Int): PrayerTime? {
+        return prayerTimeDao.getPrayerTimeById(id)
     }
 }

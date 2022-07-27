@@ -8,5 +8,5 @@ interface PrayerTimeRepository {
     suspend fun updatePrayerTime(prayerTime: PrayerTime)
     suspend fun deletePrayerTime(prayerTime: PrayerTime)
 
-    suspend fun getPrayerTimeById(): PrayerTime?
+    suspend fun getPrayerTimeById(id:Int): PrayerTime?
 }

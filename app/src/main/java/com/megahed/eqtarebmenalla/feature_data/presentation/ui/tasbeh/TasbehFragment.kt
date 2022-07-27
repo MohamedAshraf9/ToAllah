@@ -1,6 +1,5 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh
 
-import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +9,8 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
+import androidx.navigation.Navigation
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputLayout
@@ -97,13 +98,17 @@ class TasbehFragment : Fragment() {
         binding.tasbehCounter.increaseButton.setOnClickListener {
             ++counter
             if (counter>=100000)
-                binding.tasbehCounter.textCountar.textSize=38f
+                binding.tasbehCounter.textCountar.textSize=36f
+
             tasbehCounter?.let {tasbeh ->
                 lifecycleScope.launchWhenStarted {
                     tasbehViewModel.getTasbehDataToday(tasbeh.id,str.time,end.time)?.let {
                         it.target+=1
                         tasbehViewModel.updateTasbehData(it)
                         binding.tasbehCounter.textCountar.text="${it.target}"
+
+                        if (counter>=100000)
+                            binding.tasbehCounter.textCountar.textSize=36f
 
                     }?:run {
                         val now = Calendar.getInstance()
@@ -148,6 +153,17 @@ class TasbehFragment : Fragment() {
                 .show()
 
         }
+        binding.fabEditTasbeh.setOnClickListener {
+            val action: NavDirections = TasbehFragmentDirections.actionNavigationTasbehToEditTasbehFragment()
+            Navigation.findNavController(requireView()).navigate(action)
+        }
+
+
+        binding.fabAnalyze.setOnClickListener {
+            val action: NavDirections = TasbehFragmentDirections.actionNavigationTasbehToTasbehAnalizeFragment()
+            Navigation.findNavController(requireView()).navigate(action)
+        }
+
 
         return root
     }

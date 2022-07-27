@@ -4,7 +4,7 @@
     <string name="quran">القران</string>
     <string name="listener">استماع</string>
     <string name="azkar">الأذكار</string>
-    <string name="tasbeh">التسبح</string>
+    <string name="tasbeh">التسبيح</string>
     <string name="more">المزيد</string>
     <string name="islamicAzan">islamicAzan</string>
     <string name="loading">جارى التحميل</string>
@@ -43,6 +43,15 @@
     <string name="editTasbeh">تعديل التسبيح</string>
     <string name="update">تحديث</string>
     <string name="delete">حذف</string>
+    <string name="updated">تم التحديث</string>
+    <string name="deleteConferm">"هل تريد الحذف ؟ "</string>
+    <string name="addValidData">الرجاء ملئ البيانات</string>
+    <string name="allTasbehData">جميع التسابيح</string>
+    <string name="best_day">أفضل يوم</string>
+    <string name="best_day_desc">أفضل يوم قمت بعدد تسبيح أكثر</string>
+    <string name="no_analysis">لا توجد بيانات بعد</string>
+    <string name="best_tasbeh">أفضل تسبيح</string>
+    <string name="best_tasbehDesc">أفضل عدد من التسبيح قمت به</string>
 
     <string-array name="tasbeh">
         <item>أستغفر الله</item>

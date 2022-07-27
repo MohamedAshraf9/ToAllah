@@ -22,7 +22,7 @@ class PrayerTimeViewModel @Inject constructor(
     }
 
     suspend fun getPrayerTimeById(): PrayerTime?{
-        return prayerTimeRepository.getPrayerTimeById()
+        return prayerTimeRepository.getPrayerTimeById(1)
     }
 
 
