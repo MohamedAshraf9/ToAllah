@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.SoraFavoriteAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentSoraFavoriteBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
@@ -42,6 +43,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        toolbar.title=getString(R.string.soraFav)
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
