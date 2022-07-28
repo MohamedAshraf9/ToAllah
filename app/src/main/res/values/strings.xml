@@ -57,6 +57,8 @@
     <string name="daysWork">عدد ايام التسبيح</string>
     <string name="daysNumDesc">عدد الايام التى قمت فيها بالتسبيح</string>
     <string name="unitComplete">عدد التسبيحات التى قمت بها</string>
+    <string name="alert">تنبيه</string>
+    <string name="alertDesc">يمكنك التسبيح ولكن لن يتم الاحتفاظ بما قمت به إلا عند اختيار تسبيح ثم البدئ</string>
 
     <string-array name="tasbeh">
         <item>أستغفر الله</item>

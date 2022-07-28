@@ -1,7 +1,9 @@
 package com.megahed.eqtarebmenalla.db.repositoryImp
 
+import com.megahed.eqtarebmenalla.db.customModel.SorasFavOfReader
 import com.megahed.eqtarebmenalla.db.dao.QuranListenerReaderDao
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
+import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -31,5 +33,9 @@ class QuranListenerReaderRepositoryImp (
 
         override fun getAllQuranListenerReader(): Flow<List<QuranListenerReader>> {
                 return quranListenerReaderDao.getAllQuranListenerReader()
+        }
+
+        override fun getAllFavSorasOfReader(): Flow<List<ReaderWithSora>> {
+                return quranListenerReaderDao.getAllFavSorasOfReader()
         }
 }

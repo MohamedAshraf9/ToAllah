@@ -96,6 +96,12 @@ class TasbehFragment : Fragment() {
 
 
         binding.tasbehCounter.increaseButton.setOnClickListener {
+            if(tasbehCounter==null){
+                if (counter==0)
+                    showDialog()
+                binding.tasbehCounter.textCountar.text="$counter"
+            }
+
             ++counter
             if (counter>=100000)
                 binding.tasbehCounter.textCountar.textSize=36f
@@ -166,6 +172,19 @@ class TasbehFragment : Fragment() {
 
 
         return root
+    }
+
+    private fun showDialog() {
+        val d = resources.getDrawable(R.drawable.dialog_bg,requireContext().theme)
+        MaterialAlertDialogBuilder(requireContext(),
+            com.google.android.material.R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_Centered)
+            .setTitle(getString(R.string.alert))
+            .setMessage(getString(R.string.alertDesc))
+            .setNegativeButton(resources.getString(R.string.ok)) { dialog, which ->
+                // Respond to negative button press
+                dialog.cancel()
+            }.setBackground(d)
+            .show()
     }
 
     private fun getCounterData(str: Calendar, end: Calendar,show:Boolean) {

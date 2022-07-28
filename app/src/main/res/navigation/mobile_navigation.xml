@@ -48,6 +48,13 @@
             android:name="fromFavorite"
             app:argType="boolean"
             android:defaultValue="false" />
+        <action
+            android:id="@+id/action_navigation_listener_to_soraFavoriteFragment"
+            app:destination="@id/soraFavoriteFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
     <fragment
         android:id="@+id/ayatFragment"
@@ -146,6 +153,11 @@
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.TasbehAnalizeFragment"
         android:label="fragment_tasbeh_analize"
         tools:layout="@layout/fragment_tasbeh_analize" />
+    <fragment
+        android:id="@+id/soraFavoriteFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.SoraFavoriteFragment"
+        android:label="fragment_sora_favorite"
+        tools:layout="@layout/fragment_sora_favorite" />
 
 
 </navigation>

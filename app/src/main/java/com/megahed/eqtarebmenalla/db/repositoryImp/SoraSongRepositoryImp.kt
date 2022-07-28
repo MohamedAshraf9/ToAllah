@@ -21,8 +21,8 @@ class SoraSongRepositoryImp(
         soraSongDao.deleteSoraSong(soraSong)
     }
 
-    override suspend fun getSoraSongById(id: Int): SoraSong? {
-       return soraSongDao.getSoraSongById(id)
+    override suspend fun getSoraSongById(id: Int,readerId:String): SoraSong? {
+       return soraSongDao.getSoraSongById(id,readerId)
     }
 
     override fun getFavoriteSoraSong(): Flow<List<SoraSong>> {

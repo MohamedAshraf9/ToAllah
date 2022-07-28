@@ -48,8 +48,8 @@ class QuranListenerReaderViewModel @Inject constructor(
     }
 
 
-    suspend fun getSoraSongById(id:Int): SoraSong?{
-        return songRepository.getSoraSongById(id)
+    suspend fun getSoraSongById(id:Int,readerId:String): SoraSong?{
+        return songRepository.getSoraSongById(id,readerId)
     }
 
     fun getFavoriteSoraSong(): Flow<List<SoraSong>>{
@@ -66,14 +66,15 @@ class QuranListenerReaderViewModel @Inject constructor(
         ints.let {
             it.forEach {
                 viewModelScope.launch {
-                    songRepository.getSoraSongById(it)?.let {it1->
+                    songRepository.getSoraSongById(it,quranListenerReader.id)?.let {it1->
                         it1.readerId=quranListenerReader.id
                         it1.url=Constants.getSoraLink(quranListenerReader.server, it)
                         songRepository.updateSoraSong(it1)
                     }?:run {
                         val soraSong=SoraSong(
                             it,quranListenerReader.id,
-                            Constants.getSoraLink(quranListenerReader.server, it)
+                            Constants.getSoraLink(quranListenerReader.server, it),
+                            false
                         )
                         songRepository.insertSoraSong(soraSong)
                     }

@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
@@ -26,6 +27,7 @@ import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.Recit
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class QuranListenerFragment : Fragment() , MenuProvider {
@@ -94,6 +96,22 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
 
             }
+
+          /*  lifecycleScope.launchWhenStarted {
+                quranListenerViewModel.getAllFavSorasOfReader().collect{
+                    it.map {
+                        it.soraSongData.map {
+                            it.isVaForte
+                        }
+                    }
+                    it.forEach {
+                        Log.d("jkhdssjkdhsjhd",it.quranListenerReader.name)
+                        Log.d("jkhdssjkdhsjhd","${it.soraSongData.size}")
+
+                    }
+                }
+            }*/
+
         }
         else{
             (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
@@ -184,6 +202,9 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         soraFav.setOnClickListener {
             bottomSheetDialog.dismiss()
+            val action: NavDirections = QuranListenerFragmentDirections.
+            actionNavigationListenerToSoraFavoriteFragment()
+            Navigation.findNavController(requireView()).navigate(action)
 
 
         }

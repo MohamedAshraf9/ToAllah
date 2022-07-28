@@ -13,7 +13,7 @@ interface SoraSongRepository {
 
     suspend fun deleteSoraSong(soraSong: SoraSong)
 
-    suspend fun getSoraSongById(id:Int): SoraSong?
+    suspend fun getSoraSongById(id:Int,readerId:String): SoraSong?
 
     fun getFavoriteSoraSong(): Flow<List<SoraSong>>
 

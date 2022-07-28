@@ -18,14 +18,14 @@ interface SoraSongDao {
     suspend fun deleteSoraSong(soraSong: SoraSong)
 
 
-    @Query("SELECT * FROM sorasong WHERE id =:id ")
-    suspend fun getSoraSongById(id:Int): SoraSong?
+    @Query("SELECT * FROM sorasong WHERE SoraId =:id and readerId=:readerId ")
+    suspend fun getSoraSongById(id:Int,readerId:String): SoraSong?
 
 
     @Query("SELECT * FROM sorasong WHERE isVaForte=1 ")
     fun getFavoriteSoraSong(): Flow<List<SoraSong>>
 
-    @Query("SELECT * FROM sorasong WHERE readerId=:readerId ")
+    @Query("SELECT * FROM sorasong WHERE readerId=:readerId order by SoraId")
     fun getSongsOfSora(readerId:String): Flow<List<SoraSong>>
 
 }

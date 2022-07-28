@@ -1,8 +1,9 @@
 package com.megahed.eqtarebmenalla.db.dao
 
 import androidx.room.*
-import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.db.customModel.SorasFavOfReader
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
+import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -27,5 +28,9 @@ interface QuranListenerReaderDao {
 
     @Query("SELECT * FROM quranlistenerreader ")
     fun getAllQuranListenerReader(): Flow<List<QuranListenerReader>>
+
+    @Transaction
+    @Query("SELECT * FROM quranlistenerreader")
+    fun getAllFavSorasOfReader():Flow<List<ReaderWithSora>>
 
 }
