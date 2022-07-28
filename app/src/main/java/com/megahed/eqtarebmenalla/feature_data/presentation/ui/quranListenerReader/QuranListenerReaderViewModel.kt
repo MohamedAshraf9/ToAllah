@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
+import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import com.megahed.eqtarebmenalla.db.model.SoraSong
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
 import com.megahed.eqtarebmenalla.db.repository.SoraSongRepository
@@ -58,6 +59,10 @@ class QuranListenerReaderViewModel @Inject constructor(
 
     fun getSongsOfSora(readerId:String): Flow<List<SoraSong>>{
         return songRepository.getSongsOfSora(readerId)
+    }
+
+    fun getAllFavSorasOfReader(): Flow<List<ReaderWithSora>> {
+        return quranListenerReaderRepository.getAllFavSorasOfReader()
     }
 
     private fun getData(quranListenerReader: QuranListenerReader) {

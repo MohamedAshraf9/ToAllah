@@ -14,10 +14,13 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.SoraFavoriteAdapter
+import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.databinding.FragmentSoraFavoriteBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
+import com.megahed.eqtarebmenalla.db.model.SoraSong
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerViewModel
+import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,7 +36,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         savedInstanceState: Bundle?
     ): View {
         val quranListenerViewModel =
-            ViewModelProvider(this).get(QuranListenerViewModel::class.java)
+            ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
 
         binding = FragmentSoraFavoriteBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -54,13 +57,22 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         binding.recyclerView.setHasFixedSize(true)
 
 
-        soraFavoriteAdapter= SoraFavoriteAdapter(requireContext(), object : OnMyItemClickListener<ReaderWithSora> {
+        soraFavoriteAdapter= SoraFavoriteAdapter(requireContext(), object :
+            OnItemWithFavClickListener<SoraSong> {
 
-            override fun onItemClick(itemObject: ReaderWithSora, view: View?) {
+            override fun onItemClick(itemObject: SoraSong, view: View?) {
+
+                CommonUtils.showMessage(requireContext(),"${itemObject.isVaForte}")
 
             }
 
-            override fun onItemLongClick(itemObject: ReaderWithSora, view: View?) {
+            override fun onItemFavClick(itemObject: SoraSong, view: View?) {
+                //CommonUtils.showMessage(requireContext(),"${itemObject.id}, ${itemObject.readerId}")
+                itemObject.isVaForte=!itemObject.isVaForte
+                quranListenerViewModel.updateSoraSong(itemObject)
+            }
+
+            override fun onItemLongClick(itemObject: SoraSong, view: View?) {
             }
         })
         binding.recyclerView.adapter = soraFavoriteAdapter

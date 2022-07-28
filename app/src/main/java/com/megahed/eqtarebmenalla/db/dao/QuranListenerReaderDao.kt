@@ -30,7 +30,7 @@ interface QuranListenerReaderDao {
     fun getAllQuranListenerReader(): Flow<List<QuranListenerReader>>
 
     @Transaction
-    @Query("SELECT * FROM quranlistenerreader")
+    @Query("SELECT q.* FROM quranlistenerreader q INNER JOIN sorasong s ON q.id=s.readerId and s.isVaForte=1 group by q.id")
     fun getAllFavSorasOfReader():Flow<List<ReaderWithSora>>
 
 }

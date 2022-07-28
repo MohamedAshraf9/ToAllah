@@ -23,7 +23,7 @@ import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import java.util.*
 
 class SoraFavoriteAdapter (private val context: Context,
-                           private val onMyItemClickListener: OnMyItemClickListener<ReaderWithSora>
+                           private val onMyItemClickListener: OnItemWithFavClickListener<SoraSong>
 ) : RecyclerView.Adapter<SoraFavoriteAdapter.MyHolder>(){
 
     private var listData= mutableListOf<ReaderWithSora>()
@@ -57,9 +57,8 @@ class SoraFavoriteAdapter (private val context: Context,
     }
 
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
-
         val soraFav= listData[position]
-        val sFav=  soraFav.soraSongData.filter {
+        val sFav= soraFav.soraSongData.filter {
             it.isVaForte
         }
         if (sFav.isNotEmpty()){
@@ -70,14 +69,16 @@ class SoraFavoriteAdapter (private val context: Context,
                     OnItemWithFavClickListener<SoraSong> {
 
                     override fun onItemClick(itemObject: SoraSong, view: View?) {
+                        onMyItemClickListener.onItemClick(itemObject,view)
 
                     }
 
                     override fun onItemFavClick(itemObject: SoraSong, view: View?) {
-
+                        onMyItemClickListener.onItemFavClick(itemObject,view)
                     }
 
                     override fun onItemLongClick(itemObject: SoraSong, view: View?) {
+                        onMyItemClickListener.onItemLongClick(itemObject,view)
                     }
                 })
 
@@ -92,10 +93,6 @@ class SoraFavoriteAdapter (private val context: Context,
             holder.cardContainer.visibility=View.GONE
         }
 
-        holder.itemView.setOnClickListener {
-            onMyItemClickListener.onItemClick(listData[position],it)
-
-        }
 
 
     }
