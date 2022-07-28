@@ -97,7 +97,7 @@ class TasbehAnalizeFragment : Fragment(), MenuProvider {
         lifecycleScope.launchWhenStarted {
             tasbehViewModel.getBestDays().collect{
                binding.dayBestCounter.text="${it.maxByOrNull{ it.count }?.count ?: getString(R.string.no_analysis)}"
-                val textDate= it.maxByOrNull{ it.date }?.date?.let { it1 -> CommonUtils.getDay(it1) }
+                val textDate= it.maxByOrNull{ it.count }?.date?.let { it1 -> CommonUtils.getDay(it1) }
                binding.dayBest.text= textDate ?: getString(R.string.no_analysis)
                 binding.daysNumber.text="${it.size}"
             }
