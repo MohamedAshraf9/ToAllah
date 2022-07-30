@@ -210,7 +210,9 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         }
         listeningToSave.setOnClickListener {
             bottomSheetDialog.dismiss()
-
+            val action: NavDirections = QuranListenerFragmentDirections.
+            actionNavigationListenerToListenerHelperFragment()
+            Navigation.findNavController(requireView()).navigate(action)
         }
 
 

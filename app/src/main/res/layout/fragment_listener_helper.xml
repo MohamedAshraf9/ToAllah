@@ -1,14 +1,260 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+     android:layout_margin="@dimen/_1sdp"
+     android:padding="@dimen/_1sdp">
 
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/chooseReader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="@dimen/_3sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginEnd="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:padding="@dimen/_3sdp"
+        android:text="@string/chooseReader"
+        android:textSize="@dimen/_14ssp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/readerSpinner"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/_5sdp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerInParent="true"
+        android:layout_toEndOf="@id/chooseReader"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:hint="@string/chooseReader">
+
+
+    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="none"
+        />
+    </com.google.android.material.textfield.TextInputLayout>
+
+  </RelativeLayout>
+
+  <TextView
+      android:textAlignment="center"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textSize="@dimen/_14ssp"
+      android:textStyle="bold"
+      android:padding="@dimen/_3sdp"
+      android:layout_margin="@dimen/_3sdp"
+      android:text="@string/soraStart"/>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:orientation="horizontal"
+      android:weightSum="2"
+      android:layout_margin="@dimen/_1sdp"
+      android:padding="@dimen/_1sdp">
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/soraStartSpinner"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/_5sdp"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:hint="@string/sora">
+
+
+      <com.google.android.material.textfield.MaterialAutoCompleteTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none"
+          />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:hint="@string/ayaNum"
+        android:id="@+id/soraStartEditText"
+        android:layout_gravity="center"
+        app:helperTextEnabled="true">
+      <com.google.android.material.textfield.TextInputEditText
+          android:layout_width="match_parent"
+          android:inputType="number"
+          android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+
+  </LinearLayout>
+
+
+  <TextView
+      android:textAlignment="center"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textSize="@dimen/_14ssp"
+      android:textStyle="bold"
+      android:padding="@dimen/_3sdp"
+      android:layout_margin="@dimen/_3sdp"
+      android:text="@string/soraEnd"/>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:orientation="horizontal"
+      android:weightSum="2"
+      android:layout_margin="@dimen/_1sdp"
+      android:padding="@dimen/_1sdp">
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/soraEndSpinner"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/_5sdp"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:hint="@string/sora">
+
+
+      <com.google.android.material.textfield.MaterialAutoCompleteTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none"
+          />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:hint="@string/ayaNum"
+        android:id="@+id/soraStartEndText"
+        android:layout_gravity="center"
+        app:helperTextEnabled="true">
+      <com.google.android.material.textfield.TextInputEditText
+          android:layout_width="match_parent"
+          android:inputType="number"
+          android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+
+  </LinearLayout>
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/_1sdp"
+      android:padding="@dimen/_1sdp"
+      android:layout_gravity="center">
+
+
+    <TextView
+        android:id="@+id/ayaRepeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="@dimen/_3sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginEnd="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:padding="@dimen/_3sdp"
+        android:text="@string/ayaRepeat"
+        android:textSize="@dimen/_13ssp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:hint="@string/ayaRepeatNum"
+        android:id="@+id/ayaRepeatEndText"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@id/ayaRepeat"
+        android:layout_gravity="center"
+        app:helperTextEnabled="true">
+
+      <com.google.android.material.textfield.TextInputEditText
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+  </RelativeLayout>
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/_1sdp"
+      android:padding="@dimen/_1sdp"
+      android:layout_gravity="center">
+
+
+    <TextView
+        android:id="@+id/cycleRepeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="@dimen/_3sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginEnd="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:padding="@dimen/_3sdp"
+        android:text="@string/cycleRepeat"
+        android:textSize="@dimen/_11ssp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:hint="@string/ayaRepeatNum"
+        android:id="@+id/cycleRepeatEndText"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@id/cycleRepeat"
+        android:layout_gravity="center"
+        app:helperTextEnabled="true">
+
+      <com.google.android.material.textfield.TextInputEditText
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+  </RelativeLayout>
+
+</LinearLayout>

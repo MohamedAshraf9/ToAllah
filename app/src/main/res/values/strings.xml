@@ -59,6 +59,13 @@
     <string name="unitComplete">عدد التسبيحات التى قمت بها</string>
     <string name="alert">تنبيه</string>
     <string name="alertDesc">يمكنك التسبيح ولكن لن يتم الاحتفاظ بما قمت به إلا عند اختيار تسبيح ثم البدئ</string>
+    <string name="soraStart">سوره البدايه</string>
+    <string name="chooseReader">أختر القارئ</string>
+    <string name="ayaNum">رقم الايه</string>
+    <string name="soraEnd">سوره النهايه</string>
+    <string name="ayaRepeat">عدد مرات تكرار الايه الواحده</string>
+    <string name="ayaRepeatNum">عدد المرات</string>
+    <string name="cycleRepeat">عدد مرات التكرار من البدايه للنهايه</string>
 
     <string-array name="tasbeh">
         <item>أستغفر الله</item>

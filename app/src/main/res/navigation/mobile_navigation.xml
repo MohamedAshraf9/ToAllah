@@ -55,6 +55,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_navigation_listener_to_listenerHelperFragment"
+            app:destination="@id/listenerHelperFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
     <fragment
         android:id="@+id/ayatFragment"
@@ -158,6 +165,11 @@
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.SoraFavoriteFragment"
         android:label="fragment_sora_favorite"
         tools:layout="@layout/fragment_sora_favorite" />
+    <fragment
+        android:id="@+id/listenerHelperFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment"
+        android:label="fragment_listener_helper"
+        tools:layout="@layout/fragment_listener_helper" />
 
 
 </navigation>
