@@ -8,15 +8,23 @@
     tools:context=".feature_data.presentation.ui.quranListener.QuranListenerFragment">
 
 
+
     <include layout="@layout/custom_toolbar"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:id="@+id/toolbar"/>
 
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:id="@+id/progressBar"
+        android:layout_gravity="center"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         app:fastScrollEnabled="true"
+        android:visibility="gone"
         app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
         app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
         app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"

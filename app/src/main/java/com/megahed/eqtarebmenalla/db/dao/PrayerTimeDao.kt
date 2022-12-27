@@ -18,5 +18,5 @@ interface PrayerTimeDao{
 
 
     @Query("SELECT * FROM prayertime WHERE id =:id ")
-    suspend fun getPrayerTimeById(id:Int): PrayerTime?
+    fun getPrayerTimeById(id:Int): Flow<PrayerTime?>
 }

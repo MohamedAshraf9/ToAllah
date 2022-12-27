@@ -91,6 +91,14 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
             lifecycleScope.launchWhenStarted {
                 quranListenerViewModel.getAllQuranListenerReader().collect {
+                    if (it.isEmpty()){
+                        binding.progressBar.visibility=View.VISIBLE
+                        binding.recyclerView.visibility=View.GONE
+                    }
+                    else{
+                        binding.progressBar.visibility=View.GONE
+                        binding.recyclerView.visibility=View.VISIBLE
+                    }
                     quranListenerAdapter.setData(it)
                 }
 
