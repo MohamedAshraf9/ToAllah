@@ -14,7 +14,6 @@ class MusicPlaybackPreparer(
     private val firebaseMusicSource: FirebaseMusicSource,
     private val playerPrepared: (MediaMetadataCompat?) -> Unit
 ) : MediaSessionConnector.PlaybackPreparer {
-
     override fun onCommand(
         player: Player,
         command: String,
