@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.db.repository
 
 import com.megahed.eqtarebmenalla.db.model.PrayerTime
+import kotlinx.coroutines.flow.Flow
 
 interface PrayerTimeRepository {
 
@@ -8,5 +9,5 @@ interface PrayerTimeRepository {
     suspend fun updatePrayerTime(prayerTime: PrayerTime)
     suspend fun deletePrayerTime(prayerTime: PrayerTime)
 
-    suspend fun getPrayerTimeById(id:Int): PrayerTime?
+    fun getPrayerTimeById(id:Int): Flow<PrayerTime?>
 }

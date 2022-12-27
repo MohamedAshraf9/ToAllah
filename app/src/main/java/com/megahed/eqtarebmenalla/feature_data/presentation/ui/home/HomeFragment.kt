@@ -20,6 +20,7 @@ import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import java.text.DateFormat
 import java.util.*
 import java.util.regex.Pattern
@@ -49,56 +50,111 @@ class HomeFragment : Fragment() {
 
 
         lifecycleScope.launchWhenStarted {
-            mainViewModel.getPrayerTimeById()?.let {
-                binding.fajrTime.text=CommonUtils.convertSalahTime(it.Fajr)
-                binding.sunriseTime.text=CommonUtils.convertSalahTime(it.Sunrise)
-                binding.dhuhrTime.text=CommonUtils.convertSalahTime(it.Dhuhr)
-                binding.asrTime.text=CommonUtils.convertSalahTime(it.Asr)
-                binding.maghribTime.text=CommonUtils.convertSalahTime(it.Maghrib)
-                binding.ishaTime.text=CommonUtils.convertSalahTime(it.Isha)
+            mainViewModel.getPrayerTimeById().collect {
+                it?.let {
+                binding.fajrTime.text = CommonUtils.convertSalahTime(it.Fajr)
+                binding.sunriseTime.text = CommonUtils.convertSalahTime(it.Sunrise)
+                binding.dhuhrTime.text = CommonUtils.convertSalahTime(it.Dhuhr)
+                binding.asrTime.text = CommonUtils.convertSalahTime(it.Asr)
+                binding.maghribTime.text = CommonUtils.convertSalahTime(it.Maghrib)
+                binding.ishaTime.text = CommonUtils.convertSalahTime(it.Isha)
 
 
-                val currentTime=CommonUtils.getCurrentTime()
-                if (CommonUtils.getTimeLong(it.Fajr,false)>=CommonUtils.getTimeLong(currentTime,true)){
+                val currentTime = CommonUtils.getCurrentTime()
+                if (CommonUtils.getTimeLong(it.Fajr, false) >= CommonUtils.getTimeLong(
+                        currentTime,
+                        true
+                    )
+                ) {
 
-                    setDataView(getString(R.string.fajr),CommonUtils.convertSalahTime(it.Fajr),
-                        CommonUtils.getTimeLong(it.Fajr,false)-CommonUtils.getTimeLong(currentTime,true),true)
+                    setDataView(
+                        getString(R.string.fajr), CommonUtils.convertSalahTime(it.Fajr),
+                        CommonUtils.getTimeLong(it.Fajr, false) - CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        ), true
+                    )
 
-                } else if (CommonUtils.getTimeLong(it.Sunrise,false)>=CommonUtils.getTimeLong(currentTime,true)){
-                    setDataView(getString(R.string.sunrise),CommonUtils.convertSalahTime(it.Sunrise),
-                        CommonUtils.getTimeLong(it.Sunrise,false)-CommonUtils.getTimeLong(currentTime,true),true)
+                } else if (CommonUtils.getTimeLong(it.Sunrise, false) >= CommonUtils.getTimeLong(
+                        currentTime,
+                        true
+                    )
+                ) {
+                    setDataView(
+                        getString(R.string.sunrise), CommonUtils.convertSalahTime(it.Sunrise),
+                        CommonUtils.getTimeLong(it.Sunrise, false) - CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        ), true
+                    )
 
-                } else if (CommonUtils.getTimeLong(it.Dhuhr,false)>=CommonUtils.getTimeLong(currentTime,true)){
+                } else if (CommonUtils.getTimeLong(it.Dhuhr, false) >= CommonUtils.getTimeLong(
+                        currentTime,
+                        true
+                    )
+                ) {
 
-                    setDataView(getString(R.string.duhr),CommonUtils.convertSalahTime(it.Dhuhr),
-                        CommonUtils.getTimeLong(it.Dhuhr,false)-CommonUtils.getTimeLong(currentTime,true),true)
+                    setDataView(
+                        getString(R.string.duhr), CommonUtils.convertSalahTime(it.Dhuhr),
+                        CommonUtils.getTimeLong(it.Dhuhr, false) - CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        ), true
+                    )
 
-                } else if (CommonUtils.getTimeLong(it.Asr,false)>=CommonUtils.getTimeLong(currentTime,true)){
+                } else if (CommonUtils.getTimeLong(it.Asr, false) >= CommonUtils.getTimeLong(
+                        currentTime,
+                        true
+                    )
+                ) {
 
-                    setDataView(getString(R.string.asr),CommonUtils.convertSalahTime(it.Asr),
-                        CommonUtils.getTimeLong(it.Asr,false)-CommonUtils.getTimeLong(currentTime,true),true)
+                    setDataView(
+                        getString(R.string.asr), CommonUtils.convertSalahTime(it.Asr),
+                        CommonUtils.getTimeLong(
+                            it.Asr,
+                            false
+                        ) - CommonUtils.getTimeLong(currentTime, true), true
+                    )
 
-                } else if (CommonUtils.getTimeLong(it.Maghrib,false)>=CommonUtils.getTimeLong(currentTime,true)){
-                    setDataView(getString(R.string.maghreb),CommonUtils.convertSalahTime(it.Maghrib),
-                        CommonUtils.getTimeLong(it.Maghrib,false)-CommonUtils.getTimeLong(currentTime,true),true)
+                } else if (CommonUtils.getTimeLong(it.Maghrib, false) >= CommonUtils.getTimeLong(
+                        currentTime,
+                        true
+                    )
+                ) {
+                    setDataView(
+                        getString(R.string.maghreb), CommonUtils.convertSalahTime(it.Maghrib),
+                        CommonUtils.getTimeLong(it.Maghrib, false) - CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        ), true
+                    )
 
 
-                } else if (CommonUtils.getTimeLong(it.Isha,false)>=CommonUtils.getTimeLong(currentTime,true)) {
-                    setDataView(getString(R.string.isha),CommonUtils.convertSalahTime(it.Isha),
-                        CommonUtils.getTimeLong(it.Isha,false)-CommonUtils.getTimeLong(currentTime,true),true)
-                }
-                else{
-                    setDataView(getString(R.string.isha),CommonUtils.convertSalahTime(it.Isha),
-                        0,false)
+                } else if (CommonUtils.getTimeLong(it.Isha, false) >= CommonUtils.getTimeLong(
+                        currentTime,
+                        true
+                    )
+                ) {
+                    setDataView(
+                        getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
+                        CommonUtils.getTimeLong(it.Isha, false) - CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        ), true
+                    )
+                } else {
+                    setDataView(
+                        getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
+                        0, false
+                    )
 
-                    timeStarted=CommonUtils.getTimeLong(it.Isha,false)
+                    timeStarted = CommonUtils.getTimeLong(it.Isha, false)
                     startCoroutineTimer()
 
                 }
 
 
-
-            }?:run{
+            } ?: run {
                 binding.fajrTime.text = getString(R.string.error)
                 binding.sunriseTime.text = getString(R.string.error)
                 binding.dhuhrTime.text = getString(R.string.error)
@@ -108,6 +164,7 @@ class HomeFragment : Fragment() {
                 binding.salahName.text = getString(R.string.error)
                 binding.prayerTime.text = getString(R.string.error)
                 binding.prayerCountdown.text = getString(R.string.error)
+            }
             }
         }
 

@@ -16,4 +16,9 @@ data class PrayerTime (
     var Sunrise: String=""
     
     
-    )
+)
+/*
+{
+    @PrimaryKey(autoGenerate = true)
+    var id:Int=0
+}*/
