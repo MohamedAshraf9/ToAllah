@@ -3,7 +3,6 @@ package com.megahed.eqtarebmenalla.exoplayer
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -17,7 +16,6 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants.NOTIFICATION_CHANNEL_ID
 import com.megahed.eqtarebmenalla.common.Constants.NOTIFICATION_ID
 
-
 class MusicNotificationManager(
     private val context: Context,
     sessionToken: MediaSessionCompat.Token,
@@ -25,64 +23,49 @@ class MusicNotificationManager(
     private val newSongCallback: () -> Unit
 ) {
 
-    private val notificationManager: PlayerNotificationManager
+    private val mediaController = MediaControllerCompat(context, sessionToken)
 
-    init {
-        val mediaController = MediaControllerCompat(context, sessionToken)
-        notificationManager =  PlayerNotificationManager.Builder(
-            context,
-            NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
-            .setChannelNameResourceId(R.string.notification_channel_name)
-            .setChannelDescriptionResourceId(R.string.notification_channel_description)
-            .setMediaDescriptionAdapter(DescriptionAdapter(mediaController))
-            .setNotificationListener(notificationListener)
-            .build().apply {
+    private val notificationManager: PlayerNotificationManager = PlayerNotificationManager.Builder(
+        context,
+        NOTIFICATION_ID,
+        NOTIFICATION_CHANNEL_ID
+    )
+        .setChannelNameResourceId(R.string.notification_channel_name)
+        .setChannelDescriptionResourceId(R.string.notification_channel_description)
+        .setMediaDescriptionAdapter(DescriptionAdapter(mediaController))
+        .setNotificationListener(notificationListener)
+        .build().apply {
             setSmallIcon(R.drawable.ic_music)
             setMediaSessionToken(sessionToken)
-            setUseStopAction(true)
-                setColor(Color.BLACK)
-                setColorized(true)
-                setUseChronometer(false)
-                setUseNextActionInCompactView(true)
-                setBadgeIconType(NotificationCompat.BADGE_ICON_NONE)
-                setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-
-                setMediaSessionToken(mediaController.sessionToken)
-
-
-                setUsePlayPauseActions(true)
-                setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-
-                setUseChronometer(false)
-            //setColor(ContextCompat.getColor(context, R.color.red_500))
+            setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            setUseNextActionInCompactView(true)
+            setUsePreviousActionInCompactView(true)
         }
-
-    }
 
     fun showNotification(player: Player) {
         notificationManager.setPlayer(player)
     }
 
+    fun hideNotification() {
+        notificationManager.setPlayer(null)
+    }
+
+
+
     private inner class DescriptionAdapter(
         private val mediaController: MediaControllerCompat
     ) : PlayerNotificationManager.MediaDescriptionAdapter {
-
 
         override fun getCurrentContentTitle(player: Player): CharSequence {
             newSongCallback()
             return mediaController.metadata.description.title.toString()
         }
 
-        //todo clear this fun
-        override fun getCurrentSubText(player: Player): CharSequence {
-            return mediaController.metadata.description.subtitle.toString()
-        }
-
         override fun createCurrentContentIntent(player: Player): PendingIntent? {
             return mediaController.sessionActivity
         }
 
-        override fun getCurrentContentText(player: Player): CharSequence {
+        override fun getCurrentContentText(player: Player): CharSequence? {
             return mediaController.metadata.description.subtitle.toString()
         }
 
@@ -106,3 +89,24 @@ class MusicNotificationManager(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

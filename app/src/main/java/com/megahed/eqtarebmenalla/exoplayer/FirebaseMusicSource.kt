@@ -6,46 +6,57 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
 import androidx.core.net.toUri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
-import com.megahed.eqtarebmenalla.common.Constants
-import com.megahed.eqtarebmenalla.exoplayer.State.*
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
+import com.megahed.eqtarebmenalla.exoplayer.State.*
 
-class FirebaseMusicSource{
-
+class FirebaseMusicSource {
 
     var songs = emptyList<MediaMetadataCompat>()
 
-    suspend fun fetchMediaData() = withContext(Dispatchers.IO) {
+    //private val _audiosLiveData = MutableLiveData<List<MediaMetadataCompat>>()
+    val audiosLiveData: LiveData<List<Song>> = _audiosLiveData
+
+
+    companion object{
+         val _audiosLiveData = MutableLiveData<List<Song>>()
+
+    }
+     fun fetchMediaData() {
         state = STATE_INITIALIZING
-        val allSongs = Constants.songs
-        songs = allSongs.map { song ->
-            MediaMetadataCompat.Builder()
-                .putString(METADATA_KEY_ARTIST, song.subtitle)
-                .putString(METADATA_KEY_MEDIA_ID, song.mediaId)
-                .putString(METADATA_KEY_TITLE, song.title)
-                .putString(METADATA_KEY_DISPLAY_TITLE, song.title)
-                .putString(METADATA_KEY_DISPLAY_ICON_URI, song.imageUrl)
-                .putString(METADATA_KEY_MEDIA_URI, song.songUrl)
-                .putString(METADATA_KEY_ALBUM_ART_URI, song.imageUrl)
-                .putString(METADATA_KEY_DISPLAY_SUBTITLE, song.subtitle)
-                .putString(METADATA_KEY_DISPLAY_DESCRIPTION, song.subtitle)
-                .build()
+        //val allSongs = musicDatabase.getAllSongs()
+
+        //_audiosLiveData.value= null
+        audiosLiveData.observeForever{
+            state = STATE_INITIALIZING
+            songs = it.map { song ->
+                MediaMetadataCompat.Builder()
+                    .putString(METADATA_KEY_ARTIST, song.subtitle)
+                    .putString(METADATA_KEY_MEDIA_ID, song.mediaId)
+                    .putString(METADATA_KEY_TITLE, song.title)
+                    .putString(METADATA_KEY_DISPLAY_TITLE, song.title)
+                    .putString(METADATA_KEY_DISPLAY_ICON_URI, song.imageUrl)
+                    .putString(METADATA_KEY_MEDIA_URI, song.songUrl)
+                    .putString(METADATA_KEY_ALBUM_ART_URI, song.imageUrl)
+                    .putString(METADATA_KEY_DISPLAY_SUBTITLE, song.subtitle)
+                    .putString(METADATA_KEY_DISPLAY_DESCRIPTION, song.subtitle)
+                    .build()
+            }
+            state = STATE_INITIALIZED
         }
         state = STATE_INITIALIZED
+
     }
 
     fun asMediaSource(dataSourceFactory: DefaultDataSource.Factory): ConcatenatingMediaSource {
         val concatenatingMediaSource = ConcatenatingMediaSource()
-
         songs.forEach { song ->
-            val mediaItem: MediaItem=MediaItem.fromUri(song.getString(METADATA_KEY_MEDIA_URI).toUri())
+            val mediaItem: MediaItem = MediaItem.fromUri(song.getString(METADATA_KEY_MEDIA_URI).toUri())
             val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             concatenatingMediaSource.addMediaSource(mediaSource)

@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
@@ -13,18 +14,23 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN
 import com.megahed.eqtarebmenalla.common.Constants.getSoraLink
 import com.megahed.eqtarebmenalla.common.Constants.songs
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.db.model.SoraSong
+import com.megahed.eqtarebmenalla.db.model.toSong
+import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
+import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerFragmentDirections
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSongsViewModel
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
@@ -114,7 +120,11 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             OnItemWithFavClickListener<SoraSong> {
 
             override fun onItemClick(itemObject: SoraSong, view: View?) {
-                //mainViewModel.playOrToggleSong(itemObject,true)
+                Log.d("etrtr","ddd")
+                mainViewModel.playOrToggleSong(itemObject.toSong(readerName),true)
+                val action: NavDirections = QuranListenerReaderFragmentDirections.
+                actionQuranListenerReaderFragmentToSongFragment()
+                Navigation.findNavController(requireView()).navigate(action)
             }
 
             override fun onItemFavClick(itemObject: SoraSong, view: View?) {
@@ -132,6 +142,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         lifecycleScope.launchWhenStarted {
             readerId?.let {
                 quranListenerReaderViewModel.getSongsOfSora(it).collect{
+                    FirebaseMusicSource._audiosLiveData.value=it.map { it.toSong(readerName) }
                     quranListenerReaderAdapter.setData(it)
                 }
             }

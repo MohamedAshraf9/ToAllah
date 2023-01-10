@@ -1,7 +1,5 @@
 package com.megahed.eqtarebmenalla.exoplayer
 
-
-
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
@@ -17,6 +15,8 @@ import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.megahed.eqtarebmenalla.common.Constants.MEDIA_ROOT_ID
 import com.megahed.eqtarebmenalla.common.Constants.NETWORK_ERROR
+import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
+import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 import com.megahed.eqtarebmenalla.exoplayer.callbacks.MusicPlaybackPreparer
 import com.megahed.eqtarebmenalla.exoplayer.callbacks.MusicPlayerEventListener
 import com.megahed.eqtarebmenalla.exoplayer.callbacks.MusicPlayerNotificationListener
@@ -29,13 +29,14 @@ private const val SERVICE_TAG = "MusicService"
 @AndroidEntryPoint
 class MusicService : MediaBrowserServiceCompat() {
 
+
     @Inject
     lateinit var dataSourceFactory: DefaultDataSource.Factory
 
     @Inject
     lateinit var exoPlayer: ExoPlayer
 
-    @Inject
+
     lateinit var firebaseMusicSource: FirebaseMusicSource
 
     private lateinit var musicNotificationManager: MusicNotificationManager
@@ -46,6 +47,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
 
+
     var isForegroundService = false
 
     private var curPlayingSong: MediaMetadataCompat? = null
@@ -54,6 +56,10 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private lateinit var musicPlayerEventListener: MusicPlayerEventListener
 
+    private var currentPlaylistItems: List<Song> = emptyList()
+
+
+
     companion object {
         var curSongDuration = 0L
             private set
@@ -61,12 +67,13 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onCreate() {
         super.onCreate()
+        firebaseMusicSource= FirebaseMusicSource()
         serviceScope.launch {
             firebaseMusicSource.fetchMediaData()
         }
 
         val activityIntent = packageManager?.getLaunchIntentForPackage(packageName)?.let {
-            PendingIntent.getActivity(this, 0, it, 0)
+            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         }
 
         mediaSession = MediaSessionCompat(this, SERVICE_TAG).apply {
@@ -93,14 +100,22 @@ class MusicService : MediaBrowserServiceCompat() {
             )
         }
 
+        //sessionToken = mediaSession.sessionToken
+
         mediaSessionConnector = MediaSessionConnector(mediaSession)
         mediaSessionConnector.setPlaybackPreparer(musicPlaybackPreparer)
         mediaSessionConnector.setQueueNavigator(MusicQueueNavigator())
         mediaSessionConnector.setPlayer(exoPlayer)
 
-        musicPlayerEventListener = MusicPlayerEventListener(this)
+        musicPlayerEventListener = MusicPlayerEventListener(this,musicNotificationManager,exoPlayer)
         exoPlayer.addListener(musicPlayerEventListener)
         musicNotificationManager.showNotification(exoPlayer)
+
+
+
+
+
+
 
     }
 
@@ -116,9 +131,12 @@ class MusicService : MediaBrowserServiceCompat() {
         playNow: Boolean
     ) {
         val curSongIndex = if(curPlayingSong == null) 0 else songs.indexOf(itemToPlay)
+        //exoPlayer.prepare(firebaseMusicSource.asMediaSource(dataSourceFactory))
         exoPlayer.setMediaSource(firebaseMusicSource.asMediaSource(dataSourceFactory))
         exoPlayer.seekTo(curSongIndex, 0L)
+        exoPlayer.prepare()
         exoPlayer.playWhenReady = playNow
+        //musicNotificationManager.showNotification(exoPlayer)
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -128,11 +146,6 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         super.onDestroy()
-         //todo delete this block
-        mediaSession.run {
-            isActive=false
-            exoPlayer.release()
-        }
         serviceScope.cancel()
 
         exoPlayer.removeListener(musicPlayerEventListener)
@@ -172,6 +185,25 @@ class MusicService : MediaBrowserServiceCompat() {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
