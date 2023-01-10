@@ -43,6 +43,16 @@
             </intent-filter>
         </service>
 
+
+        <service
+            android:name=".newExoPlayer.service.AudioService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+
+        </service>
+
     </application>
 
 </manifest>
