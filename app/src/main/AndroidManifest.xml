@@ -6,6 +6,7 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Always include this permission -->
+
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Include only if your app benefits from precise location access. -->
@@ -44,14 +45,14 @@
         </service>
 
 
-        <service
-            android:name=".newExoPlayer.service.AudioService"
+       <!-- <service
+            android:name=".exoplayer.MusicService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
 
-        </service>
+        </service>-->
 
     </application>
 

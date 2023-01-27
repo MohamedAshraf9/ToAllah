@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import retrofit2.http.Query
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,8 +27,9 @@ class IslamicViewModel @Inject constructor(
     //val state1 :StateFlow<IslamicInfo> =_state1
 
 
-    fun getAzanData(city:String,country:String){
-        usesCase(city,country).onEach {
+    fun getAzanData(@Query("latitude") latitude:Double,
+                    @Query("longitude") longitude:Double){
+        usesCase(latitude, longitude).onEach {
             when(it){
                 is Resource.Success ->{
                     _state.value= it.data?.let { it1 -> IslamicListState(islamicInfo = it1) }!!

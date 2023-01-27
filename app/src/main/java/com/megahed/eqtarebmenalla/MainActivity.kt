@@ -1,13 +1,22 @@
 package com.megahed.eqtarebmenalla
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
@@ -15,24 +24,27 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
+import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.databinding.ActivityMainBinding
 import com.megahed.eqtarebmenalla.db.model.PrayerTime
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.quran.QuranData
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.IOException
 import java.util.*
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    //private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,24 +54,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val mainViewModel = ViewModelProvider(this).get(IslamicViewModel::class.java)
+       /* val mainViewModel = ViewModelProvider(this).get(IslamicViewModel::class.java)*/
         val prayerTimeViewModel = ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
 
-        mainViewModel.getAzanData("Cairo","Egypt")
-        lifecycleScope.launchWhenStarted {
-            mainViewModel.state.collect{ islamicListState ->
-                islamicListState.let { islamicInfo ->
-                    islamicInfo.islamicInfo.data?.let {
-                        val prayerTime=PrayerTime(1,it.date.gregorian.date,it.timings.Asr,it.timings.Dhuhr,
-                            it.timings.Fajr,it.timings.Isha,it.timings.Maghrib,it.timings.Sunrise)
-                        prayerTimeViewModel.insertPrayerTime(prayerTime)
-
-                    }
-                }
-            }
 
 
-        }
+
+
 
 
 
@@ -122,23 +123,27 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        /*fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location : Location? ->
                 // Got last known location. In some rare situations this can be null.
                 location?.let {
                     val geocoder = Geocoder(this, Locale.getDefault())
-                    val addresses: List<Address> = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                    val addresses: List<Address> =
+                        geocoder.getFromLocation(it.latitude, it.longitude, 1) as List<Address>
                     val cityName: String = addresses[0].getAddressLine(0)
                     Log.d("MyTag", "\n====================================================\n")
                     Log.d("MyTag", "cityName : $cityName  addressesNum= ${addresses.size}")
                     Toast.makeText(this,"cityName : $cityName  addressesNum= ${addresses.size}",Toast.LENGTH_LONG).show()
                 }
-            }
+            }*/
 
 
-        val locationPermissionRequest = registerForActivityResult(
+
+
+
+       /* val locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             when {
@@ -164,16 +169,16 @@ class MainActivity : AppCompatActivity() {
                 // No location access granted.
             }
             }
-        }
+        }*/
 
 // ...
 
 // Before you perform the actual permission request, check whether your app
 // already has the permissions, and whether your app needs to show a permission
 // rationale dialog. For more details, see Request permissions.
-        locationPermissionRequest.launch(arrayOf(
+       /* locationPermissionRequest.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION))
+            Manifest.permission.ACCESS_COARSE_LOCATION))*/
 
 
 
@@ -193,4 +198,8 @@ class MainActivity : AppCompatActivity() {
         //setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
+
+
+
+
 }

@@ -8,6 +8,7 @@ import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicReposito
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
+import retrofit2.http.Query
 import java.io.IOException
 import javax.inject.Inject
 
@@ -16,12 +17,13 @@ class PrayerDataUsesCase @Inject constructor(
 ){
 
     //todo change AzanInfoDto to AzanInfo
-    operator fun invoke(city:String,country:String):Flow<Resource<IslamicInfo>> = flow {
+    operator fun invoke(@Query("latitude") latitude:Double,
+                        @Query("longitude") longitude:Double):Flow<Resource<IslamicInfo>> = flow {
 
         try {
 
             emit(Resource.Loading())
-            val azanData=repository.getAzanData(city,country)
+            val azanData=repository.getAzanData(longitude=longitude, latitude = latitude)
             emit(Resource.Success(azanData))
 
         }

@@ -67,6 +67,11 @@
     <string name="ayaRepeatNum">عدد المرات</string>
     <string name="cycleRepeat">عدد مرات التكرار من البدايه للنهايه</string>
 
+    <string name="openSettings">فتح الموقع</string>
+    <string name="openLocation">خدمات الموقع غير مفعله الرجاء تفعيلها</string>
+    <string name="cancel">إلغاء</string>
+
+
     <string-array name="tasbeh">
         <item>أستغفر الله</item>
         <item>سُبْحَانَ اللَّهِ</item>
