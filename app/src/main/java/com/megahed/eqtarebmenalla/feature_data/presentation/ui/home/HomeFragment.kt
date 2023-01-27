@@ -433,7 +433,8 @@ class HomeFragment : Fragment(), LocationListener {
 
     override fun onStart() {
         super.onStart()
-        checkLocationPermission()
+        statusLocationCheck()
+        //checkLocationPermission()
     }
     override fun onPause() {
         super.onPause()
@@ -454,7 +455,7 @@ class HomeFragment : Fragment(), LocationListener {
 
             startGetLocation()
         } else {
-            statusLocationCheck()
+            //statusLocationCheck()
             requestPermissionLauncher.launch(perms)
 
         }
