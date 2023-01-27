@@ -14,8 +14,6 @@ import com.megahed.eqtarebmenalla.exoplayer.isPlayEnabled
 import com.megahed.eqtarebmenalla.exoplayer.isPlaying
 import com.megahed.eqtarebmenalla.exoplayer.isPrepared
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
-import com.megahed.eqtarebmenalla.newExoPlayer.extensions.EMPTY_PLAYBACK_STATE
-import com.megahed.eqtarebmenalla.newExoPlayer.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -60,28 +58,28 @@ class MainSongsViewModel @Inject constructor(
 
 
 
-    private fun playPauseOrToggle(mediaItem: String, newAudioList: List<Song>?) {
-        if (mediaItem.isEmpty()) return
-        val playState = playbackState.value
-        val isPrepared = playbackState.value?.isPrepared ?: false
-        val currentSongId = curPlayingSong.value?.id
-
-        if (isPrepared && mediaItem == currentSongId) {
-            // If we call this fun with the same current playing song
-            // We can pause it if playbackState.isPlaying
-            // We can play it again from start if playbackState.isPlayEnabled
-            playState?.let { playbackState ->
-                when {
-                    playbackState.isPlaying -> musicServiceConnection.transportControls.pause()
-                    playbackState.isPlayEnabled -> musicServiceConnection.transportControls.play()
-                    else -> Unit
-                }
-            }
-        } else {
-            // New song so play it
-            playNewAudio(newAudioList, mediaItem)
-        }
-    }
+//    private fun playPauseOrToggle(mediaItem: String, newAudioList: List<Song>?) {
+//        if (mediaItem.isEmpty()) return
+//        val playState = playbackState.value
+//        val isPrepared = playbackState.value?.isPrepared ?: false
+//        val currentSongId = curPlayingSong.value?.id
+//
+//        if (isPrepared && mediaItem == currentSongId) {
+//            // If we call this fun with the same current playing song
+//            // We can pause it if playbackState.isPlaying
+//            // We can play it again from start if playbackState.isPlayEnabled
+//            playState?.let { playbackState ->
+//                when {
+//                    playbackState.isPlaying -> musicServiceConnection.transportControls.pause()
+//                    playbackState.isPlayEnabled -> musicServiceConnection.transportControls.play()
+//                    else -> Unit
+//                }
+//            }
+//        } else {
+//            // New song so play it
+//            playNewAudio(newAudioList, mediaItem)
+//        }
+//    }
 
     private fun playNewAudio(newAudioList: List<Song>?, mediaItem: String) {
         if (newAudioList != null) {
@@ -115,7 +113,7 @@ class MainSongsViewModel @Inject constructor(
 
 
 
-    fun getPlayBackState(): PlaybackStateCompat = playbackState.value ?: EMPTY_PLAYBACK_STATE
+//    fun getPlayBackState(): PlaybackStateCompat = playbackState.value ?: EMPTY_PLAYBACK_STATE
 
 
 

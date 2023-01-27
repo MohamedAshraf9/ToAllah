@@ -1,34 +1,56 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.home
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.*
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.CommonUtils
-import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
+import com.megahed.eqtarebmenalla.db.model.PrayerTime
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
+import java.io.IOException
 import java.text.DateFormat
 import java.util.*
 import java.util.regex.Pattern
 
 @AndroidEntryPoint
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), LocationListener {
+
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
+    private var lastLocation: Location?=null
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var mLocationCallback: LocationCallback
 
 
+    private val mainViewModel : IslamicViewModel by activityViewModels()
 
 
     private lateinit var binding: FragmentHomeBinding
@@ -39,7 +61,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val mainViewModel =
+        val prayerTimeViewModel =
             ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
 
         binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -47,10 +69,23 @@ class HomeFragment : Fragment() {
 
        binding.dayDetails.text= DateFormat.getDateInstance(DateFormat.FULL).format(Date())
 
+        lifecycleScope.launchWhenStarted {
+            mainViewModel.state.collect{ islamicListState ->
+                islamicListState.let { islamicInfo ->
+                    islamicInfo.islamicInfo.data?.let {
+                        val prayerTime= PrayerTime(1,it.date.gregorian.date,it.timings.Asr,it.timings.Dhuhr,
+                            it.timings.Fajr,it.timings.Isha,it.timings.Maghrib,it.timings.Sunrise)
+                        prayerTimeViewModel.insertPrayerTime(prayerTime)
 
+                    }
+                }
+            }
+
+
+        }
 
         lifecycleScope.launchWhenStarted {
-            mainViewModel.getPrayerTimeById().collect {
+            prayerTimeViewModel.getPrayerTimeById().collect {
                 it?.let {
                 binding.fajrTime.text = CommonUtils.convertSalahTime(it.Fajr)
                 binding.sunriseTime.text = CommonUtils.convertSalahTime(it.Sunrise)
@@ -168,6 +203,38 @@ class HomeFragment : Fragment() {
             }
         }
 
+
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        locationRequest= LocationRequest
+            .Builder(Priority.PRIORITY_HIGH_ACCURACY,100)
+            .setWaitForAccurateLocation(false)
+            .setMinUpdateIntervalMillis(100)
+            .setMaxUpdateDelayMillis(800)
+            .build()
+
+
+        mLocationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    // Update UI with location data
+                    //Log.d("gfdgdfg lastLocation.isMock", ""+ location.isMock)
+                    lastLocation = location
+                    lastLocation?.let {
+                        getCountryFromLocation(it)
+
+                        mainViewModel.getAzanData(it.latitude,it.longitude)
+
+                    }
+                    Log.d(
+                        "myLocccc",
+                        " callback location " + lastLocation?.longitude + "  " + lastLocation?.latitude
+                    )
+                }
+            }
+
+        }
 
 
 
@@ -329,6 +396,7 @@ class HomeFragment : Fragment() {
             val timer = object : CountDownTimer(
                 time, 1000
             ) {
+                @SuppressLint("SetTextI18n")
                 override fun onTick(millisUntilFinished: Long) {
                     binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
                 }
@@ -358,6 +426,140 @@ class HomeFragment : Fragment() {
     private fun startCoroutineTimer() {
         handler.post(runnable)
     }
+
+
+
+
+
+    override fun onStart() {
+        super.onStart()
+        checkLocationPermission()
+    }
+    override fun onPause() {
+        super.onPause()
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+    }
+
+
+
+    @SuppressLint("MissingPermission")
+    private fun checkLocationPermission() {
+        val perms = arrayOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        if (MethodHelper.hasPermissions(requireContext(), perms)) {
+
+            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
+
+            startGetLocation()
+        } else {
+            statusLocationCheck()
+            requestPermissionLauncher.launch(perms)
+
+        }
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all {
+            it.value
+        }
+        if (granted) {
+            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
+            startGetLocation()
+            // PERMISSION GRANTED
+        } else {
+            // PERMISSION NOT GRANTED
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startGetLocation() {
+        mFusedLocationClient.lastLocation
+            .addOnSuccessListener(
+                requireActivity()
+            ) { location ->
+                // Got last known location. In some rare situations this can be null.
+                if (location != null) {
+                    lastLocation = location
+                    Log.d(
+                        "myLocccc",
+                        " last  " + lastLocation?.longitude + "  " + lastLocation?.latitude
+                    )
+
+                }
+            }
+            .addOnFailureListener(
+                requireActivity()
+            ) { e ->
+                Log.w("myLocccc", "getLastLocation:exception " + e.message)
+            }
+
+    }
+
+
+    override fun onLocationChanged(location: Location) {
+        lastLocation = location
+        lastLocation?.let {
+            mainViewModel.getAzanData(it.latitude,it.longitude)
+        }
+
+    }
+
+
+    private fun statusLocationCheck() {
+        val manager = requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            buildAlertMessageNoGps()
+
+        }else{
+            checkLocationPermission()
+        }
+    }
+
+
+    private fun buildAlertMessageNoGps() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage(getString(R.string.openLocation))
+            .setCancelable(false)
+            .setPositiveButton(
+                getString(R.string.openSettings)
+            ) { dialog, id -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+            .setNegativeButton(
+                getString(R.string.cancel)
+            ) { dialog, id ->
+                dialog.cancel()
+
+            }
+        val alert = builder.create()
+        alert.show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun getCountryFromLocation(location: Location) {
+        val geocoder = Geocoder(requireContext())
+        //var country: String=""
+        try {
+            Geocoder.isPresent()
+            val addresses = geocoder.getFromLocation(
+                location.latitude, location.longitude, 1
+            )
+            if (addresses != null && addresses.size > 0) {
+               val country = addresses[0].adminArea
+                val city = addresses[0].subAdminArea
+                binding.currentLocation.text = "$city,$country"
+                //Toast.makeText(requireContext(),"$city,$country ", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: IOException) {
+            e.message?.let { Log.d("myLocccc Exception  ", it) }
+        }
+        //return country?.lowercase()
+    }
+
 
 
 }
