@@ -3,30 +3,33 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="wrap_content"
-    android:layout_margin="@dimen/_2sdp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginStart="10dp"
+    android:layout_marginTop="4dp"
+    android:layout_height="55dp"
     app:cardElevation="@dimen/_3sdp"
+    android:background="@drawable/soura_item_background"
+
     android:padding="@dimen/_2sdp"
-    app:cardCornerRadius="@dimen/_12sdp"
+    app:cardCornerRadius="8dp"
     android:layout_width="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_margin="@dimen/_3sdp"
-        android:padding="@dimen/_3sdp"
         android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/soraNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="25dp"
+            android:layout_height="40dp"
             android:gravity="center"
             android:text="أ"
-            android:textSize="@dimen/_14ssp"
-            android:background="@drawable/circle"
+            android:textSize="13sp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/id_soura_background"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            android:layout_margin="@dimen/_1sdp"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -50,6 +53,8 @@
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_color"
+                android:fontFamily="@font/amiri_regular"
                 android:text="Al-Fatihah" />
 
 

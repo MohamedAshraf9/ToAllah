@@ -52,13 +52,13 @@ class QuranFragment : Fragment(), MenuProvider {
 
         quranTextAdapter= SoraAdapter(requireContext(), object : OnMyItemClickListener<Sora>{
 
-            override fun onItemClick(itemObject: Sora, view: View?) {
+            override fun onItemClick(itemObject: Sora, view: View?,position: Int) {
                 val action: NavDirections =QuranFragmentDirections.actionNavigationQuranToAyatFragment(itemObject.soraId,itemObject.name,false)
                 Navigation.findNavController(requireView()).navigate(action)
                 //Toast.makeText(requireContext(),itemObject.name,Toast.LENGTH_LONG).show()
             }
 
-            override fun onItemLongClick(itemObject: Sora, view: View?) {
+            override fun onItemLongClick(itemObject: Sora, view: View?,position: Int) {
             }
         })
         val string:StringBuilder= StringBuilder()

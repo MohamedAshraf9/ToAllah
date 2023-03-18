@@ -16,6 +16,7 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentAyatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.feature_data.presentation.NewTaskSheet
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr.ElzekrFragmentArgs
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -62,13 +63,15 @@ class AyatFragment : Fragment(),MenuProvider {
 
         quranTextAdapter= AyaAdapter(requireContext(), object : OnMyItemClickListener<Aya> {
 
-            override fun onItemClick(itemObject: Aya, view: View?) {
+            override fun onItemClick(itemObject: Aya, view: View?,position: Int) {
                 //fav icon click
                 itemObject.isVaForte=!itemObject.isVaForte
                 ayaViewModel.updateAya(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: Aya, view: View?) {
+            override fun onItemLongClick(itemObject: Aya, view: View?,position: Int) {
+                val sheet= NewTaskSheet(itemObject,position.toString())
+                sheet.show(requireActivity().supportFragmentManager,"sheet")
             }
         })
         binding.recyclerView.adapter = quranTextAdapter

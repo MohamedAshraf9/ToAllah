@@ -7,6 +7,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment">
 
+
+  <include layout="@layout/custom_toolbar"
+      android:layout_height="wrap_content"
+      android:layout_width="match_parent"
+      android:id="@+id/toolbar"/>
+
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -44,6 +50,7 @@
 
 
     <com.google.android.material.textfield.MaterialAutoCompleteTextView
+        android:id="@+id/list_of_rewat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="none"
@@ -79,11 +86,13 @@
         android:layout_margin="@dimen/_5sdp"
         android:layout_gravity="center"
         android:layout_weight="1"
+        android:enabled="false"
         android:layout_height="wrap_content"
         android:hint="@string/sora">
 
 
       <com.google.android.material.textfield.MaterialAutoCompleteTextView
+          android:id="@+id/list_soura_name"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:inputType="none"
@@ -92,18 +101,20 @@
 
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
         android:hint="@string/ayaNum"
+        android:enabled="false"
         android:id="@+id/soraStartEditText"
         android:layout_gravity="center"
         app:helperTextEnabled="true">
-      <com.google.android.material.textfield.TextInputEditText
+      <com.google.android.material.textfield.MaterialAutoCompleteTextView
+          android:id="@+id/nb_aya"
           android:layout_width="match_parent"
-          android:inputType="number"
+          android:inputType="none"
           android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -132,38 +143,24 @@
       android:padding="@dimen/_1sdp">
 
 
+
+
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/soraEndSpinner"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-        android:layout_width="match_parent"
-        android:layout_margin="@dimen/_5sdp"
-        android:layout_gravity="center"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:hint="@string/sora">
-
-
-      <com.google.android.material.textfield.MaterialAutoCompleteTextView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:inputType="none"
-          />
-    </com.google.android.material.textfield.TextInputLayout>
-
-
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
         android:hint="@string/ayaNum"
+        android:enabled="false"
         android:id="@+id/soraStartEndText"
         android:layout_gravity="center"
         app:helperTextEnabled="true">
-      <com.google.android.material.textfield.TextInputEditText
+      <com.google.android.material.textfield.MaterialAutoCompleteTextView
+          android:id="@+id/nb_eya_end"
           android:layout_width="match_parent"
-          android:inputType="number"
+          android:inputType="none"
           android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -207,8 +204,10 @@
         app:helperTextEnabled="true">
 
       <com.google.android.material.textfield.TextInputEditText
+          android:id="@+id/nb_aya_repeat"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
+          android:text="1"
           android:inputType="number" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -251,10 +250,54 @@
 
       <com.google.android.material.textfield.TextInputEditText
           android:layout_width="match_parent"
+          android:id="@+id/sura_repeat"
           android:layout_height="wrap_content"
+          android:text="1"
+
           android:inputType="number" />
     </com.google.android.material.textfield.TextInputLayout>
 
   </RelativeLayout>
+  <androidx.constraintlayout.widget.ConstraintLayout
+
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/start"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_35sdp"
+        android:layout_marginStart="@dimen/_20sdp"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:enabled="false"
+        android:layout_marginBottom="@dimen/_25sdp"
+        app:backgroundTint="@color/colorPrimary"
+        android:text="البدأ"
+        android:textColor="@color/text_color"
+        android:textSize="@dimen/_18sdp"
+        android:background="@drawable/shape_bkg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/stop"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_35sdp"
+        android:layout_marginStart="@dimen/_20sdp"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:layout_marginBottom="@dimen/_25sdp"
+        app:backgroundTint="@color/colorPrimary"
+        android:text="انهاء"
+        android:visibility="gone"
+        android:textSize="@dimen/_18sdp"
+        android:background="@drawable/shape_bkg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 </LinearLayout>

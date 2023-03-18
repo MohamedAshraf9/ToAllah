@@ -64,7 +64,7 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnItemWithFavClickListener<QuranListenerReader> {
 
-            override fun onItemClick(itemObject: QuranListenerReader, view: View?) {
+            override fun onItemClick(itemObject: QuranListenerReader, view: View?,position: Int) {
                 val action: NavDirections = QuranListenerFragmentDirections.
                 actionNavigationListenerToQuranListenerReaderFragment(
                   id = itemObject.id,
@@ -78,7 +78,7 @@ class QuranListenerFragment : Fragment() , MenuProvider {
                 quranListenerViewModel.updateQuranListenerReader(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: QuranListenerReader, view: View?) {
+            override fun onItemLongClick(itemObject: QuranListenerReader, view: View?,position: Int) {
             }
         })
         binding.recyclerView.adapter = quranListenerAdapter

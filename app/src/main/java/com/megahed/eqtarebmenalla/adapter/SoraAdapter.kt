@@ -33,7 +33,7 @@ class SoraAdapter (private val context: Context,
     class MyHolder(binding: SoraItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         val soraNameAr=binding.soraNameAr
-        val soraNameEn=binding.soraNameEn
+
         val soraInfo=binding.soraInfo
         val soraNumber=binding.soraNumber
         val root = binding.root
@@ -56,7 +56,7 @@ class SoraAdapter (private val context: Context,
         val sora= listData[position]
 
         holder.soraNameAr.text=sora.name
-        holder.soraNameEn.text=sora.englishName
+
         val ayat=App.getInstance().getString(R.string.ayat)
         var revelationType=sora.revelationType
         revelationType = if (revelationType == "Meccan"){
@@ -70,7 +70,7 @@ class SoraAdapter (private val context: Context,
         holder.soraNumber.text="${sora.soraId}"
 
         holder.itemView.setOnClickListener {
-            onMyItemClickListener.onItemClick(listData[position],it)
+            onMyItemClickListener.onItemClick(listData[position],it,0)
 
         }
 

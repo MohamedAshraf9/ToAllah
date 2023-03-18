@@ -26,13 +26,18 @@
         android:icon="@drawable/tasbeh_icon"
         android:title="@string/tasbeh" />
 
+<!--    <item-->
+<!--        android:id="@+id/navigation_qibla"-->
+<!--        android:icon="@drawable/ic_qibla"-->
+<!--        android:title="@string/qibla" />-->
+
     <!--
 
 
 
     <item
         android:id="@+id/navigation_more"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_notifications_black_@dimen/_20sdp"
         android:title="@string/more" />-->
 
 

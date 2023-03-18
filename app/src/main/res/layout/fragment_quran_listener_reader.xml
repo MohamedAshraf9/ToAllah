@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
-            app:contentScrim="?attr/colorPrimary"
+            app:contentScrim="@color/primary_color"
             app:titleEnabled="false"
             android:background="@color/background_color"
             app:layout_scrollFlags="scroll|snap|exitUntilCollapsed">
@@ -228,6 +228,8 @@
         android:orientation="vertical">
 
         <androidx.recyclerview.widget.RecyclerView
+            android:background="@color/background_color"
+
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

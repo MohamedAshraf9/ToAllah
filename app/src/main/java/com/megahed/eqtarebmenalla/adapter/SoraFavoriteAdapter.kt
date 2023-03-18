@@ -68,7 +68,7 @@ class SoraFavoriteAdapter (private val context: Context,
                 object :
                     OnItemWithFavClickListener<SoraSong> {
 
-                    override fun onItemClick(itemObject: SoraSong, view: View?) {
+                    override fun onItemClick(itemObject: SoraSong, view: View?,position: Int) {
                         onMyItemClickListener.onItemClick(itemObject,view)
 
                     }
@@ -77,7 +77,7 @@ class SoraFavoriteAdapter (private val context: Context,
                         onMyItemClickListener.onItemFavClick(itemObject,view)
                     }
 
-                    override fun onItemLongClick(itemObject: SoraSong, view: View?) {
+                    override fun onItemLongClick(itemObject: SoraSong, view: View?,position: Int) {
                         onMyItemClickListener.onItemLongClick(itemObject,view)
                     }
                 })

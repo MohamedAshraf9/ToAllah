@@ -60,7 +60,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         soraFavoriteAdapter= SoraFavoriteAdapter(requireContext(), object :
             OnItemWithFavClickListener<SoraSong> {
 
-            override fun onItemClick(itemObject: SoraSong, view: View?) {
+            override fun onItemClick(itemObject: SoraSong, view: View?,position: Int) {
 
                 CommonUtils.showMessage(requireContext(),"${itemObject.isVaForte}")
 
@@ -72,7 +72,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
                 quranListenerViewModel.updateSoraSong(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: SoraSong, view: View?) {
+            override fun onItemLongClick(itemObject: SoraSong, view: View?,position: Int) {
             }
         })
         binding.recyclerView.adapter = soraFavoriteAdapter

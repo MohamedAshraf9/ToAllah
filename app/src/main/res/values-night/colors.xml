@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-
-
     <color name="background_color">#2E2D2D</color>
     <color name="text_color">#ffffff</color>
+    <color name="primary_color">#A0CAFF</color>
+
+    <color name="colorPrimary">#A0CAFF</color>
 
 </resources>

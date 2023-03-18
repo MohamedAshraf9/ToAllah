@@ -9,7 +9,13 @@
         android:id="@+id/navigation_home"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_navigation_home_to_qiblaFragment2"
+            app:destination="@id/qiblaFragment2" />
+    </fragment>
+
+
 
     <fragment
         android:id="@+id/navigation_quran"
@@ -181,6 +187,15 @@
         android:id="@+id/songFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.SongFragment"
         android:label="SongFragment" />
+    <fragment
+        android:id="@+id/qiblaFragment2"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.qibla.QiblaFragment"
+        android:label="fragment_qibla"
+        tools:layout="@layout/fragment_qibla" >
+        <action
+            android:id="@+id/action_qiblaFragment2_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </fragment>
 
 
 </navigation>

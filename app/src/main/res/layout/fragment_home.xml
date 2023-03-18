@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.motion.widget.MotionLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
+<androidx.constraintlayout.motion.widget.MotionLayout
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".feature_data.presentation.ui.home.HomeFragment"
@@ -22,15 +29,40 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/qibla"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:paddingTop="@dimen/_5sdp"
+        android:paddingBottom="@dimen/_15sdp"
+        android:src="@drawable/ic_qibla"
+        app:tint="@color/white"
+
+        tools:layout_editor_absoluteX="346dp" />
+
+
+
 
     <TextView
         android:id="@+id/currentLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_3sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginStart="@dimen/_16sdp"
         android:text="@string/loading"
         android:textColor="@color/white"
         android:textSize="@dimen/_12ssp"
+        app:layout_constraintStart_toEndOf="@+id/openDrawable"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/openDrawable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_3sdp"
+        android:src="@drawable/baseline_menu_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -113,15 +145,35 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+    android:id="@+id/update"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:layout_marginLeft="10dp"
+    android:text="تحديث"
+    android:textColor="@color/text_color"
+    android:background="@drawable/type_soura_background"
+    android:textSize="@dimen/_12ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+    />
+    <TextView
+        android:id="@+id/dayDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/_3sdp"
+        android:text="@string/loading"
+        android:textSize="@dimen/_12ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        />
 
-                        <TextView
-                            android:id="@+id/dayDetails"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/_3sdp"
-                            android:text="@string/loading"
-                            android:layout_gravity="center"
-                            android:textSize="@dimen/_12ssp" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
 
 
 
@@ -143,7 +195,8 @@
                                     android:layout_height="@dimen/_25sdp"
                                     android:layout_gravity="start"
                                     android:layout_marginStart="@dimen/_3sdp"
-                                    android:src="@drawable/ic_notifications_black_24dp" />
+                                    app:tint="#E7B10A"
+                                    android:src="@drawable/ic_notifications_active_24" />
 
                                 <TextView
                                     android:layout_width="match_parent"
@@ -169,6 +222,7 @@
 
                                 <CheckBox android:id="@+id/cb_fajr"
                                     android:layout_width="wrap_content"
+
                                     android:layout_height="wrap_content"/>
                                 <TextView
                                     android:layout_width="match_parent"
@@ -194,6 +248,7 @@
 
                                 <CheckBox android:id="@+id/sunrise"
                                     android:layout_width="wrap_content"
+
                                     android:layout_height="wrap_content"/>
                                 <TextView
                                     android:layout_width="match_parent"
@@ -218,6 +273,7 @@
                             <TableRow>
 
                                 <CheckBox
+
                                     android:id="@+id/cb_dhuhr"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content" />
@@ -245,6 +301,7 @@
                             <TableRow>
 
                                 <CheckBox
+
                                     android:id="@+id/cb_asr"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content" />
@@ -270,7 +327,8 @@
                             <!--Maghrib-->
                             <TableRow>
 
-                                <CheckBox android:id="@+id/cb_maghrib" />
+                                <CheckBox android:id="@+id/cb_maghrib"
+                                    />
 
                                 <TextView
                                     android:layout_width="match_parent"
@@ -293,7 +351,8 @@
                             <!--Isha-->
                             <TableRow>
 
-                                <CheckBox android:id="@+id/cb_isha" />
+                                <CheckBox android:id="@+id/cb_isha"
+                                    />
 
                                 <TextView
                                     android:layout_width="match_parent"
@@ -327,3 +386,14 @@
 
 
 </androidx.constraintlayout.motion.widget.MotionLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header_main"
+        app:menu="@menu/activity_main_drawer" />
+</androidx.drawerlayout.widget.DrawerLayout>

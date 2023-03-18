@@ -2,15 +2,17 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.*
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
+import android.net.Uri
+import android.os.*
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
@@ -21,33 +23,51 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.*
+import com.google.android.material.navigation.NavigationView
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.CommonUtils
+import com.megahed.eqtarebmenalla.common.LoadingAlert
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
 import com.megahed.eqtarebmenalla.db.model.PrayerTime
+import com.megahed.eqtarebmenalla.feature_data.data.remote.adhen.MyBroadcastReceiver
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import de.coldtea.smplr.smplralarm.*
 import java.io.IOException
 import java.text.DateFormat
 import java.util.*
 import java.util.regex.Pattern
 
+
 @AndroidEntryPoint
 class HomeFragment : Fragment(), LocationListener {
+
+
+    lateinit var  sharedPreference : SharedPreferences
+
 
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private var lastLocation: Location?=null
     private lateinit var locationRequest: LocationRequest
     private lateinit var mLocationCallback: LocationCallback
+
+    lateinit var notificationManager : NotificationManager
+    lateinit var notificationChannel : NotificationChannel
+    lateinit var builder : Notification.Builder
+    lateinit var loadingAlert: LoadingAlert
+
 
 
     private val mainViewModel : IslamicViewModel by activityViewModels()
@@ -56,6 +76,8 @@ class HomeFragment : Fragment(), LocationListener {
     private lateinit var binding: FragmentHomeBinding
     private var timeStarted : Long = 0
     private var timeElapsed : Long = 0
+    @RequiresApi(Build.VERSION_CODES.S)
+    @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -67,6 +89,26 @@ class HomeFragment : Fragment(), LocationListener {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        val drawerLayout: DrawerLayout = binding.drawerLayout
+        val navView: NavigationView = binding.navView
+
+        // create loading alert
+
+        loadingAlert = LoadingAlert(requireActivity())
+        loadingAlert.startLoadingAlert()
+
+
+        sharedPreference =  requireActivity().getSharedPreferences("adhen",Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+
+
+
+        if (sharedPreference.getString("firstTime", "") != "false"){
+            val alert = Alert(requireActivity()).startLoadingAlert()
+            editor.putString("firstTime", "false");
+            editor.commit()
+
+        }
        binding.dayDetails.text= DateFormat.getDateInstance(DateFormat.FULL).format(Date())
 
         lifecycleScope.launchWhenStarted {
@@ -93,6 +135,7 @@ class HomeFragment : Fragment(), LocationListener {
                 binding.asrTime.text = CommonUtils.convertSalahTime(it.Asr)
                 binding.maghribTime.text = CommonUtils.convertSalahTime(it.Maghrib)
                 binding.ishaTime.text = CommonUtils.convertSalahTime(it.Isha)
+                loadingAlert.dismissDialog()
 
 
                 val currentTime = CommonUtils.getCurrentTime()
@@ -189,7 +232,8 @@ class HomeFragment : Fragment(), LocationListener {
                 }
 
 
-            } ?: run {
+            }
+                 ?: run {
                 binding.fajrTime.text = getString(R.string.error)
                 binding.sunriseTime.text = getString(R.string.error)
                 binding.dhuhrTime.text = getString(R.string.error)
@@ -223,6 +267,7 @@ class HomeFragment : Fragment(), LocationListener {
                     lastLocation = location
                     lastLocation?.let {
                         getCountryFromLocation(it)
+
 
                         mainViewModel.getAzanData(it.latitude,it.longitude)
 
@@ -349,7 +394,576 @@ class HomeFragment : Fragment(), LocationListener {
                 textView.justificationMode=Layout.JUSTIFICATION_MODE_NONE
             }
         }*/
+
+
+            // check if any salaet is checked
+
+        if (sharedPreference.getString("fajr","") == "true"){
+            binding.cbFajr.isChecked = true
+        }
+        if (sharedPreference.getString("dhuhr","") == "true"){
+            binding.cbDhuhr.isChecked = true
+        }
+        if (sharedPreference.getString("asr","") == "true"){
+            binding.cbAsr.isChecked = true
+        }
+        if (sharedPreference.getString("maghrib","") == "true"){
+            binding.cbMaghrib.isChecked = true
+        }
+
+        if (sharedPreference.getString("isha","") == "true"){
+            binding.cbIsha.isChecked = true
+        }
+
+
+
+        // adhen alarm create by fkchaou 08/03/2023
+
+
+
+        binding.cbFajr.setOnCheckedChangeListener { compoundButton, b ->
+            if(binding.cbFajr.isChecked){
+
+                editor.putString("fajr","true")
+                editor.commit()
+
+                var houre = binding.fajrTime.text.toString().substring(0,2).toInt()
+                var minute = binding.fajrTime.text.toString().substring(3,5).toInt()
+
+                val alarmReceivedIntent = Intent(
+                    requireContext().applicationContext,
+                    MyBroadcastReceiver::class.java // this class must be inherited from BroadcastReceiver
+                )
+
+
+
+                smplrAlarmSet(requireContext().applicationContext) {
+                    hour { houre }
+                    min { minute }
+                    requestCode { 1810 }
+                    alarmReceivedIntent { alarmReceivedIntent }
+                     // name of this parameter is intent in the version 2.1.0 and earlier
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+
+                    }
+
+                    notification {
+                        alarmNotification {
+                            smallIcon { R.drawable.prayer_icon }
+
+
+                            autoCancel { true }
+
+                        }
+                    }
+                    notificationChannel {
+                        channel {
+                            importance { NotificationManager.IMPORTANCE_HIGH }
+                            showBadge { false }
+                            name { "de.coldtea.smplr.alarm.channel" }
+                            description { "This notification channel is created by SmplrAlarm" }
+                        }
+                    }
+                }
+//
+
+
+
+            }
+            else{
+                editor.putString("fajr","false")
+                editor.commit()
+
+                smplrAlarmCancel(requireContext().applicationContext) {
+                    requestCode { 1810 }
+                }
+
+
+            }
+        }
+
+        binding.cbDhuhr.setOnCheckedChangeListener { compoundButton, b ->
+            if(binding.cbDhuhr.isChecked){
+
+                editor.putString("dhuhr","true")
+                editor.commit()
+                var houre = binding.dhuhrTime.text.toString().substring(0,2).toInt()
+                var minute = binding.dhuhrTime.text.toString().substring(3,5).toInt()
+
+                val alarmReceivedIntent = Intent(
+                    requireContext().applicationContext,
+                    MyBroadcastReceiver::class.java // this class must be inherited from BroadcastReceiver
+                )
+
+
+
+                smplrAlarmSet(requireContext().applicationContext) {
+                    hour { houre }
+                    min { minute }
+                    requestCode { 1820 }
+                    alarmReceivedIntent { alarmReceivedIntent }
+                    // name of this parameter is intent in the version 2.1.0 and earlier
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+
+                    }
+
+                    notification {
+                        alarmNotification {
+                            smallIcon { R.drawable.prayer_icon }
+
+
+                            autoCancel { true }
+
+                        }
+                    }
+                    notificationChannel {
+                        channel {
+                            importance { NotificationManager.IMPORTANCE_HIGH }
+                            showBadge { false }
+                            name { "de.coldtea.smplr.alarm.channel" }
+                            description { "This notification channel is created by SmplrAlarm" }
+                        }
+                    }
+                }
+//
+
+
+
+            }
+            else {
+                editor.putString("dhuhr", "false")
+                editor.commit()
+
+                smplrAlarmCancel(requireContext().applicationContext) {
+                    requestCode { 1820 }
+                }
+            }
+        }
+
+
+        binding.cbAsr.setOnCheckedChangeListener { compoundButton, b ->
+            if(binding.cbAsr.isChecked){
+
+                editor.putString("asr","true")
+                editor.commit()
+
+                var houre = binding.asrTime.text.toString().substring(0,2).toInt()+12
+                var minute = binding.asrTime.text.toString().substring(3,5).toInt()
+
+                val alarmReceivedIntent = Intent(
+                    requireContext().applicationContext,
+                    MyBroadcastReceiver::class.java // this class must be inherited from BroadcastReceiver
+                )
+
+
+
+                smplrAlarmSet(requireContext().applicationContext) {
+                    hour { houre }
+                    min { minute }
+                    requestCode { 1830 }
+                    alarmReceivedIntent { alarmReceivedIntent }
+                    // name of this parameter is intent in the version 2.1.0 and earlier
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+
+                    }
+
+                    notification {
+                        alarmNotification {
+                            smallIcon { R.drawable.prayer_icon }
+
+
+                            autoCancel { true }
+
+                        }
+                    }
+                    notificationChannel {
+                        channel {
+                            importance { NotificationManager.IMPORTANCE_HIGH }
+                            showBadge { false }
+                            name { "de.coldtea.smplr.alarm.channel" }
+                            description { "This notification channel is created by SmplrAlarm" }
+                        }
+                    }
+                }
+//
+
+
+
+            }
+            else {
+                editor.putString("asr", "false")
+                editor.commit()
+
+                smplrAlarmCancel(requireContext().applicationContext) {
+                    requestCode { 1830 }
+                }
+            }
+        }
+
+
+        binding.cbMaghrib.setOnCheckedChangeListener { compoundButton, b ->
+            if(binding.cbMaghrib.isChecked){
+
+                editor.putString("maghrib","true")
+                editor.commit()
+                var houre = binding.maghribTime.text.toString().substring(0,2).toInt() +12
+                var minute = binding.maghribTime.text.toString().substring(3,5).toInt()
+                val alarmReceivedIntent = Intent(
+                    requireContext().applicationContext,
+                    MyBroadcastReceiver::class.java // this class must be inherited from BroadcastReceiver
+                )
+
+
+
+                smplrAlarmSet(requireContext().applicationContext) {
+                    hour { houre }
+                    min { minute }
+                    requestCode { 1840 }
+                    alarmReceivedIntent { alarmReceivedIntent }
+                    // name of this parameter is intent in the version 2.1.0 and earlier
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+
+                    }
+
+                    notification {
+                        alarmNotification {
+                            smallIcon { R.drawable.prayer_icon }
+
+
+                            autoCancel { true }
+
+                        }
+                    }
+                    notificationChannel {
+                        channel {
+                            importance { NotificationManager.IMPORTANCE_HIGH }
+                            showBadge { false }
+                            name { "de.coldtea.smplr.alarm.channel" }
+                            description { "This notification channel is created by SmplrAlarm" }
+                        }
+                    }
+                }
+//
+
+
+
+            }
+            else {
+                editor.putString("maghrib", "false")
+                editor.commit()
+
+                smplrAlarmCancel(requireContext().applicationContext) {
+                    requestCode { 1840 }
+                }
+            }
+        }
+
+
+        binding.cbIsha.setOnCheckedChangeListener { compoundButton, b ->
+            if(binding.cbIsha.isChecked){
+
+                editor.putString("isha","true")
+                editor.commit()
+                var houre = binding.ishaTime.text.toString().substring(0,2).toInt() +12
+                var minute = binding.ishaTime.text.toString().substring(3,5).toInt()
+
+                val alarmReceivedIntent = Intent(
+                    requireContext().applicationContext,
+                    MyBroadcastReceiver::class.java // this class must be inherited from BroadcastReceiver
+                )
+
+
+
+                smplrAlarmSet(requireContext().applicationContext) {
+                    hour { houre }
+                    min { minute }
+                    requestCode { 1850 }
+                    alarmReceivedIntent { alarmReceivedIntent }
+                    // name of this parameter is intent in the version 2.1.0 and earlier
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+
+                    }
+
+                    notification {
+                        alarmNotification {
+                            smallIcon { R.drawable.prayer_icon }
+
+
+                            autoCancel { true }
+
+                        }
+                    }
+                    notificationChannel {
+                        channel {
+                            importance { NotificationManager.IMPORTANCE_HIGH }
+                            showBadge { false }
+                            name { "de.coldtea.smplr.alarm.channel" }
+                            description { "This notification channel is created by SmplrAlarm" }
+                        }
+                    }
+                }
+//
+
+
+
+            }
+            else {
+                editor.putString("isha", "false")
+                editor.commit()
+
+                smplrAlarmCancel(requireContext().applicationContext) {
+                    requestCode { 1850 }
+                }
+            }
+
+        }
+
+
+
+        binding.update.setOnClickListener {
+
+            if (sharedPreference.getString("fajr","") == "true"){
+
+                var houre = binding.fajrTime.text.toString().substring(0,2).toInt()
+                var minute = binding.fajrTime.text.toString().substring(3,5).toInt()
+
+                smplrAlarmUpdate(requireContext().applicationContext) {
+                    requestCode { 1810 }
+                    hour { houre }
+                    min { minute }
+
+
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+                    }
+
+                }
+
+
+
+            }
+
+
+            if (sharedPreference.getString("asr","") == "true"){
+
+
+                var houre = binding.asrTime.text.toString().substring(0,2).toInt() +12
+                var minute = binding.asrTime.text.toString().substring(3,5).toInt()
+                smplrAlarmUpdate(requireContext().applicationContext) {
+                    requestCode { 1830 }
+                    hour { houre }
+                    min { minute }
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+                    }
+
+                }
+
+
+            }
+
+            if (sharedPreference.getString("dhuhr","") == "true"){
+
+
+                editor.putString("dhuhr","true")
+                editor.commit()
+                var houre = binding.dhuhrTime.text.toString().substring(0,2).toInt()
+                var minute = binding.dhuhrTime.text.toString().substring(3,5).toInt()
+                smplrAlarmUpdate(requireContext().applicationContext) {
+                    requestCode { 1820 }
+                    hour { houre }
+                    min { minute }
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+                    }
+
+                }
+
+            }
+
+
+            if (sharedPreference.getString("maghrib","") == "true"){
+                var houre = binding.maghribTime.text.toString().substring(0,2).toInt() +12
+                var minute = binding.maghribTime.text.toString().substring(3,5).toInt()
+
+                smplrAlarmUpdate(requireContext().applicationContext) {
+                    requestCode { 1840 }
+                    hour { houre }
+                    min { minute }
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+                    }
+
+                }
+
+
+            }
+
+            if (sharedPreference.getString("isha","") == "true"){
+                var houre = binding.ishaTime.text.toString().substring(0,2).toInt() +12
+                var minute = binding.ishaTime.text.toString().substring(3,5).toInt()
+
+                smplrAlarmUpdate(requireContext().applicationContext) {
+                    requestCode { 1850 }
+                    hour { houre }
+                    min { minute }
+
+                    weekdays {
+                        monday()
+                        friday()
+                        sunday()
+                        thursday()
+                        tuesday()
+                        wednesday()
+                        saturday()
+
+                    }
+
+                }
+
+
+
+
+            }
+
+            Toast.makeText(requireContext(), "تم تحديث أوقات الصلاة", Toast.LENGTH_LONG).show()
+        }
+
+
+        binding.qibla.setOnClickListener {
+
+//            val intent = Intent(requireContext(), QiblaActivity::class.java)
+//            requireContext().startActivity(intent)
+
+            val bundle = Bundle()
+            bundle.putString("altitude", lastLocation?.altitude.toString())
+            bundle.putString("longitude", lastLocation?.longitude.toString())
+
+            findNavController().navigate(R.id.action_navigation_home_to_qiblaFragment2, bundle)
+
+
+
+        }
+
+        binding.openDrawable.setOnClickListener {
+            drawerLayout.open()
+        }
+
+        navView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.rateApp -> {
+                    rateApp()
+                }
+                R.id.projectLink -> {
+                   projectLink()
+                }
+                R.id.shareApp -> {
+                    MethodHelper.shareApp(
+                        requireContext(), getString(R.string.app_name),
+                        "https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla"
+                    )
+
+                }
+                else -> {
+                    drawerLayout.closeDrawers()
+                }
+
+            }
+
+            true
+        }
+
         return root
+    }
+
+    private fun rateApp() {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data =
+            Uri.parse("https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla")
+        startActivity(intent)
+    }
+    private fun projectLink() {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data =
+            Uri.parse("https://github.com/MohamedAshraf9/ToAllah")
+        startActivity(intent)
     }
 
     fun getSpannable(text: String): Spannable? {
@@ -542,25 +1156,60 @@ class HomeFragment : Fragment(), LocationListener {
 
     @SuppressLint("SetTextI18n")
     private fun getCountryFromLocation(location: Location) {
+        //val local = Locale("en")
         val geocoder = Geocoder(requireContext())
-        //var country: String=""
-        try {
-            Geocoder.isPresent()
-            val addresses = geocoder.getFromLocation(
-                location.latitude, location.longitude, 1
-            )
-            if (addresses != null && addresses.size > 0) {
-               val country = addresses[0].adminArea
-                val city = addresses[0].subAdminArea
-                binding.currentLocation.text = "$city,$country"
-                //Toast.makeText(requireContext(),"$city,$country ", Toast.LENGTH_LONG).show()
-            }
-        } catch (e: IOException) {
-            e.message?.let { Log.d("myLocccc Exception  ", it) }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            geocoder.getFromLocation(location.latitude,location.longitude,1,object : Geocoder.GeocodeListener{
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    // code
+                    if (addresses.size > 0) {
+                        val country = addresses[0].adminArea
+                        val city = addresses[0].subAdminArea
+                        binding.currentLocation.text = "$city,$country"
+                        //Log.d("eyrtewew",addresses.toString())
+
+                        //Toast.makeText(requireContext(),"$city,$country ", Toast.LENGTH_LONG).show()
+                    }
+                }
+                override fun onError(errorMessage: String?) {
+                    super.onError(errorMessage)
+
+                }
+
+            })
         }
+        else{
+            try {
+                Geocoder.isPresent()
+                val addresses = geocoder.getFromLocation(
+                    location.latitude, location.longitude, 1
+                )
+
+                if (addresses != null && addresses.size > 0) {
+                    val country = addresses[0].adminArea
+                    val city = addresses[0].subAdminArea
+                    binding.currentLocation.text = "$city,$country"
+
+                    //Log.d("eyrtewew",addresses.toString())
+                    //Toast.makeText(requireContext(),"$city,$country ", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: IOException) {
+                e.message?.let { Log.d("myLocccc Exception  ", it) }
+            }
+        }
+
+        //Log.d("eyrtewew",binding.currentLocation.text.toString())
+
+        //var country: String=""
+
         //return country?.lowercase()
     }
 
+
+
+        var lang = ""
+        var lati = ""
 
 
 }
