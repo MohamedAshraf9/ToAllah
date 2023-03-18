@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/shareApp"
+            android:icon="@drawable/ic_baseline_share_24"
+            android:title="@string/shareApp" />
+        <item
+            android:id="@+id/rateApp"
+            android:icon="@drawable/ic_baseline_stars_24"
+            android:title="@string/rateApp" />
+        <item
+            android:id="@+id/projectLink"
+            android:icon="@drawable/baseline_link_24"
+            android:title="@string/projectLink" />
+    </group>
+</menu>

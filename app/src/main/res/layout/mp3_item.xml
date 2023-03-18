@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_marginBottom="2dp"
+    android:background="@drawable/soura_item_background"
+    android:layout_height="50dp">
+
+    <TextView
+        android:id="@+id/letter"
+        android:layout_width="25dp"
+        android:layout_height="40dp"
+
+        android:background="@drawable/id_soura_background"
+        android:gravity="center"
+        android:text="١"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/readerName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:fontFamily="@font/amiri_regular"
+        android:text="الْفَاتِحَة"
+        android:textColor="@color/text_color"
+        android:textSize="20sp"
+        android:layout_marginBottom="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/letter"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/rewayaInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/aref_ruqa_regular"
+        android:text="٧ أيات"
+        android:layout_marginBottom="-3dp"
+        android:textColor="@color/text_color"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/readerName" />
+
+
+    <TextView
+        android:id="@+id/count"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="@dimen/_12sdp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/type_soura_background"
+        android:fontFamily="@font/aref_ruqa_regular"
+        android:text="مكية"
+        android:textAlignment="center"
+        android:textColor="@color/text_color"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/fav"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.47" />
+
+    <ImageView
+        android:id="@+id/fav"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/_5sdp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="@dimen/_2sdp"
+        android:src="@drawable/ic_baseline_favorite_border_24"
+        app:layout_constraintBottom_toBottomOf="@+id/count"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/count" />
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
