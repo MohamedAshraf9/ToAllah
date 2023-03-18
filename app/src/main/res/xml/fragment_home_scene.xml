@@ -15,6 +15,17 @@
         <Constraint
             motion:layout_constraintEnd_toEndOf="@+id/sl_main"
             android:id="@+id/cardView" />
+        <Constraint
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_50sdp"
+            motion:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/qibla"
+            android:layout_marginEnd="0dp"
+            android:layout_marginTop="0dp"
+            android:rotationX="0"
+            android:rotationY="0"
+            android:rotation="-41" />
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">

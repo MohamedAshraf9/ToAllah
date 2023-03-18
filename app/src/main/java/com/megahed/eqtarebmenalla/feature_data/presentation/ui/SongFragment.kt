@@ -2,17 +2,21 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui
 
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import com.bumptech.glide.RequestManager
+import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
-import com.megahed.eqtarebmenalla.common.Resource
-import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
 import com.megahed.eqtarebmenalla.databinding.FragmentSongBinding
 import com.megahed.eqtarebmenalla.exoplayer.isPlaying
 import com.megahed.eqtarebmenalla.exoplayer.toSong
@@ -25,7 +29,7 @@ import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SongFragment : Fragment() {
+class SongFragment : Fragment() , MenuProvider {
 
     private lateinit var binding: FragmentSongBinding
     @Inject
@@ -52,7 +56,20 @@ class SongFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         binding = FragmentSongBinding.inflate(inflater, container, false)
+
+        val toolbar: Toolbar = binding.toolbar.toolbar
+        (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
+        (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
+        (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+
+        toolbar.title=" "
+        toolbar.setBackgroundColor(ContextCompat.getColor(App.getInstance(), R.color.transparent))
+
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         subscribeToObservers()
         binding.apply {
@@ -102,7 +119,7 @@ class SongFragment : Fragment() {
     private fun updateTitleAndSongImage(song: Song) {
         val title = "${song.title} - ${song.subtitle}"
         binding.tvSongName.text = title
-        glide.load(song.imageUrl).into(binding.ivSongImage)
+       // glide.load(song.imageUrl).into(binding.ivSongImage)
     }
 
     private fun subscribeToObservers() {
@@ -111,7 +128,7 @@ class SongFragment : Fragment() {
                         result.data?.let { songs ->
                             if(curPlayingSong == null && songs.isNotEmpty()) {
                                 curPlayingSong = songs[0]
-                                updateTitleAndSongImage(songs[0])
+                              //  updateTitleAndSongImage(songs[0])
                             }
                         }
 
@@ -145,6 +162,20 @@ class SongFragment : Fragment() {
     private fun setCurPlayerTimeToTextView(ms: Long) {
         val dateFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
         binding.tvCurTime.text = dateFormat.format(ms)
+    }
+
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return  when (menuItem.itemId) {
+            android.R.id.home -> {
+                Navigation.findNavController(requireView()).popBackStack()
+            }
+            else -> false
+        }
     }
 }
 

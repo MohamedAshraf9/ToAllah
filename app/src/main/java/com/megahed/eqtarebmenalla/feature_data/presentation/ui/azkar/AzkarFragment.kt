@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.GridLayoutManager
-import com.megahed.eqtarebmenalla.adapter.AyaAdapter
 import com.megahed.eqtarebmenalla.adapter.AzkarCategoryAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentAzkarBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
@@ -19,6 +18,7 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran.QuranFragme
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import java.text.FieldPosition
 
 
 @AndroidEntryPoint
@@ -44,12 +44,12 @@ class AzkarFragment : Fragment() {
 
         azkarCategoryAdapter= AzkarCategoryAdapter(requireContext(), object : OnMyItemClickListener<AzkarCategory> {
 
-            override fun onItemClick(itemObject: AzkarCategory, view: View?) {
+            override fun onItemClick(itemObject: AzkarCategory, view: View?,position: Int) {
                 val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(itemObject.id,itemObject.catName,false)
                 Navigation.findNavController(requireView()).navigate(action)
             }
 
-            override fun onItemLongClick(itemObject: AzkarCategory, view: View?) {
+            override fun onItemLongClick(itemObject: AzkarCategory, view: View?,position: Int) {
             }
         })
         binding.recyclerView.adapter = azkarCategoryAdapter

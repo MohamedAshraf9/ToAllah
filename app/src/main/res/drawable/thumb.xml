@@ -12,6 +12,6 @@
         android:paddingLeft="@dimen/_15sdp"
         android:paddingRight="@dimen/_15sdp" />
 
-    <solid android:color="#009688" />
+    <solid android:color="@color/primary_color" />
 
 </shape>

@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.megahed.eqtarebmenalla"
-        minSdk 21
+        minSdk 24
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -42,13 +42,14 @@ dependencies {
 
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.test:core-ktx:1.4.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -90,7 +91,7 @@ dependencies {
     implementation 'com.google.dagger:hilt-android:2.44.2'
     kapt 'com.google.dagger:hilt-android-compiler:2.44.2'
     kapt "androidx.hilt:hilt-compiler:1.0.0"
-   // implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
+    // implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
 
     //kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.4.2")
 
@@ -105,9 +106,20 @@ dependencies {
 
 
     // ExoPlayer
-    api "com.google.android.exoplayer:exoplayer-core:2.18.2"
-    api "com.google.android.exoplayer:exoplayer-ui:2.18.2"
-    api "com.google.android.exoplayer:extension-mediasession:2.18.2"
+    api "com.google.android.exoplayer:exoplayer-core:2.18.4"
+    api "com.google.android.exoplayer:exoplayer-ui:2.18.4"
+    api "com.google.android.exoplayer:extension-mediasession:2.18.4"
+
+
+    implementation 'com.github.ColdTea-Projects:SmplrAlarm:2.1.1'
+
+
+
+
+
+
+
+
 
 
 

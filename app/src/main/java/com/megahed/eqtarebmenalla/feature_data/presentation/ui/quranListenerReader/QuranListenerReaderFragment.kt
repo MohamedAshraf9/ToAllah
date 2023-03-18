@@ -119,7 +119,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         quranListenerReaderAdapter= QuranListenerReaderAdapter(requireContext(), object :
             OnItemWithFavClickListener<SoraSong> {
 
-            override fun onItemClick(itemObject: SoraSong, view: View?) {
+            override fun onItemClick(itemObject: SoraSong, view: View?,position: Int) {
                 Log.d("etrtr","ddd")
                 mainViewModel.playOrToggleSong(itemObject.toSong(readerName),true)
                 val action: NavDirections = QuranListenerReaderFragmentDirections.
@@ -132,7 +132,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
                 quranListenerReaderViewModel.updateSoraSong(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: SoraSong, view: View?) {
+            override fun onItemLongClick(itemObject: SoraSong, view: View?,position: Int) {
             }
         })
         binding.recyclerView.adapter = quranListenerReaderAdapter
@@ -231,6 +231,8 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             else -> false
         }
     }
+
+
 
 
 }

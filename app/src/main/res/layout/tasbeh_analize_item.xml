@@ -6,7 +6,7 @@
     android:layout_margin="@dimen/_5sdp"
     app:cardElevation="@dimen/_3sdp"
     android:padding="@dimen/_5sdp"
-    android:backgroundTint="@color/blue_500"
+    android:backgroundTint="@color/primary_color"
     app:cardCornerRadius="@dimen/_8sdp"
     android:layout_width="wrap_content">
 
@@ -26,7 +26,7 @@
         android:padding="@dimen/_3sdp"
         android:textSize="@dimen/_14ssp"
         android:textAlignment="center"
-        android:textColor="@color/black"
+        android:textColor="@color/text_color"
         android:id="@+id/tasbehName"
         android:text="@string/tasbeh"/>
 
@@ -37,7 +37,7 @@
         android:padding="@dimen/_3sdp"
         android:textSize="@dimen/_14ssp"
         android:textAlignment="center"
-        android:textColor="@color/black"
+        android:textColor="@color/text_color"
         android:id="@+id/tasbehNumber"
         android:text="@string/tasbeh"/>
 

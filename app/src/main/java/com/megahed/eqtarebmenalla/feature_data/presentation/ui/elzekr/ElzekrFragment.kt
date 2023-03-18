@@ -62,13 +62,13 @@ class ElzekrFragment : Fragment(), MenuProvider {
 
         elzekrAdapter= ElzekrAdapter(requireContext(), object : OnMyItemClickListener<ElZekr> {
 
-            override fun onItemClick(itemObject: ElZekr, view: View?) {
+            override fun onItemClick(itemObject: ElZekr, view: View?,position: Int) {
                 //fav icon click
                 itemObject.isVaForte=!itemObject.isVaForte
                 elzekrViewModel.updateElZekr(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: ElZekr, view: View?) {
+            override fun onItemLongClick(itemObject: ElZekr, view: View?,position: Int) {
             }
         })
 

@@ -5,37 +5,45 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/backplayer"
+    android:fitsSystemWindows="true"
+
     tools:context=".feature_data.presentation.ui.SongFragment">
+
+    <include layout="@layout/custom_toolbar"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:id="@+id/toolbar"/>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvSongName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Sora NAME"
+        android:layout_marginStart="80dp"
+        android:layout_marginEnd="80dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/player_background"
+        android:fontFamily="@font/amiri_regular"
         android:gravity="center"
+        android:text="Sora NAME"
+        android:textColor="@color/blue_200"
         android:textSize="@dimen/_16ssp"
-        app:layout_constraintBottom_toTopOf="@+id/ivSongImage"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/ivSongImage"
-        android:layout_width="@dimen/_250sdp"
-        android:layout_height="@dimen/_250sdp"
-        android:background="@color/background_color"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
-        android:scaleType="fitXY"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
+
+
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCurTime"
         android:layout_width="@dimen/_40sdp"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:textColor="@color/blue_200"
         android:text="00:00"
         android:layout_marginStart="@dimen/_14sdp"
         android:textSize="@dimen/_12ssp"
@@ -47,6 +55,8 @@
         android:id="@+id/seekBar"
         android:layout_width="0dp"
         android:layout_height="@dimen/_16sdp"
+        android:progressTint="@color/white"
+        android:thumbTint="@color/white"
         app:layout_constraintEnd_toStartOf="@+id/tvSongDuration"
         app:layout_constraintStart_toEndOf="@+id/tvCurTime"
         app:layout_constraintTop_toTopOf="@+id/guideline3" />
@@ -55,6 +65,7 @@
         android:id="@+id/tvSongDuration"
         android:layout_width="@dimen/_40sdp"
         android:layout_height="wrap_content"
+        android:textColor="@color/blue_200"
         android:gravity="center"
         android:text="00:00"
         android:layout_marginEnd="@dimen/_14sdp"
@@ -63,37 +74,57 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/seekBar" />
 
-    <ImageView
-        android:id="@+id/ivPlayPauseDetail"
-        android:layout_width="@dimen/_50sdp"
-        android:layout_height="@dimen/_50sdp"
-        android:layout_marginTop="@dimen/_25sdp"
-        android:background="@drawable/red_button"
-        android:src="@drawable/ic_play"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/player_background"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/seekBar" />
+        app:layout_constraintTop_toBottomOf="@+id/seekBar">
 
-    <ImageView
-        android:id="@+id/ivSkipPrevious"
-        android:layout_width="@dimen/_40sdp"
-        android:layout_height="@dimen/_40sdp"
-        android:layout_marginEnd="@dimen/_14sdp"
-        android:src="@drawable/ic_baseline_skip_previous_24"
-        app:layout_constraintBottom_toBottomOf="@+id/ivPlayPauseDetail"
-        app:layout_constraintEnd_toStartOf="@+id/ivPlayPauseDetail"
-        app:layout_constraintTop_toTopOf="@+id/ivPlayPauseDetail" />
+        <ImageView
+            android:id="@+id/ivPlayPauseDetail"
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_50sdp"
 
-    <ImageView
-        android:id="@+id/ivSkip"
-        android:layout_width="@dimen/_40sdp"
-        android:layout_height="@dimen/_40sdp"
-        android:layout_marginStart="@dimen/_14sdp"
-        android:src="@drawable/ic_baseline_skip_next_24"
-        app:layout_constraintBottom_toBottomOf="@+id/ivPlayPauseDetail"
-        app:layout_constraintStart_toEndOf="@+id/ivPlayPauseDetail"
-        app:layout_constraintTop_toTopOf="@+id/ivPlayPauseDetail" />
+            android:background="@drawable/circle_button_player"
+            android:src="@drawable/ic_play"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivSkipPrevious"
+            android:layout_width="@dimen/_40sdp"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_marginEnd="@dimen/_14sdp"
+            android:src="@drawable/ic_baseline_skip_next_24"
+
+            app:layout_constraintBottom_toBottomOf="@+id/ivPlayPauseDetail"
+            app:layout_constraintEnd_toStartOf="@+id/ivPlayPauseDetail"
+            app:layout_constraintTop_toTopOf="@+id/ivPlayPauseDetail" />
+
+        <ImageView
+            android:id="@+id/ivSkip"
+            android:layout_width="@dimen/_40sdp"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_marginStart="@dimen/_14sdp"
+            android:src="@drawable/ic_baseline_skip_previous_24"
+            app:layout_constraintBottom_toBottomOf="@+id/ivPlayPauseDetail"
+            app:layout_constraintStart_toEndOf="@+id/ivPlayPauseDetail"
+            app:layout_constraintTop_toTopOf="@+id/ivPlayPauseDetail" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"

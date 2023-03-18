@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EqtarebMenAlla</string>
+    <string name="app_name">إقترب من الله</string>
     <string name="title_home">الرئيسيه</string>
     <string name="quran">القران</string>
     <string name="listener">استماع</string>
@@ -36,7 +36,7 @@
     <string name="readerFav">القُرَّاء المفضلين</string>
     <string name="soraFav">السور المفضله</string>
     <string name="listeningToSave">مساعدتك على الحفظ</string>
-
+    <string name="checkConnection">تحقق من الاتصال بالانترنت</string>
 
     <string name="notification_channel_name">Music Channel</string>
     <string name="notification_channel_description">Shows the currently playing music</string>
@@ -59,10 +59,10 @@
     <string name="unitComplete">عدد التسبيحات التى قمت بها</string>
     <string name="alert">تنبيه</string>
     <string name="alertDesc">يمكنك التسبيح ولكن لن يتم الاحتفاظ بما قمت به إلا عند اختيار تسبيح ثم البدئ</string>
-    <string name="soraStart">سوره البدايه</string>
+    <string name="soraStart">بداية الحفظ</string>
     <string name="chooseReader">أختر القارئ</string>
     <string name="ayaNum">رقم الايه</string>
-    <string name="soraEnd">سوره النهايه</string>
+    <string name="soraEnd">نهاية الحفظ</string>
     <string name="ayaRepeat">عدد مرات تكرار الايه الواحده</string>
     <string name="ayaRepeatNum">عدد المرات</string>
     <string name="cycleRepeat">عدد مرات التكرار من البدايه للنهايه</string>
@@ -70,6 +70,7 @@
     <string name="openSettings">فتح الموقع</string>
     <string name="openLocation">خدمات الموقع غير مفعله الرجاء تفعيلها</string>
     <string name="cancel">إلغاء</string>
+    <string name="qibla">القبلة</string>
 
 
     <string-array name="tasbeh">
@@ -104,6 +105,32 @@
 
 
     </string-array>
+    <string name="title_activity_qibla">QiblaActivity</string>
+    <string name="compass_hands">Compass Dial</string>
 
+
+    <string name="sotw_north">N</string>
+    <string name="sotw_east">E</string>
+    <string name="sotw_south">S</string>
+    <string name="sotw_west">W</string>
+    <string name="sotw_northeast">NE</string>
+    <string name="sotw_northwest">NW</string>
+    <string name="sotw_southeast">SE</string>
+    <string name="sotw_southwest">SW</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="shareApp">شارك التطبيق</string>
+    <string name="rateApp">قيم التطبيق</string>
+    <string name="projectLink">(شارك فى الثواب) رابط السورس كود</string>
+    <string name="openSource">تطبيق مفتوح المصدر لوجه الله تعالى يمكنك المشاركه فى الثواب من خلال تطوير السورس كود</string>
 
 </resources>
