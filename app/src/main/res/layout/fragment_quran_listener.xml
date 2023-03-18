@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent"
-
     tools:context=".feature_data.presentation.ui.quranListener.QuranListenerFragment">
 
     <View
@@ -13,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/_70sdp"
         android:backgroundTint="#19496154"
+        android:visibility="gone"
         android:background="@drawable/shape_toolbar01"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="0dp" >
@@ -21,9 +21,6 @@
     <include layout="@layout/custom_toolbar"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_marginTop="-80dp"
-        android:layout_marginBottom="@dimen/_30sdp"
-
         android:id="@+id/toolbar"/>
 
     <ProgressBar
