@@ -339,7 +339,8 @@ class HomeFragment : Fragment(), LocationListener {
                                binding.prayerTime.text= Constants.convertSalahTime(it.timings.Maghrib)
                               *//* binding.prayerCountdown.text=Constants.updateCountDownText(
                                    Constants.getTimeLong(it.timings.Maghrib)-Constants.getTimeLong(currentTime))
-*//*
+*/
+/*
                                val timer = object: CountDownTimer(
                                    Constants.getTimeLong(it.timings.Maghrib,false)-Constants.getTimeLong(currentTime,true)
                                    , 1000) {
@@ -379,7 +380,7 @@ class HomeFragment : Fragment(), LocationListener {
 
 
         //<editor-fold desc="Create Text">
-        val builder = StringBuilder()
+        //val builder = StringBuilder()
 
        /* homeViewModel.text.observe(viewLifecycleOwner) {
             // insert  البسملة

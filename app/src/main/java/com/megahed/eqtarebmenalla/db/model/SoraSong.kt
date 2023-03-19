@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 
@@ -17,6 +18,7 @@ import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
         )
     ]
 )
+@Keep
 data class SoraSong(
     val SoraId:Int,
     var readerId:String,

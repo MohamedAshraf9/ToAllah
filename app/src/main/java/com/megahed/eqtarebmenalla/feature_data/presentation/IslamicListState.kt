@@ -1,7 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation
 
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.IslamicInfo
-
+@Keep
 data class IslamicListState(
     val isLoading:Boolean=false,
     val islamicInfo: IslamicInfo = IslamicInfo(3243,"dsad",

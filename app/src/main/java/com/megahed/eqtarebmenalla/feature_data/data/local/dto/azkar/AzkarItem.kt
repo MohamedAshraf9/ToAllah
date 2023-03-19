@@ -1,7 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.data.local.dto.azkar
 
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.db.model.ElZekr
-
+@Keep
 data class AzkarItem(
     val category: String,
     val count: String,

@@ -2,8 +2,10 @@ package com.megahed.eqtarebmenalla.db.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 
 @Entity
+@Keep
 data class QuranListenerReader(
     @PrimaryKey
     var id: String,

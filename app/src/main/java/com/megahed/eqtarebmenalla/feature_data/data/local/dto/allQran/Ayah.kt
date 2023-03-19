@@ -1,7 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran
 
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.db.model.Aya
-
+@Keep
 data class Ayah(
     val hizbQuarter: Int,
     val juz: Int,

@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity(){
         setContentView(binding.root)
 
        /* val mainViewModel = ViewModelProvider(this).get(IslamicViewModel::class.java)*/
-        val prayerTimeViewModel = ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
+        //val prayerTimeViewModel = ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
 
 
 
