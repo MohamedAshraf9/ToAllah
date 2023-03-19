@@ -779,6 +779,7 @@ class HomeFragment : Fragment(), LocationListener {
 
 
         binding.update.setOnClickListener {
+            statusLocationCheck()
 
             if (sharedPreference.getString("fajr","") == "true"){
 
@@ -916,7 +917,7 @@ class HomeFragment : Fragment(), LocationListener {
 
             }
 
-            Toast.makeText(requireContext(), "تم تحديث أوقات الصلاة", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "جارى تحديث أوقات الصلاة", Toast.LENGTH_LONG).show()
         }
 
 

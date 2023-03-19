@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="@dimen/_15sdp"
-    android:paddingBottom="25dp">
+    android:paddingBottom="@dimen/_20sdp">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
         android:fontFamily="@font/scheherazadenew_regular"
         android:paddingLeft="@dimen/_18sdp"
         android:paddingRight="@dimen/_18sdp"
-        android:text="أوقات الصلاة هنا تقديرية و لا يجب الاعتماد عليها بشكل أساسي, و للمحافظة على دقة الأوقات يجب تحديث الأوقات بشكل دائم من خلال زر التحديث في الأعلى.  "
+        android:text="@string/hint"
         android:textAlignment="center"
         android:textColor="@color/text_color"
         android:textSize="15sp"
