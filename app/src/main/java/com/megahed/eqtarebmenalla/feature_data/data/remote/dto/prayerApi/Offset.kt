@@ -1,5 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi
 
+import com.google.errorprone.annotations.Keep
+
+@Keep
 data class Offset(
     val Asr: Int=0,
     val Dhuhr: Int=0,

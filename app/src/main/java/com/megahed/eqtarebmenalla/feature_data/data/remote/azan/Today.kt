@@ -1,7 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.data.remote.azan
 
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
-
+@Keep
 data class Today(
     val Asr: String="",
     val Dhuhr: String="",

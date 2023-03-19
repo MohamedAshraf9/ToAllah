@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.Ayah
 
 @Entity(
@@ -14,6 +15,7 @@ import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.Ayah
         onUpdate = ForeignKey.CASCADE
     )]
 )
+@Keep
 data class Aya(
     @PrimaryKey
     val ayaId: Int,//number

@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 
 import androidx.core.app.NotificationCompat
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.MainActivity
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
@@ -130,7 +131,7 @@ class MyBroadcastReceiver : BroadcastReceiver() {
         return salet!!
     }
 }
-
+@Keep
 data class Salet(var title : String,
                     var text: String,
                         var channelId : String,

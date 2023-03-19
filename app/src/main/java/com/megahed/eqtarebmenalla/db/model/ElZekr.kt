@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 
 @Entity(
     foreignKeys = [
@@ -15,6 +16,7 @@ import androidx.room.PrimaryKey
     )
     ]
 )
+@Keep
 data class ElZekr(
     var count:String,
     var description:String,

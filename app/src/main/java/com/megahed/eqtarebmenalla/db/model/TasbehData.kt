@@ -3,6 +3,7 @@ package com.megahed.eqtarebmenalla.db.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 import java.util.*
 
 @Entity(
@@ -14,6 +15,7 @@ import java.util.*
         onUpdate = ForeignKey.CASCADE
     )]
 )
+@Keep
 data class TasbehData(
     var time:Date,
     var target:Int=0,

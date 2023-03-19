@@ -1,7 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto
 
+import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
-
+@Keep
 data class Reciter(
     val count: String,
     val id: String,
