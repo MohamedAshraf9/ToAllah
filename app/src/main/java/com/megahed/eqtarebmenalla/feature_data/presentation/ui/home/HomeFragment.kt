@@ -495,7 +495,7 @@ class HomeFragment : Fragment(), LocationListener {
             if(binding.cbDhuhr.isChecked){
 
                 editor.putString("dhuhr","true")
-                editor.commit()
+                editor.apply()
                 var houre = binding.dhuhrTime.text.toString().substring(0,2).toInt()
                 var minute = binding.dhuhrTime.text.toString().substring(3,5).toInt()
 
@@ -550,7 +550,7 @@ class HomeFragment : Fragment(), LocationListener {
             }
             else {
                 editor.putString("dhuhr", "false")
-                editor.commit()
+                editor.apply()
 
                 smplrAlarmCancel(requireContext().applicationContext) {
                     requestCode { 1820 }
