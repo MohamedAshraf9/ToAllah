@@ -19,6 +19,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerBinding
@@ -217,10 +218,13 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         }
         listeningToSave.setOnClickListener {
-            bottomSheetDialog.dismiss()
-            val action: NavDirections = QuranListenerFragmentDirections.
-            actionNavigationListenerToListenerHelperFragment()
-            Navigation.findNavController(requireView()).navigate(action)
+            if (MethodHelper.isOnline(requireContext())) {
+                bottomSheetDialog.dismiss()
+                val action: NavDirections =
+                    QuranListenerFragmentDirections.actionNavigationListenerToListenerHelperFragment()
+                Navigation.findNavController(requireView()).navigate(action)
+            }
+            else MethodHelper.toastMessage(getString(R.string.checkConnection))
         }
 
 
