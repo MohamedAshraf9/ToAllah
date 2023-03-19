@@ -1,20 +1,23 @@
 package com.megahed.eqtarebmenalla.adapter
 
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.SoraListenerItemBinding
 import com.megahed.eqtarebmenalla.db.model.SoraSong
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
+import java.io.File
 import java.util.*
 
 
@@ -25,6 +28,7 @@ class QuranListenerReaderAdapter (private val context: Context,
     private var listData= mutableListOf<SoraSong>()
     private var listDataSearch= mutableListOf<SoraSong>()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(data: List<SoraSong>){
         listData.clear()
         listData.addAll(data)
@@ -83,10 +87,8 @@ class QuranListenerReaderAdapter (private val context: Context,
         }
 
         holder.download.setOnClickListener {
-            saveFileToDownloadFolder(listData[position].url,
-                        listData[position].readerId.toString(),
-                            listData[position].SoraId.toString()
-                                 )
+            onMyItemClickListener.onItemLongClick(listData[position],it)
+            //downloadTask(listData[position])
         }
 
 
@@ -116,6 +118,7 @@ class QuranListenerReaderAdapter (private val context: Context,
             return results
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
             if (filterResults.values != null) {
                 listData.clear()
@@ -131,33 +134,37 @@ class QuranListenerReaderAdapter (private val context: Context,
 
     }
 
-    fun saveFileToDownloadFolder(url: String, qar2eId: String, surahId: String) {
 
-        try{
-        val downloadmanager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
-        val uri = Uri.parse(url)
 
-            var nameSuah =Constants.SORA_OF_QURAN.get(surahId.toInt() )
-        val request = DownloadManager.Request(uri)
-        request.setTitle(nameSuah)
-        request.setDescription("Downloading")
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.allowScanningByMediaScanner();
-            request.setAllowedOverMetered(true);
-            request.setAllowedOverRoaming(true);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"$qar2eId-$surahId")
-        //request.setDestinationUri(Uri.parse("file://qor2an/test.mp3"))
 
-      var downloadReference =  downloadmanager!!.enqueue(request)
-            if (downloadReference != 0L) {
-                Toast.makeText(context, "بدأ التحميل", Toast.LENGTH_SHORT).show();
-            }else {
-                Toast.makeText(context, " هناك مشكل ما", Toast.LENGTH_SHORT).show();
-            }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-    }
+
+//    private fun saveFileToDownloadFolder(url: String, qar2eId: String, surahId: String) {
+//
+//        try{
+//        val downloadmanager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
+//        val uri = Uri.parse(url)
+//
+//            var nameSuah =Constants.SORA_OF_QURAN.get(surahId.toInt() )
+//        val request = DownloadManager.Request(uri)
+//        request.setTitle(nameSuah)
+//        request.setDescription("Downloading")
+//        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+//            request.allowScanningByMediaScanner();
+//            request.setAllowedOverMetered(true);
+//            request.setAllowedOverRoaming(true);
+//            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"$qar2eId-$surahId")
+//        //request.setDestinationUri(Uri.parse("file://qor2an/test.mp3"))
+//
+//      var downloadReference =  downloadmanager!!.enqueue(request)
+//            if (downloadReference != 0L) {
+//                Toast.makeText(context, "بدأ التحميل", Toast.LENGTH_SHORT).show();
+//            }else {
+//                Toast.makeText(context, " هناك مشكل ما", Toast.LENGTH_SHORT).show();
+//            }
+//        } catch (e: java.lang.Exception) {
+//            e.printStackTrace()
+//        }
+//    }
 
 
 
