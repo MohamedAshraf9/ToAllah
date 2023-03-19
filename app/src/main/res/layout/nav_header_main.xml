@@ -2,36 +2,46 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/_175sdp"
+    android:layout_height="@dimen/_180sdp"
     android:background="@drawable/side_nav_bar"
-    android:gravity="bottom"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingStart="@dimen/_5sdp"
+    android:paddingEnd="@dimen/_5sdp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_width="@dimen/_100sdp"
-        android:layout_height="@dimen/_80sdp"
-        android:src="@drawable/allah" />
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_marginTop="@dimen/_8sdp"
+      android:layout_height="wrap_content">
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="@dimen/_100sdp"
+          android:layout_alignParentStart="true"
+          android:layout_centerInParent="true"
+          android:layout_height="@dimen/_75sdp"
+          android:src="@drawable/allah" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/_5sdp"
-        android:text="@string/app_name"
-        android:textSize="@dimen/_14ssp"
-        android:textStyle="bold"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignParentEnd="true"
+          android:layout_toEndOf="@id/imageView"
+          android:textAlignment="center"
+          android:layout_centerInParent="true"
+          android:text="@string/app_name"
+          android:textSize="@dimen/_14ssp"
+          android:fontFamily="@font/amiri_regular"
+          android:textStyle="bold"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+  </RelativeLayout>
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/_12ssp"
+        android:fontFamily="@font/amiri_regular"
         android:textStyle="bold"
+        android:layout_margin="@dimen/_1sdp"
         android:text="@string/openSource" />
 </LinearLayout>
