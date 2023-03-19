@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".feature_data.presentation.ui.SplashScreenActivity">
+
+
+    <ImageView
+        android:layout_width="@dimen/_200sdp"
+        android:layout_marginTop="@dimen/_16sdp"
+        android:layout_height="@dimen/_200sdp"
+        android:layout_marginBottom="@dimen/_5sdp"
+        android:layout_gravity="center"
+        android:src="@drawable/prayer_icon"/>
+
+
+
+    <TextView
+        android:layout_gravity="center|bottom"
+        android:layout_marginTop="@dimen/_25sdp"
+        android:gravity="bottom|center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="@dimen/_26ssp"
+        android:layout_margin="@dimen/_12sdp"
+        android:textColor="@color/primary_color"
+        android:textStyle="bold"
+        android:text="@string/app_name"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_marginBottom="@dimen/_5sdp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="@dimen/_14ssp"
+            android:layout_alignParentBottom="true"
+            android:textColor="@color/grey"
+            android:layout_marginBottom="@dimen/_50sdp"
+            android:textStyle="italic"
+            android:text="@string/developed_by"/>
+
+    </RelativeLayout>
+
+
+
+</LinearLayout>

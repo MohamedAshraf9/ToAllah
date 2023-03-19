@@ -135,5 +135,8 @@
     <string name="downloading">جارى التحميل</string>
     <string name="requiredLocation">تعتمد القبله على الموقع والانترنت</string>
     <string name="hint">تميل البيانات يتم مره واحده فى التطبيق ، الرجاء الانتظار لدقيقه لتحميل جميع البيانات ،الرجاء عدم الخروج من التطبيق ، أوقات الصلاة هنا تقديرية و لا يجب الاعتماد عليها بشكل أساسي.</string>
+    <string name="salahNow">حان الان موعد الصلاه</string>
+
+    <string name="developed_by"> مطور بواسطة مجاهد </string>
 
 </resources>

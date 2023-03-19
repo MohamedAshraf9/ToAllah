@@ -77,7 +77,7 @@ class MyBroadcastReceiver : BroadcastReceiver() {
 
             val sound: Uri =
                 Uri.parse((ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + p0
-                    .packageName).toString() + "/" + R.raw.adhen) //Here is FILE_NAME is the name of file that you want to play
+                    .packageName).toString() + "/" + R.raw.azan) //Here is FILE_NAME is the name of file that you want to play
 
 
             channel.setSound(sound, attributes)
