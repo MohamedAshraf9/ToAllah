@@ -1,6 +1,11 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
+import android.app.DownloadManager
+import android.content.Context
+import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
@@ -18,6 +23,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
 import com.megahed.eqtarebmenalla.common.Constants
@@ -35,6 +41,7 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSong
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 
 @AndroidEntryPoint
 class QuranListenerReaderFragment : Fragment() , MenuProvider {
@@ -133,6 +140,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             }
 
             override fun onItemLongClick(itemObject: SoraSong, view: View?,position: Int) {
+                downloadTask(itemObject)
             }
         })
         binding.recyclerView.adapter = quranListenerReaderAdapter
@@ -195,6 +203,49 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         }
 
     }
+
+
+
+    @Throws(Exception::class)
+    private fun downloadTask(soraSong: SoraSong): Boolean {
+        if (!soraSong.url.startsWith("http")) {
+            MethodHelper.toastMessage(getString(R.string.error))
+            return false
+        }
+        try {
+            /*val file = if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
+                File(Environment.getExternalStorageDirectory(), getString(R.string.app_name))
+            else File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS)*/
+            val file= File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS)
+            if (!file.exists()) {
+                file.mkdirs()
+            }
+            val result = File(file.absolutePath + File.separator.toString() + SORA_OF_QURAN[soraSong.SoraId]+"."+soraSong.url.substringAfterLast('.', ""))
+            val downloadManager = requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val request = DownloadManager.Request(Uri.parse(soraSong.url))
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+            request.setDestinationUri(Uri.fromFile(result))
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,result.name)
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
+            downloadManager.enqueue(request)
+            MethodHelper.toastMessage(getString(R.string.downloading))
+            MediaScannerConnection.scanFile(
+                context, arrayOf(result.toString()), null
+            ) { path, uri ->
+                MethodHelper.toastMessage(path)
+            }
+
+
+            //Log.d("jhdfgdjf", "yyyyyyyyyyyyyy")
+        } catch (e: Exception) {
+            MethodHelper.toastMessage(getString(R.string.error))
+            //e.message?.let { Log.d("jhdfgdjf", it) }
+            return false
+        }
+        return true
+    }
+
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
