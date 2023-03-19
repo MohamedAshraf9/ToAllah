@@ -220,7 +220,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             if (!file.exists()) {
                 file.mkdirs()
             }
-            val result = File(file.absolutePath + File.separator.toString() + SORA_OF_QURAN[soraSong.SoraId]+"."+soraSong.url.substringAfterLast('.', ""))
+            val result = File(file.absolutePath + File.separator.toString() + SORA_OF_QURAN[soraSong.SoraId]+"_"+(readerName?:"")+"."+soraSong.url.substringAfterLast('.', ""))
             val downloadManager = requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             val request = DownloadManager.Request(Uri.parse(soraSong.url))
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
