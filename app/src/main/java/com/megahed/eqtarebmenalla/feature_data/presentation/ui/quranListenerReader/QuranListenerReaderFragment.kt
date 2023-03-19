@@ -227,7 +227,6 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             request.setDestinationUri(Uri.fromFile(result))
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,result.name)
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-
             downloadManager.enqueue(request)
             MethodHelper.toastMessage(getString(R.string.downloading))
             MediaScannerConnection.scanFile(
