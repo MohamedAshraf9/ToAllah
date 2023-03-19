@@ -133,5 +133,6 @@
     <string name="projectLink">(شارك فى الثواب) رابط السورس كود</string>
     <string name="openSource">تطبيق مفتوح المصدر لوجه الله تعالى يمكنك المشاركه فى الثواب من خلال تطوير السورس كود (إن قصرت فمن نفسى ومن الشيطان ، نسالكم الدعاء)</string>
     <string name="downloading">جارى التحميل</string>
+    <string name="requiredLocation">تعتمد القبله على الموقع والانترنت</string>
 
 </resources>

@@ -47,7 +47,7 @@
        android:textSize="@dimen/_17sdp"
        android:fontFamily="@font/amiri_bold"
        android:textColor="@color/white"
-       android:text="اتجاه القبلة" />
+       android:text="اتجاه القبلة(سيتغير لون الخلفيه عند القبله الصحيحه)" />
 
 
 
