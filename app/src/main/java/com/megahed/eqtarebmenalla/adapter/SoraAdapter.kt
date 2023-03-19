@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -21,6 +22,7 @@ class SoraAdapter (private val context: Context,
     private var listData= mutableListOf<Sora>()
     private var listDataSearch= mutableListOf<Sora>()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(data:List<Sora>){
         listData.clear()
         listData.addAll(data)
@@ -100,6 +102,7 @@ class SoraAdapter (private val context: Context,
             return results
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
             if (filterResults.values != null) {
                 listData.clear()

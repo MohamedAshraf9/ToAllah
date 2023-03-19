@@ -213,9 +213,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             return false
         }
         try {
-            /*val file = if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
-                File(Environment.getExternalStorageDirectory(), getString(R.string.app_name))
-            else File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS)*/
+
             val file= File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS)
             if (!file.exists()) {
                 file.mkdirs()
