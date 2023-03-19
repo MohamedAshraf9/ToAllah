@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.location.Address
@@ -13,7 +14,6 @@ import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.*
-import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -32,12 +32,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.tasks.SuccessContinuation
+import com.google.android.gms.tasks.Task
 import com.google.android.material.navigation.NavigationView
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.CommonUtils
-import com.megahed.eqtarebmenalla.common.LoadingAlert
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
 import com.megahed.eqtarebmenalla.db.model.PrayerTime
 import com.megahed.eqtarebmenalla.feature_data.data.remote.adhen.MyBroadcastReceiver
@@ -66,8 +68,9 @@ class HomeFragment : Fragment(), LocationListener {
     lateinit var notificationManager : NotificationManager
     lateinit var notificationChannel : NotificationChannel
     lateinit var builder : Notification.Builder
-    lateinit var loadingAlert: LoadingAlert
+    //lateinit var loadingAlert: LoadingAlert
 
+    ///var isDataAdded:Boolean=false
 
 
     private val mainViewModel : IslamicViewModel by activityViewModels()
@@ -94,8 +97,8 @@ class HomeFragment : Fragment(), LocationListener {
 
         // create loading alert
 
-        loadingAlert = LoadingAlert(requireActivity())
-        loadingAlert.startLoadingAlert()
+        //loadingAlert = LoadingAlert(requireActivity())
+        //loadingAlert.startLoadingAlert()
 
 
         sharedPreference =  requireActivity().getSharedPreferences("adhen",Context.MODE_PRIVATE)
@@ -106,7 +109,7 @@ class HomeFragment : Fragment(), LocationListener {
         if (sharedPreference.getString("firstTime", "") != "false"){
             val alert = Alert(requireActivity()).startLoadingAlert()
             editor.putString("firstTime", "false");
-            editor.commit()
+            editor.apply()
 
         }
        binding.dayDetails.text= DateFormat.getDateInstance(DateFormat.FULL).format(Date())
@@ -117,7 +120,9 @@ class HomeFragment : Fragment(), LocationListener {
                     islamicInfo.islamicInfo.data?.let {
                         val prayerTime= PrayerTime(1,it.date.gregorian.date,it.timings.Asr,it.timings.Dhuhr,
                             it.timings.Fajr,it.timings.Isha,it.timings.Maghrib,it.timings.Sunrise)
+                        //isDataAdded=true
                         prayerTimeViewModel.insertPrayerTime(prayerTime)
+
 
                     }
                 }
@@ -129,120 +134,128 @@ class HomeFragment : Fragment(), LocationListener {
         lifecycleScope.launchWhenStarted {
             prayerTimeViewModel.getPrayerTimeById().collect {
                 it?.let {
-                binding.fajrTime.text = CommonUtils.convertSalahTime(it.Fajr)
-                binding.sunriseTime.text = CommonUtils.convertSalahTime(it.Sunrise)
-                binding.dhuhrTime.text = CommonUtils.convertSalahTime(it.Dhuhr)
-                binding.asrTime.text = CommonUtils.convertSalahTime(it.Asr)
-                binding.maghribTime.text = CommonUtils.convertSalahTime(it.Maghrib)
-                binding.ishaTime.text = CommonUtils.convertSalahTime(it.Isha)
-                loadingAlert.dismissDialog()
+                    //if (isDataAdded) {
+
+                    binding.fajrTime.text = CommonUtils.convertSalahTime(it.Fajr)
+                    binding.sunriseTime.text = CommonUtils.convertSalahTime(it.Sunrise)
+                    binding.dhuhrTime.text = CommonUtils.convertSalahTime(it.Dhuhr)
+                    binding.asrTime.text = CommonUtils.convertSalahTime(it.Asr)
+                    binding.maghribTime.text = CommonUtils.convertSalahTime(it.Maghrib)
+                    binding.ishaTime.text = CommonUtils.convertSalahTime(it.Isha)
+                    //loadingAlert.dismissDialog()
 
 
-                val currentTime = CommonUtils.getCurrentTime()
-                if (CommonUtils.getTimeLong(it.Fajr, false) >= CommonUtils.getTimeLong(
-                        currentTime,
-                        true
-                    )
-                ) {
-
-                    setDataView(
-                        getString(R.string.fajr), CommonUtils.convertSalahTime(it.Fajr),
-                        CommonUtils.getTimeLong(it.Fajr, false) - CommonUtils.getTimeLong(
+                    val currentTime = CommonUtils.getCurrentTime()
+                    if (CommonUtils.getTimeLong(it.Fajr, false) >= CommonUtils.getTimeLong(
                             currentTime,
                             true
-                        ), true
-                    )
+                        )
+                    ) {
 
-                } else if (CommonUtils.getTimeLong(it.Sunrise, false) >= CommonUtils.getTimeLong(
-                        currentTime,
-                        true
-                    )
-                ) {
-                    setDataView(
-                        getString(R.string.sunrise), CommonUtils.convertSalahTime(it.Sunrise),
-                        CommonUtils.getTimeLong(it.Sunrise, false) - CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        ), true
-                    )
+                        setDataView(
+                            getString(R.string.fajr), CommonUtils.convertSalahTime(it.Fajr),
+                            CommonUtils.getTimeLong(it.Fajr, false) - CommonUtils.getTimeLong(
+                                currentTime,
+                                true
+                            ), true
+                        )
 
-                } else if (CommonUtils.getTimeLong(it.Dhuhr, false) >= CommonUtils.getTimeLong(
-                        currentTime,
-                        true
-                    )
-                ) {
-
-                    setDataView(
-                        getString(R.string.duhr), CommonUtils.convertSalahTime(it.Dhuhr),
-                        CommonUtils.getTimeLong(it.Dhuhr, false) - CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        ), true
-                    )
-
-                } else if (CommonUtils.getTimeLong(it.Asr, false) >= CommonUtils.getTimeLong(
-                        currentTime,
-                        true
-                    )
-                ) {
-
-                    setDataView(
-                        getString(R.string.asr), CommonUtils.convertSalahTime(it.Asr),
-                        CommonUtils.getTimeLong(
-                            it.Asr,
+                    } else if (CommonUtils.getTimeLong(
+                            it.Sunrise,
                             false
-                        ) - CommonUtils.getTimeLong(currentTime, true), true
-                    )
-
-                } else if (CommonUtils.getTimeLong(it.Maghrib, false) >= CommonUtils.getTimeLong(
-                        currentTime,
-                        true
-                    )
-                ) {
-                    setDataView(
-                        getString(R.string.maghreb), CommonUtils.convertSalahTime(it.Maghrib),
-                        CommonUtils.getTimeLong(it.Maghrib, false) - CommonUtils.getTimeLong(
+                        ) >= CommonUtils.getTimeLong(
                             currentTime,
                             true
-                        ), true
-                    )
+                        )
+                    ) {
+                        setDataView(
+                            getString(R.string.sunrise), CommonUtils.convertSalahTime(it.Sunrise),
+                            CommonUtils.getTimeLong(it.Sunrise, false) - CommonUtils.getTimeLong(
+                                currentTime,
+                                true
+                            ), true
+                        )
 
-
-                } else if (CommonUtils.getTimeLong(it.Isha, false) >= CommonUtils.getTimeLong(
-                        currentTime,
-                        true
-                    )
-                ) {
-                    setDataView(
-                        getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
-                        CommonUtils.getTimeLong(it.Isha, false) - CommonUtils.getTimeLong(
+                    } else if (CommonUtils.getTimeLong(it.Dhuhr, false) >= CommonUtils.getTimeLong(
                             currentTime,
                             true
-                        ), true
-                    )
-                } else {
-                    setDataView(
-                        getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
-                        0, false
-                    )
+                        )
+                    ) {
 
-                    timeStarted = CommonUtils.getTimeLong(it.Isha, false)
-                    startCoroutineTimer()
+                        setDataView(
+                            getString(R.string.duhr), CommonUtils.convertSalahTime(it.Dhuhr),
+                            CommonUtils.getTimeLong(it.Dhuhr, false) - CommonUtils.getTimeLong(
+                                currentTime,
+                                true
+                            ), true
+                        )
 
-                }
+                    } else if (CommonUtils.getTimeLong(it.Asr, false) >= CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        )
+                    ) {
+
+                        setDataView(
+                            getString(R.string.asr), CommonUtils.convertSalahTime(it.Asr),
+                            CommonUtils.getTimeLong(
+                                it.Asr,
+                                false
+                            ) - CommonUtils.getTimeLong(currentTime, true), true
+                        )
+
+                    } else if (CommonUtils.getTimeLong(
+                            it.Maghrib,
+                            false
+                        ) >= CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        )
+                    ) {
+                        setDataView(
+                            getString(R.string.maghreb), CommonUtils.convertSalahTime(it.Maghrib),
+                            CommonUtils.getTimeLong(it.Maghrib, false) - CommonUtils.getTimeLong(
+                                currentTime,
+                                true
+                            ), true
+                        )
 
 
+                    } else if (CommonUtils.getTimeLong(it.Isha, false) >= CommonUtils.getTimeLong(
+                            currentTime,
+                            true
+                        )
+                    ) {
+                        setDataView(
+                            getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
+                            CommonUtils.getTimeLong(it.Isha, false) - CommonUtils.getTimeLong(
+                                currentTime,
+                                true
+                            ), true
+                        )
+                    } else {
+                        setDataView(
+                            getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
+                            0, false
+                        )
+
+                        timeStarted = CommonUtils.getTimeLong(it.Isha, false)
+                        startCoroutineTimer()
+
+                    }
+
+                //}
             }
                  ?: run {
-                binding.fajrTime.text = getString(R.string.error)
-                binding.sunriseTime.text = getString(R.string.error)
-                binding.dhuhrTime.text = getString(R.string.error)
-                binding.asrTime.text = getString(R.string.error)
-                binding.maghribTime.text = getString(R.string.error)
-                binding.ishaTime.text = getString(R.string.error)
-                binding.salahName.text = getString(R.string.error)
-                binding.prayerTime.text = getString(R.string.error)
-                binding.prayerCountdown.text = getString(R.string.error)
+                binding.fajrTime.text = getString(R.string.loading)
+                binding.sunriseTime.text = getString(R.string.loading)
+                binding.dhuhrTime.text = getString(R.string.loading)
+                binding.asrTime.text = getString(R.string.loading)
+                binding.maghribTime.text = getString(R.string.loading)
+                binding.ishaTime.text = getString(R.string.loading)
+                binding.salahName.text = getString(R.string.loading)
+                binding.prayerTime.text = getString(R.string.loading)
+                binding.prayerCountdown.text = getString(R.string.loading)
             }
             }
         }
@@ -425,7 +438,7 @@ class HomeFragment : Fragment(), LocationListener {
             if(binding.cbFajr.isChecked){
 
                 editor.putString("fajr","true")
-                editor.commit()
+                editor.apply()
 
                 var houre = binding.fajrTime.text.toString().substring(0,2).toInt()
                 var minute = binding.fajrTime.text.toString().substring(3,5).toInt()
@@ -481,7 +494,7 @@ class HomeFragment : Fragment(), LocationListener {
             }
             else{
                 editor.putString("fajr","false")
-                editor.commit()
+                editor.apply()
 
                 smplrAlarmCancel(requireContext().applicationContext) {
                     requestCode { 1810 }
@@ -563,7 +576,7 @@ class HomeFragment : Fragment(), LocationListener {
             if(binding.cbAsr.isChecked){
 
                 editor.putString("asr","true")
-                editor.commit()
+                editor.apply()
 
                 var houre = binding.asrTime.text.toString().substring(0,2).toInt()+12
                 var minute = binding.asrTime.text.toString().substring(3,5).toInt()
@@ -619,7 +632,7 @@ class HomeFragment : Fragment(), LocationListener {
             }
             else {
                 editor.putString("asr", "false")
-                editor.commit()
+                editor.apply()
 
                 smplrAlarmCancel(requireContext().applicationContext) {
                     requestCode { 1830 }
@@ -632,7 +645,7 @@ class HomeFragment : Fragment(), LocationListener {
             if(binding.cbMaghrib.isChecked){
 
                 editor.putString("maghrib","true")
-                editor.commit()
+                editor.apply()
                 var houre = binding.maghribTime.text.toString().substring(0,2).toInt() +12
                 var minute = binding.maghribTime.text.toString().substring(3,5).toInt()
                 val alarmReceivedIntent = Intent(
@@ -686,7 +699,7 @@ class HomeFragment : Fragment(), LocationListener {
             }
             else {
                 editor.putString("maghrib", "false")
-                editor.commit()
+                editor.apply()
 
                 smplrAlarmCancel(requireContext().applicationContext) {
                     requestCode { 1840 }
@@ -699,7 +712,7 @@ class HomeFragment : Fragment(), LocationListener {
             if(binding.cbIsha.isChecked){
 
                 editor.putString("isha","true")
-                editor.commit()
+                editor.apply()
                 var houre = binding.ishaTime.text.toString().substring(0,2).toInt() +12
                 var minute = binding.ishaTime.text.toString().substring(3,5).toInt()
 
@@ -754,7 +767,7 @@ class HomeFragment : Fragment(), LocationListener {
             }
             else {
                 editor.putString("isha", "false")
-                editor.commit()
+                editor.apply()
 
                 smplrAlarmCancel(requireContext().applicationContext) {
                     requestCode { 1850 }
@@ -827,7 +840,7 @@ class HomeFragment : Fragment(), LocationListener {
 
 
                 editor.putString("dhuhr","true")
-                editor.commit()
+                editor.apply()
                 var houre = binding.dhuhrTime.text.toString().substring(0,2).toInt()
                 var minute = binding.dhuhrTime.text.toString().substring(3,5).toInt()
                 smplrAlarmUpdate(requireContext().applicationContext) {
@@ -912,11 +925,21 @@ class HomeFragment : Fragment(), LocationListener {
 //            val intent = Intent(requireContext(), QiblaActivity::class.java)
 //            requireContext().startActivity(intent)
 
-            val bundle = Bundle()
-            bundle.putString("altitude", lastLocation?.altitude.toString())
-            bundle.putString("longitude", lastLocation?.longitude.toString())
+           lastLocation?.let {
+               if (MethodHelper.isOnline(requireContext())){
+                   val bundle = Bundle()
+                   bundle.putString("altitude", lastLocation?.altitude.toString())
+                   bundle.putString("longitude", lastLocation?.longitude.toString())
 
-            findNavController().navigate(R.id.action_navigation_home_to_qiblaFragment2, bundle)
+                   findNavController().navigate(R.id.action_navigation_home_to_qiblaFragment2, bundle)
+               }
+               else{
+                   MethodHelper.toastMessage(getString(R.string.checkConnection))
+               }
+           }?:run {
+               MethodHelper.toastMessage(getString(R.string.requiredLocation))
+           }
+
 
 
 
@@ -1065,7 +1088,7 @@ class HomeFragment : Fragment(), LocationListener {
         )
         if (MethodHelper.hasPermissions(requireContext(), perms)) {
 
-            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
+            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback,  Looper.getMainLooper())
 
             startGetLocation()
         } else {
@@ -1129,7 +1152,8 @@ class HomeFragment : Fragment(), LocationListener {
     private fun statusLocationCheck() {
         val manager = requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            buildAlertMessageNoGps()
+            turnGPSOn()
+            //buildAlertMessageNoGps()
 
         }else{
             checkLocationPermission()
@@ -1137,13 +1161,53 @@ class HomeFragment : Fragment(), LocationListener {
     }
 
 
+    private fun turnGPSOn() {
+        //val builder = LocationSettingsRequest.Builder()
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+
+        val client: SettingsClient = LocationServices.getSettingsClient(requireActivity())
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+
+
+        task.addOnCompleteListener {
+            Log.d("fdfdf", "cccc dddddddddddddd ${it.isSuccessful}")
+            checkLocationPermission()
+
+        }
+        task.addOnSuccessListener {
+            Log.d("fdfdf", "sssssss dddddddddddddd ${it.locationSettingsStates}")
+            checkLocationPermission()
+        }
+
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException){
+                // Location settings are not satisfied, but this can be fixed
+                // by showing the user a dialog.
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in onActivityResult().
+                    exception.startResolutionForResult(requireActivity(),
+                        1)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                }
+            }
+        }
+    }
+
     private fun buildAlertMessageNoGps() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setMessage(getString(R.string.openLocation))
             .setCancelable(false)
             .setPositiveButton(
                 getString(R.string.openSettings)
-            ) { dialog, id -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+            ) { dialog, id ->
+
+                //startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            }
             .setNegativeButton(
                 getString(R.string.cancel)
             ) { dialog, id ->
