@@ -182,7 +182,15 @@
         android:id="@+id/listenerHelperFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment"
         android:label="fragment_listener_helper"
-        tools:layout="@layout/fragment_listener_helper" />
+        tools:layout="@layout/fragment_listener_helper" >
+        <action
+            android:id="@+id/action_listenerHelperFragment_to_hefzRepeatFragment"
+            app:destination="@id/hefzRepeatFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
     <fragment
         android:id="@+id/songFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.SongFragment"
@@ -195,6 +203,33 @@
         <action
             android:id="@+id/action_qiblaFragment2_to_navigation_home"
             app:destination="@id/navigation_home" />
+    </fragment>
+    <fragment
+        android:id="@+id/hefzRepeatFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.HefzRepeatFragment"
+        android:label="fragment_hefz_repeat"
+        tools:layout="@layout/fragment_hefz_repeat" >
+        <argument
+            android:name="link"
+            app:argType="string" />
+        <argument
+            android:name="soraId"
+            app:argType="string" />
+        <argument
+            android:name="startAya"
+            app:argType="string" />
+        <argument
+            android:name="endAya"
+            app:argType="string" />
+        <argument
+            android:name="ayaRepeat"
+            app:argType="integer" />
+        <argument
+            android:name="allRepeat"
+            app:argType="integer" />
+        <argument
+            android:name="readerName"
+            app:argType="string" />
     </fragment>
 
 

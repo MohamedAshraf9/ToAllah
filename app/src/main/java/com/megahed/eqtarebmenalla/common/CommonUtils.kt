@@ -54,15 +54,27 @@ object CommonUtils {
         return timeLeftFormatted
     }
 
-    fun convertSora(s:String):String{
-        val n=s.toInt()
-        return if (n<10){
+    fun convertSora(soraId:String,aya:String):String{
+        val n=soraId.toInt()
+        val ayaNumber=aya.toInt()
+        var sec1=""
+        var sec2=""
+        sec1 = if (n<10){
             "00$n"
         } else if (n in 10..99){
             "0$n"
         } else{
-            s
+            soraId
         }
+
+        sec2 = if (ayaNumber<10){
+            "00$ayaNumber"
+        } else if (ayaNumber in 10..99){
+            "0$ayaNumber"
+        } else{
+            aya
+        }
+        return sec1+sec2
     }
 
     fun convertSoraPart(soraId:Int,ayaNumber:Int):String{

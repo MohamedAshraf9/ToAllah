@@ -14,8 +14,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,18 +32,32 @@ import com.megahed.eqtarebmenalla.databinding.FragmentListenerHelperBinding
 import com.megahed.eqtarebmenalla.feature_data.data.remote.hez.entity.Ayah
 import com.megahed.eqtarebmenalla.feature_data.data.remote.hez.entity.Eya
 import com.megahed.eqtarebmenalla.feature_data.data.remote.hez.entity.Reway
+import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.verse.RecitersVerse
+import com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.TasbehFragmentDirections
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzVM
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzViewModel
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ListenerHelperFragment : Fragment() , MenuProvider {
 
     private lateinit var binding: FragmentListenerHelperBinding
-    private lateinit var hefzVM: HefzVM
+    //private lateinit var hefzVM: HefzVM
     private lateinit var dialogBox: Dialog
     lateinit var  player : ExoPlayer
     var arrEytMP3 = arrayListOf<Eya>()
+    var soraNumbers = arrayListOf<Int>()
+    var readers =  mutableListOf<RecitersVerse>()
     lateinit var ayetAdapter : AyetAdapter
+    var soraId:Int=0
+    var startAya:Int=0
+    var endAya:Int=0
+    var reader:RecitersVerse?=null
+    private val mainViewModel : HefzViewModel by activityViewModels()
+    var job:Job?=null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,126 +77,76 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        hefzVM  = HefzVM()
-        var arrSura = mutableListOf<String>()
-        var arrEya = mutableListOf<Int>()
-        var arrEyaEnd = mutableListOf<Int>()
-        var tempRewat = mutableListOf<Reway>()
-        var tempSuraId = 1
-
-        val adapterSura = ArrayAdapter(requireContext(),
-            android.R.layout.simple_list_item_1, arrSura)
-
-//        var adapterEya =  ArrayAdapter(requireContext(),
-//            android.R.layout.simple_list_item_1, arrEya)
-//        binding.nbAya.setAdapter(adapterEya)
-
-//        var adapterEyaEnd =  ArrayAdapter(requireContext(),
-//            android.R.layout.simple_list_item_1, arrEyaEnd)
-//        binding.nbEyaEnd.setAdapter(adapterEyaEnd)
 
 
-
-        // Display list of rewat
-        hefzVM.getAllRewat().observe(viewLifecycleOwner, Observer {
-
-            tempRewat.addAll(it.data)
-            var arrRewat = arrayListOf<String>()
-            it.data.forEach{
-                if (it.language.equals("ar")){
-                    arrRewat.add(it.name)
-
+        job= lifecycleScope.launch {
+            mainViewModel.state.collect { ayaHefzState ->
+                val filter=ayaHefzState.recitersVerse.filter {
+                    (it.audio_url_bit_rate_32_.trim().isNotEmpty() && !it.audio_url_bit_rate_32_.trim().equals("0"))||
+                    (it.audio_url_bit_rate_64.trim().isNotEmpty() && !it.audio_url_bit_rate_64.trim().equals("0"))||
+                    (it.audio_url_bit_rate_128.trim().isNotEmpty() && !it.audio_url_bit_rate_128.trim().equals("0"))
                 }
+                readers.addAll(filter)
+                val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                binding.listOfRewat.setAdapter(adapter)
+
             }
-            val adapter = ArrayAdapter(requireContext(),
-                android.R.layout.simple_list_item_1, arrRewat)
-
-            binding.listOfRewat.setAdapter(adapter)
-            binding.listOfRewat.setOnItemClickListener(
-                OnItemClickListener { adapterView, view, position, id ->
-                    for (list in arrRewat) {
-                        if (list.toString().equals(adapterView.getItemAtPosition(position))) {
-                            binding.soraStartSpinner.isEnabled = true
-
-
-                        }
-                    }
-                })
-
-        })
-
-
-
-        // get list  of suar and convert to list of string
-        Constants.SORA_OF_QURAN_WITH_NB_EYA.forEach {
-            arrSura.add(it.key)
         }
 
-        // display list of suar
 
 
+        binding.listOfRewat.onItemClickListener =
+            OnItemClickListener { parent, view, position, id ->
+               reader = parent.getItemAtPosition(position) as RecitersVerse
+                binding.soraStartSpinner.isEnabled = true
+            }
 
-        binding.listSouraName.setAdapter(adapterSura)
 
+        val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key })
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.listSouraName.setAdapter(adapter)
         binding.listSouraName.onItemClickListener =
-            OnItemClickListener { adapterView, view, position, id ->
+            OnItemClickListener { parent, view, position, id ->
                 binding.nbAya.setText("")
                 binding.nbEyaEnd.setText("")
                 binding.start.isEnabled = false
-                for (list in arrSura) {
-                    if (list == adapterView.getItemAtPosition(position)) {
-                        arrEya.clear()
-                        tempSuraId = position+1
-                        for (i in 1..Constants.SORA_OF_QURAN_WITH_NB_EYA[list]!!){
-                            arrEya.add(i)
-
-                        }
-                        binding.soraStartEditText.isEnabled = true
-                        binding.nbEyaEnd.isEnabled = false
-                        val adapterEya =  ArrayAdapter(requireContext(),
-                            android.R.layout.simple_list_item_1, arrEya)
-                        binding.nbAya.setAdapter(adapterEya)
-                        //adapterEya.notifyDataSetChanged()
-
-                    }
+                soraId=position+1
+                val sora = parent.getItemAtPosition(position) as String
+                val soraNumber= Constants.SORA_OF_QURAN_WITH_NB_EYA[sora]!!
+                soraNumbers.clear()
+                for (i in 1..soraNumber){
+                    soraNumbers.add(i)
                 }
+                val adapter1= ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+                adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                binding.nbAya.setAdapter(adapter1)
+
+                val adapter2= ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+                adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                binding.nbEyaEnd.setAdapter(adapter2)
+
+                binding.soraStartEditText.isEnabled = true
             }
 
 
 
-        binding.nbAya.setOnItemClickListener(
-            OnItemClickListener { adapterView, view, position, id ->
-                for (list in arrEya) {
-                    if (list == adapterView.getItemAtPosition(position).toString().toInt()) {
-                        arrEyaEnd.clear()
-                        var max = Constants.SORA_OF_QURAN_WITH_NB_EYA.get(binding.listSouraName.text.toString())
-                        for (i in list ..max!!){
-                            arrEyaEnd.add(i)
+        binding.nbAya.onItemClickListener =
+            OnItemClickListener { parent, view, position, id ->
+                 startAya = parent.getItemAtPosition(position) as Int
+                binding.soraStartEndText.isEnabled = true
+            }
 
 
-                        }
-                        binding.soraStartEndText.isEnabled = true
-                        val adapterEyaEnd =  ArrayAdapter(requireContext(),
-                            android.R.layout.simple_list_item_1, arrEyaEnd)
-                        binding.nbEyaEnd.setAdapter(adapterEyaEnd)
 
-                        //adapterEyaEnd.notifyDataSetChanged()
-
-                    }
-                }
-            })
-
-        binding.nbEyaEnd.setOnItemClickListener(
-            OnItemClickListener { adapterView, view, position, id ->
-                for (list in arrEyaEnd) {
-                    if (list == adapterView.getItemAtPosition(position).toString().toInt()) {
-
-                        binding.start.isEnabled = true
+        binding.nbEyaEnd.onItemClickListener =
+            OnItemClickListener { parent, view, position, id ->
+                 endAya = parent.getItemAtPosition(position) as Int
+                binding.start.isEnabled = true
+            }
 
 
-                    }
-                }
-            })
+
 
 
         binding.stop.setOnClickListener {
@@ -194,52 +161,70 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
         binding.start.setOnClickListener {
             if (MethodHelper.isOnline(requireContext())){
-            var rewayIdSelected = ""
-            tempRewat.forEach {
-                if (it.name.equals(binding.listOfRewat.text.toString())){
-                    rewayIdSelected = it.identifier
+                reader?.let {
+
+                    val link = if (it.audio_url_bit_rate_32_.trim()
+                            .isNotEmpty() && it.audio_url_bit_rate_32_.trim() != "0"
+                    ) {
+                        it.audio_url_bit_rate_32_
+                    } else if (it.audio_url_bit_rate_64.trim()
+                            .isNotEmpty() && it.audio_url_bit_rate_64.trim() != "0"
+                    ) {
+                        it.audio_url_bit_rate_64
+                    } else {
+                        it.audio_url_bit_rate_128
+                    }
+
+                    val action: NavDirections = ListenerHelperFragmentDirections
+                        .actionListenerHelperFragmentToHefzRepeatFragment(
+                            link,soraId.toString(),startAya.toString(),endAya.toString(),
+                            binding.nbAyaRepeat.text.toString().toInt(),
+                            binding.suraRepeat.text.toString().toInt(),reader?.name!!)
+                    Navigation.findNavController(requireView()).navigate(action)
+
 
                 }
-            }
-
-            hefzVM.getSuraMp3(tempSuraId ,rewayIdSelected).observe(viewLifecycleOwner, Observer {
-
-                this.dialogBox = Dialog(requireContext(),android.R.style.Theme_DeviceDefault_NoActionBar_Fullscreen)
-                this.dialogBox.setContentView(R.layout.ayet_alert)
-                val window: Window = dialogBox.getWindow()!!
-                val wlp = window.attributes
-                wlp.flags = wlp.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
-                window.attributes = wlp
-                val alert : ConstraintLayout = this.dialogBox.findViewById(R.id.alert_constraint)
-                //alert.setBackgroundColor(Color.parseColor("#ffffff"))
-                val btnStop: TextView = this.dialogBox.findViewById(R.id.stop)
-
-                 ayetAdapter = AyetAdapter(this.requireContext(), arrEytMP3)
-                val rcAyet: RecyclerView = this.dialogBox.findViewById(R.id.re_ayet)
-                rcAyet.layoutManager = LinearLayoutManager(this.requireContext())
-                rcAyet.adapter = ayetAdapter
 
 
-                dialogBox.show()
-                binding.start.visibility = View.GONE
-                binding.stop.visibility = View.VISIBLE
-                btnStop.setOnClickListener {
-                    player.stop()
-                    dialogBox.cancel()
-                    binding.start.visibility = View.VISIBLE
-                    binding.stop.visibility = View.GONE
-                }
 
+//            hefzVM.getSuraMp3(tempSuraId ,rewayIdSelected).observe(viewLifecycleOwner, Observer {
+//
+//                this.dialogBox = Dialog(requireContext(),android.R.style.Theme_DeviceDefault_NoActionBar_Fullscreen)
+//                this.dialogBox.setContentView(R.layout.ayet_alert)
+//                val window: Window = dialogBox.getWindow()!!
+//                val wlp = window.attributes
+//                wlp.flags = wlp.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
+//                window.attributes = wlp
+//                val alert : ConstraintLayout = this.dialogBox.findViewById(R.id.alert_constraint)
+//                //alert.setBackgroundColor(Color.parseColor("#ffffff"))
+//                val btnStop: TextView = this.dialogBox.findViewById(R.id.stop)
+//
+//                 ayetAdapter = AyetAdapter(this.requireContext(), arrEytMP3)
+//                val rcAyet: RecyclerView = this.dialogBox.findViewById(R.id.re_ayet)
+//                rcAyet.layoutManager = LinearLayoutManager(this.requireContext())
 //                rcAyet.adapter = ayetAdapter
-              ///  for(i in 0..binding.suraRepeat.text.toString().toString().toInt()-1){
-                    soundRepeat(it.data.ayahs,
-                        binding.nbAya.text.toString().toInt()-1,
-                        binding.nbEyaEnd.text.toString().toInt()-1,
-                        binding.nbAyaRepeat.text.toString().toInt(),
-                        binding.suraRepeat.text.toString().toString().toInt()-1,)
-            //    }
-
-            })
+//
+//
+//                dialogBox.show()
+//                binding.start.visibility = View.GONE
+//                binding.stop.visibility = View.VISIBLE
+//                btnStop.setOnClickListener {
+//                    player.stop()
+//                    dialogBox.cancel()
+//                    binding.start.visibility = View.VISIBLE
+//                    binding.stop.visibility = View.GONE
+//                }
+//
+////                rcAyet.adapter = ayetAdapter
+//              ///  for(i in 0..binding.suraRepeat.text.toString().toString().toInt()-1){
+//                    soundRepeat(it.data.ayahs,
+//                        binding.nbAya.text.toString().toInt()-1,
+//                        binding.nbEyaEnd.text.toString().toInt()-1,
+//                        binding.nbAyaRepeat.text.toString().toInt(),
+//                        binding.suraRepeat.text.toString().toString().toInt()-1,)
+//            //    }
+//
+//            })
 
 
             }
