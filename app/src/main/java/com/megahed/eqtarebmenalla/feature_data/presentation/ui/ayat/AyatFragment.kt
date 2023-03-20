@@ -16,8 +16,7 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentAyatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
-import com.megahed.eqtarebmenalla.feature_data.presentation.NewTaskSheet
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr.ElzekrFragmentArgs
+import com.megahed.eqtarebmenalla.feature_data.states.NewTaskSheet
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 

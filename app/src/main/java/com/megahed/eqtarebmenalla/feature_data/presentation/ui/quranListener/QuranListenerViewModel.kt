@@ -3,14 +3,11 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Resource
-import com.megahed.eqtarebmenalla.db.customModel.SorasFavOfReader
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.toQuranListenerReader
 import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.QuranListenerUsesCase
-import com.megahed.eqtarebmenalla.feature_data.presentation.IslamicListState
-import com.megahed.eqtarebmenalla.feature_data.presentation.QuranListenerListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

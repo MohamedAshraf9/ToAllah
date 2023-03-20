@@ -38,6 +38,7 @@ class SoraAdapter (private val context: Context,
 
         val soraInfo=binding.soraInfo
         val soraNumber=binding.soraNumber
+        val read=binding.read
         val root = binding.root
 
 
@@ -73,6 +74,11 @@ class SoraAdapter (private val context: Context,
 
         holder.itemView.setOnClickListener {
             onMyItemClickListener.onItemClick(listData[position],it,0)
+
+        }
+
+        holder.read.setOnClickListener {
+            onMyItemClickListener.onItemLongClick(listData[position],it,0)
 
         }
 

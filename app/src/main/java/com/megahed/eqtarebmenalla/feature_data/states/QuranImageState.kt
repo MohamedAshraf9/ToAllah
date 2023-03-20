@@ -1,13 +1,14 @@
-package com.megahed.eqtarebmenalla.feature_data.presentation
+package com.megahed.eqtarebmenalla.feature_data.states
 
 import com.google.errorprone.annotations.Keep
+import com.megahed.eqtarebmenalla.feature_data.data.quranImage.QuranImageItem
 import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.IslamicInfo
+import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.verse.RecitersVerse
+
 @Keep
-data class IslamicListState(
+data class QuranImageState(
     val isLoading:Boolean=false,
-    val islamicInfo: IslamicInfo = IslamicInfo(3243,"dsad",
-       null
-    ),
+    val quranImage: List<QuranImageItem> = emptyList(),
     val error:String=""
 )
 

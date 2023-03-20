@@ -1,0 +1,23 @@
+package com.megahed.eqtarebmenalla.feature_data.states
+
+import com.google.errorprone.annotations.Keep
+import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.IslamicInfo
+@Keep
+data class IslamicListState(
+    val isLoading:Boolean=false,
+    val islamicInfo: IslamicInfo = IslamicInfo(3243,"dsad",
+       null
+    ),
+    val error:String=""
+)
+
+/*
+
+Data(
+Date(
+gregorian = Gregorian(designation = Designation(), weekday = Weekday(), month = Month()),
+hijri = Hijri(designation = Designation(), weekday = WeekdayX(), month = MonthX())
+),
+Meta(method = Method(location = Location(), params = Params()), offset = Offset())
+, Timings())
+*/
