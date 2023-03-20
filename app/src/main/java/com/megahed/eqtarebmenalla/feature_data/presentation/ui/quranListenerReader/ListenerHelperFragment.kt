@@ -47,13 +47,9 @@ import kotlinx.coroutines.launch
 class ListenerHelperFragment : Fragment() , MenuProvider {
 
     private lateinit var binding: FragmentListenerHelperBinding
-    //private lateinit var hefzVM: HefzVM
-    private lateinit var dialogBox: Dialog
-    lateinit var  player : ExoPlayer
-    var arrEytMP3 = arrayListOf<Eya>()
+
     var soraNumbers = arrayListOf<Int>()
     var readers =  mutableListOf<RecitersVerse>()
-    lateinit var ayetAdapter : AyetAdapter
     var soraId:Int=0
     var startAya:Int=0
     var endAya:Int=0
@@ -140,7 +136,6 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
             binding.start.visibility = View.VISIBLE
             binding.stop.visibility = View.GONE
 
-            player.stop()
         }
 
 
@@ -189,45 +184,6 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
 
 
-//            hefzVM.getSuraMp3(tempSuraId ,rewayIdSelected).observe(viewLifecycleOwner, Observer {
-//
-//                this.dialogBox = Dialog(requireContext(),android.R.style.Theme_DeviceDefault_NoActionBar_Fullscreen)
-//                this.dialogBox.setContentView(R.layout.ayet_alert)
-//                val window: Window = dialogBox.getWindow()!!
-//                val wlp = window.attributes
-//                wlp.flags = wlp.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
-//                window.attributes = wlp
-//                val alert : ConstraintLayout = this.dialogBox.findViewById(R.id.alert_constraint)
-//                //alert.setBackgroundColor(Color.parseColor("#ffffff"))
-//                val btnStop: TextView = this.dialogBox.findViewById(R.id.stop)
-//
-//                 ayetAdapter = AyetAdapter(this.requireContext(), arrEytMP3)
-//                val rcAyet: RecyclerView = this.dialogBox.findViewById(R.id.re_ayet)
-//                rcAyet.layoutManager = LinearLayoutManager(this.requireContext())
-//                rcAyet.adapter = ayetAdapter
-//
-//
-//                dialogBox.show()
-//                binding.start.visibility = View.GONE
-//                binding.stop.visibility = View.VISIBLE
-//                btnStop.setOnClickListener {
-//                    player.stop()
-//                    dialogBox.cancel()
-//                    binding.start.visibility = View.VISIBLE
-//                    binding.stop.visibility = View.GONE
-//                }
-//
-////                rcAyet.adapter = ayetAdapter
-//              ///  for(i in 0..binding.suraRepeat.text.toString().toString().toInt()-1){
-//                    soundRepeat(it.data.ayahs,
-//                        binding.nbAya.text.toString().toInt()-1,
-//                        binding.nbEyaEnd.text.toString().toInt()-1,
-//                        binding.nbAyaRepeat.text.toString().toInt(),
-//                        binding.suraRepeat.text.toString().toString().toInt()-1,)
-//            //    }
-//
-//            })
-
 
             }
             else MethodHelper.toastMessage(getString(R.string.checkConnection))
@@ -269,10 +225,25 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
             }
         }
-
         val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key })
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.listSouraName.setAdapter(adapter)
+
+        if (binding.listOfRewat.text.toString().trim().isNotEmpty()){
+            binding.soraStartSpinner.isEnabled = true
+        }
+
+        if (binding.listSouraName.text.toString().trim().isNotEmpty()){
+            binding.soraStartEditText.isEnabled = true
+        }
+
+        if (binding.nbAya.text.toString().trim().isNotEmpty()){
+            binding.soraStartEndText.isEnabled = true
+        }
+
+        if (binding.nbEyaEnd.text.toString().trim().isNotEmpty()){
+            binding.start.isEnabled = true
+        }
     }
 
 
