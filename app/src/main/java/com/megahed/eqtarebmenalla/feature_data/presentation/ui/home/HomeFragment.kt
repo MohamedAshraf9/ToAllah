@@ -70,7 +70,6 @@ class HomeFragment : Fragment(), LocationListener {
     private lateinit var locationRequest: LocationRequest
     private lateinit var mLocationCallback: LocationCallback
 
-   var isCalledBefore=false
     lateinit var builder : Notification.Builder
 
 
@@ -145,7 +144,7 @@ class HomeFragment : Fragment(), LocationListener {
                     binding.maghribTime.text = CommonUtils.convertSalahTime(it.Maghrib)
                     binding.ishaTime.text = CommonUtils.convertSalahTime(it.Isha)
                     if (MethodHelper.isOnline(requireContext()))
-                        updateAzan()
+                        updateAzan(false)
                     //loadingAlert.dismissDialog()
 
 
@@ -428,7 +427,7 @@ class HomeFragment : Fragment(), LocationListener {
 
 
         binding.update.setOnClickListener {
-            updateAzan()
+            updateAzan(true)
 
             Toast.makeText(requireContext(), "جارى تحديث أوقات الصلاة", Toast.LENGTH_LONG).show()
         }
@@ -496,8 +495,9 @@ class HomeFragment : Fragment(), LocationListener {
         return root
     }
 
-    private fun updateAzan() {
-        statusLocationCheck()
+    private fun updateAzan(show:Boolean) {
+        if (show)
+            statusLocationCheck()
 
         if (sharedPreference.getBoolean(Constants.AZAN.FAJR,false) ){
 
@@ -769,18 +769,16 @@ class HomeFragment : Fragment(), LocationListener {
 
 
     private fun statusLocationCheck() {
-        if (!isCalledBefore) {
             val manager =
                 requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
             if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 turnGPSOn()
-                isCalledBefore = true
                 //buildAlertMessageNoGps()
 
             } else {
                 checkLocationPermission()
             }
-        }
+
     }
 
 
