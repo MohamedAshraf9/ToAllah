@@ -29,6 +29,9 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_navigation_quran_to_quranImageFragment"
+            app:destination="@id/quranImageFragment" />
     </fragment>
 
     <fragment
@@ -229,6 +232,18 @@
             app:argType="integer" />
         <argument
             android:name="readerName"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/quranImageFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.QuranImageFragment"
+        android:label="fragment_quran_image"
+        tools:layout="@layout/fragment_quran_image" >
+        <argument
+            android:name="soraId"
+            app:argType="integer" />
+        <argument
+            android:name="soraName"
             app:argType="string" />
     </fragment>
 

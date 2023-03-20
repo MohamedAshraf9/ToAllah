@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.SoraAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranBinding
@@ -59,6 +60,15 @@ class QuranFragment : Fragment(), MenuProvider {
             }
 
             override fun onItemLongClick(itemObject: Sora, view: View?,position: Int) {
+                if (MethodHelper.isOnline(requireContext())) {
+                    val action: NavDirections =
+                        QuranFragmentDirections.actionNavigationQuranToQuranImageFragment(
+                            itemObject.soraId,
+                            itemObject.name
+                        )
+                    Navigation.findNavController(requireView()).navigate(action)
+                }
+                else MethodHelper.toastMessage(getString(R.string.checkConnection))
             }
         })
         val string:StringBuilder= StringBuilder()

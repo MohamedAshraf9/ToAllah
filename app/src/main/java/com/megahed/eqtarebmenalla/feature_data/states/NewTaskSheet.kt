@@ -1,19 +1,16 @@
-package com.megahed.eqtarebmenalla.feature_data.presentation
+package com.megahed.eqtarebmenalla.feature_data.states
 
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.databinding.TafserSheetBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
-import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allQran.AllQuran
 import com.megahed.eqtarebmenalla.feature_data.data.tafser.Tafser
-import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.TafsirVM
 
 class NewTaskSheet(private val data: Aya,private val ayaNumber:String) : BottomSheetDialogFragment()
 {

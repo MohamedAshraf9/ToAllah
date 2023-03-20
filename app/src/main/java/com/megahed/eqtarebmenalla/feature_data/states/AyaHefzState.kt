@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.feature_data
+package com.megahed.eqtarebmenalla.feature_data.states
 
 import com.google.errorprone.annotations.Keep
 import com.megahed.eqtarebmenalla.feature_data.data.remote.dto.prayerApi.IslamicInfo

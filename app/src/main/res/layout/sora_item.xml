@@ -3,10 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginEnd="10dp"
-    android:layout_marginStart="10dp"
-    android:layout_marginTop="4dp"
-    android:layout_height="55dp"
+    android:layout_margin="@dimen/_3sdp"
+    android:layout_height="@dimen/_45sdp"
     app:cardElevation="@dimen/_3sdp"
     android:background="@drawable/soura_item_background"
 
@@ -74,7 +72,6 @@
                 android:id="@+id/soraInfo"
                 android:layout_width="120dp"
                 android:layout_height="wrap_content"
-
                 android:layout_marginStart="@dimen/_12sdp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/type_soura_background"
@@ -90,15 +87,13 @@
                 app:layout_constraintVertical_bias="0.47" />
 
             <ImageView
-                android:id="@+id/fav"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/read"
+                android:layout_width="@dimen/_30sdp"
+                android:layout_height="@dimen/_25sdp"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:visibility="gone"
-                android:layout_margin="@dimen/_5sdp"
-                android:padding="@dimen/_2sdp"
-                android:src="@drawable/ic_baseline_favorite_border_24" />
+                android:layout_margin="@dimen/_3sdp"
+                android:src="@drawable/baseline_menu_book_24" />
 
 
             <!-- <ImageView

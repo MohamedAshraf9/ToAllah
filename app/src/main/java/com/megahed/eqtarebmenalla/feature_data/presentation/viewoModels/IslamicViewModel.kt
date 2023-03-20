@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Resource
 import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.PrayerDataUsesCase
-import com.megahed.eqtarebmenalla.feature_data.presentation.IslamicListState
+import com.megahed.eqtarebmenalla.feature_data.states.IslamicListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +39,7 @@ class IslamicViewModel @Inject constructor(
                     _state.value= IslamicListState(isLoading = true)
                 }
                 is Resource.Error ->{
-                    _state.value=IslamicListState(error = it.message?:"error")
+                    _state.value= IslamicListState(error = it.message?:"error")
                 }
             }
         }.launchIn(viewModelScope)
