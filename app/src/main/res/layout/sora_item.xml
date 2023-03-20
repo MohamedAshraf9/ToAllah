@@ -6,8 +6,6 @@
     android:layout_margin="@dimen/_3sdp"
     android:layout_height="@dimen/_45sdp"
     app:cardElevation="@dimen/_3sdp"
-    android:background="@drawable/soura_item_background"
-
     android:padding="@dimen/_2sdp"
     app:cardCornerRadius="8dp"
     android:layout_width="match_parent">
@@ -23,13 +21,11 @@
             android:gravity="center"
             android:text="أ"
             android:textSize="13sp"
-            android:layout_marginStart="10dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/id_soura_background"
             android:textColor="@android:color/white"
             android:textStyle="bold"
             android:textAlignment="center"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
