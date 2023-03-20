@@ -2,11 +2,11 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -17,7 +17,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
-import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaHefzAdapter
 import com.megahed.eqtarebmenalla.common.CommonUtils
@@ -135,6 +134,39 @@ class HefzRepeatFragment : Fragment(), MenuProvider {
             player.stop()
             Navigation.findNavController(requireView()).popBackStack()
         }
+
+
+       requireActivity().onBackPressedDispatcher.addCallback(requireActivity()) {
+            // Handle the back button event
+            if (isEnabled) {
+                this.isEnabled = false
+                player.stop()
+                requireActivity().onBackPressed()
+
+            }
+
+
+
+        }
+
+
+
+        // This callback will only be called when MyFragment is at least Started.
+
+//        requireActivity()
+//            .onBackPressedDispatcher
+//            .addCallback(requireActivity(), object : OnBackPressedCallback(true) {
+//                override fun handleOnBackPressed() {
+//                    // Do custom work here
+//                    //player.stop()
+//                    // if you want onBackPressed() to be called as normal afterwards
+//
+//                    //Navigation.findNavController(requireView()).popBackStack()
+//
+//                }
+//            }
+//            )
+
 
         return  binding.root
     }
