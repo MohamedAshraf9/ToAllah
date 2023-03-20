@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.PreferenceManager
 import com.megahed.eqtarebmenalla.MainActivity
 import com.megahed.eqtarebmenalla.R
 
@@ -17,7 +18,13 @@ class SplashScreenActivity : AppCompatActivity() {
     private val TIMER:Short = 500
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        if (PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean("pref_dark_mode", true)
+        ) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
 

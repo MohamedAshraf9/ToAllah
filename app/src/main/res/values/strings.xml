@@ -140,5 +140,10 @@
     <string name="developed_by"> مطور بواسطة مجاهد </string>
     <string name="start">إبدأ</string>
     <string name="ayaWrong">نهايه السوره اكبر من البدايه</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <string name="generalSettings">عام</string>
+    <string name="dark_mode"> تمكين الوضع الداكن </string>
+    <string name="settings">الاعدادات</string>
 
 </resources>
