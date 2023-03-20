@@ -23,7 +23,38 @@
         android:layout_height="wrap_content"
       android:orientation="vertical">
 
-      <RelativeLayout
+      <TextView
+          android:id="@+id/chooseReader"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="@dimen/_3sdp"
+          android:layout_marginTop="@dimen/_3sdp"
+          android:layout_marginEnd="@dimen/_3sdp"
+          android:layout_marginBottom="@dimen/_3sdp"
+          android:padding="@dimen/_3sdp"
+          android:text="@string/chooseReader"
+          android:textSize="@dimen/_14ssp"
+          android:textStyle="bold" />
+
+      <com.google.android.material.textfield.TextInputLayout
+          android:id="@+id/readerSpinner"
+          style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+          android:layout_width="match_parent"
+          android:layout_margin="@dimen/_5sdp"
+          android:layout_gravity="center"
+          android:layout_height="wrap_content"
+          android:hint="@string/chooseReader">
+
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/list_of_rewat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            />
+      </com.google.android.material.textfield.TextInputLayout>
+
+    <!--  <RelativeLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_gravity="center"
@@ -31,43 +62,11 @@
           android:padding="@dimen/_1sdp">
 
 
-        <TextView
-            android:id="@+id/chooseReader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="@dimen/_3sdp"
-            android:layout_marginTop="@dimen/_3sdp"
-            android:layout_marginEnd="@dimen/_3sdp"
-            android:layout_marginBottom="@dimen/_3sdp"
-            android:padding="@dimen/_3sdp"
-            android:text="@string/chooseReader"
-            android:textSize="@dimen/_14ssp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/readerSpinner"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_margin="@dimen/_5sdp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerInParent="true"
-            android:layout_toEndOf="@id/chooseReader"
-            android:layout_gravity="center"
-            android:layout_height="wrap_content"
-            android:hint="@string/chooseReader">
 
 
-          <com.google.android.material.textfield.MaterialAutoCompleteTextView
-              android:id="@+id/list_of_rewat"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:inputType="none"
-              />
-        </com.google.android.material.textfield.TextInputLayout>
 
-      </RelativeLayout>
+
+      </RelativeLayout>-->
 
       <TextView
           android:textAlignment="center"
