@@ -273,7 +273,7 @@
           android:layout_width="match_parent"
           android:layout_height="match_parent">
 
-        <Button
+        <!--<Button
             android:id="@+id/start"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_35sdp"
@@ -288,7 +288,25 @@
             android:background="@drawable/shape_bkg"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />-->
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="@dimen/_8sdp"
+            android:padding="@dimen/_3sdp"
+            android:background="@drawable/custom_button"
+            android:text="@string/start"
+            android:textAllCaps="false"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/_16ssp"
+            app:backgroundTint="@null"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <Button
             android:id="@+id/stop"

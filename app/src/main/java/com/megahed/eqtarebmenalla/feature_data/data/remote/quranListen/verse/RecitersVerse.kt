@@ -15,6 +15,6 @@ data class RecitersVerse(
 
 ){
     override fun toString(): String {
-        return name
+        return "$name($rewaya-$musshaf_type)"
     }
 }

@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".feature_data.presentation.ui.HefzRepeatFragment">
 
     <include layout="@layout/custom_toolbar"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:id="@+id/toolbar"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
+        android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
+        android:layout_above="@+id/cancel"
         android:layout_height="match_parent" />
 
-</LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/cancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/_5sdp"
+        android:padding="@dimen/_3sdp"
+        android:background="@drawable/custom_button"
+        android:text="@string/cancel"
+        android:textAllCaps="false"
+        android:textColor="@color/text_color"
+        android:textSize="@dimen/_16ssp"
+        app:backgroundTint="@null" />
+
+</RelativeLayout>

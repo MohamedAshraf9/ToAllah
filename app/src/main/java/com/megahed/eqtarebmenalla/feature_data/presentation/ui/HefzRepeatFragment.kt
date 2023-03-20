@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -16,6 +17,8 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.megahed.eqtarebmenalla.App
+import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaHefzAdapter
 import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.databinding.FragmentHefzRepeatBinding
@@ -66,6 +69,7 @@ class HefzRepeatFragment : Fragment(), MenuProvider {
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
+        toolbar.title=getString(R.string.listeningToSave)
 
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -105,10 +109,6 @@ class HefzRepeatFragment : Fragment(), MenuProvider {
                             (startAya!!.toInt()+i).toString()
                         ) + ".mp3"
                         ))
-                        Log.d("sdsdsd",link!! + CommonUtils.convertSora(
-                            soraId!!,
-                            (startAya!!.toInt()+i).toString()
-                        ) + ".mp3")
 
 
                         player.addMediaItem(audioItem)
@@ -118,6 +118,9 @@ class HefzRepeatFragment : Fragment(), MenuProvider {
                     }
                 }
             }
+
+//            binding.recyclerView.layoutManager?.findViewByPosition(0)?.setBackgroundColor(
+//                ContextCompat.getColor(App.getInstance(), R.color.red_200))
 //            player.prepare()
 //            player.play()
 
@@ -128,6 +131,10 @@ class HefzRepeatFragment : Fragment(), MenuProvider {
 
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
+        binding.cancel.setOnClickListener {
+            player.stop()
+            Navigation.findNavController(requireView()).popBackStack()
+        }
 
         return  binding.root
     }
@@ -141,6 +148,7 @@ class HefzRepeatFragment : Fragment(), MenuProvider {
 
         return  when (menuItem.itemId) {
             android.R.id.home -> {
+                player.stop()
                 Navigation.findNavController(requireView()).popBackStack()
             }
             else -> false

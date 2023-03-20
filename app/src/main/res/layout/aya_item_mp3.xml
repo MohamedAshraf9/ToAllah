@@ -4,12 +4,14 @@
     android:layout_width="match_parent"
     android:layout_margin="@dimen/_2sdp"
     android:minHeight="50dp"
+    android:id="@+id/container"
     android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/aya_id"
-        android:layout_width="@dimen/_20sdp"
+        android:layout_width="wrap_content"
         android:layout_height="@dimen/_30sdp"
+        android:minWidth="@dimen/_20sdp"
         android:background="@drawable/id_soura_background"
         android:gravity="center"
         android:text="١"
