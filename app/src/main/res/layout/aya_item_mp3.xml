@@ -2,22 +2,21 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_marginBottom="2dp"
+    android:layout_margin="@dimen/_2sdp"
     android:minHeight="50dp"
-    android:background="@drawable/soura_item_background"
     android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/aya_id"
-        android:layout_width="25dp"
-        android:layout_height="40dp"
-
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_30sdp"
         android:background="@drawable/id_soura_background"
         android:gravity="center"
         android:text="١"
+        android:layout_margin="@dimen/_2sdp"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:textSize="20sp"
+        android:textSize="@dimen/_14ssp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,10 +24,9 @@
         android:id="@+id/aya"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="@dimen/_12sdp"
         android:fontFamily="@font/scheherazadenew_regular"
         android:text=""
+        android:layout_margin="@dimen/_2sdp"
         android:textColor="@color/text_color"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"

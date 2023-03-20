@@ -11,4 +11,10 @@ data class RecitersVerse(
     val musshaf_type: String,
     val name: String,
     val rewaya: String
-)
+
+
+){
+    override fun toString(): String {
+        return name
+    }
+}
