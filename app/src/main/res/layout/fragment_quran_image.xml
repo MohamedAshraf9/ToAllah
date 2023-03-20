@@ -11,6 +11,12 @@
         android:layout_width="match_parent"
         android:id="@+id/toolbar"/>
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:layout_width="match_parent"
+        android:id="@+id/progressBar"
+        android:layout_height="wrap_content"
+        android:indeterminate="true" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"

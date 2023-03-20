@@ -46,6 +46,7 @@ import com.megahed.eqtarebmenalla.alarm.NotifyMessing
 import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.databinding.FragmentHomeBinding
 import com.megahed.eqtarebmenalla.db.model.PrayerTime
+import com.megahed.eqtarebmenalla.feature_data.presentation.ui.settings.SettingsActivity
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,12 +70,8 @@ class HomeFragment : Fragment(), LocationListener {
     private lateinit var locationRequest: LocationRequest
     private lateinit var mLocationCallback: LocationCallback
 
-    lateinit var notificationManager : NotificationManager
-    lateinit var notificationChannel : NotificationChannel
+   var isCalledBefore=false
     lateinit var builder : Notification.Builder
-    //lateinit var loadingAlert: LoadingAlert
-
-    ///var isDataAdded:Boolean=false
 
 
     private val mainViewModel : IslamicViewModel by activityViewModels()
@@ -481,6 +478,12 @@ class HomeFragment : Fragment(), LocationListener {
                     )
 
                 }
+               R.id.setting ->{
+                    val intent=Intent(requireContext(), SettingsActivity::class.java)
+                    startActivity(intent)
+                    drawerLayout.close()
+
+                }
                 else -> {
                     drawerLayout.closeDrawers()
                 }
@@ -766,13 +769,17 @@ class HomeFragment : Fragment(), LocationListener {
 
 
     private fun statusLocationCheck() {
-        val manager = requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
-        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            turnGPSOn()
-            //buildAlertMessageNoGps()
+        if (!isCalledBefore) {
+            val manager =
+                requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+            if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                turnGPSOn()
+                isCalledBefore = true
+                //buildAlertMessageNoGps()
 
-        }else{
-            checkLocationPermission()
+            } else {
+                checkLocationPermission()
+            }
         }
     }
 
@@ -788,12 +795,10 @@ class HomeFragment : Fragment(), LocationListener {
 
 
         task.addOnCompleteListener {
-            Log.d("fdfdf", "cccc dddddddddddddd ${it.isSuccessful}")
             checkLocationPermission()
 
         }
         task.addOnSuccessListener {
-            Log.d("fdfdf", "sssssss dddddddddddddd ${it.locationSettingsStates}")
             checkLocationPermission()
         }
 

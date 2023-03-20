@@ -2,29 +2,20 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.azkar
 
 import android.os.Bundle
 import android.view.*
-import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
-import com.megahed.eqtarebmenalla.adapter.AyaAdapter
 import com.megahed.eqtarebmenalla.adapter.NamesOfAllaAdapter
-import com.megahed.eqtarebmenalla.databinding.FragmentAyatBinding
 import com.megahed.eqtarebmenalla.databinding.FragmentNamesOfAllahBinding
-import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.feature_data.data.local.dto.allaNames.NamesOfAllah
-import com.megahed.eqtarebmenalla.feature_data.data.local.dto.azkar.Azkar
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyaViewModel
-import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 
 
 class NamesOfAllahFragment : Fragment() , MenuProvider {

@@ -2,19 +2,20 @@ package com.megahed.eqtarebmenalla.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.megahed.eqtarebmenalla.CompareDrawable.bytesEqualTo
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.AyaItemBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.tafsir.TafsirActivity
-import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
+import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 
 class AyaAdapter (private val context: Context,
-                  private val onMyItemClickListener: OnMyItemClickListener<Aya>
+                  private val onMyItemClickListener: OnItemWithFavClickListener<Aya>
 ) : RecyclerView.Adapter<AyaAdapter.MyHolder>() {
 
     private var listData= mutableListOf<Aya>()
@@ -32,6 +33,7 @@ class AyaAdapter (private val context: Context,
         val ayaTitle=binding.ayaTitle
         val ayaNumber=binding.ayaNumber
         val fav=binding.fav
+        val play=binding.play
 
         val root = binding.root
 
@@ -63,20 +65,24 @@ class AyaAdapter (private val context: Context,
         }
 
 
+
+
+
         holder.fav.setOnClickListener {//for favorite Item
-            onMyItemClickListener.onItemClick(listData[position],it)
+            onMyItemClickListener.onItemFavClick(listData[position],it)
+
+        }
+
+        holder.play.setOnClickListener {
+            onMyItemClickListener.onItemLongClick(listData[position],it,position+1)
+
 
         }
 
         holder.itemView.setOnClickListener {
-            onMyItemClickListener.onItemLongClick(listData[position],it,position+1)
-//            val intent = Intent(context, TafsirActivity::class.java)
-//
-//            intent.putExtra("sura", listData[position].soraId.toString())
-//            intent.putExtra("eyaId", (position+1).toString())
-//            intent.putExtra("aya", listData[position].text)
-//
-//            context.startActivity(intent)
+            onMyItemClickListener.onItemClick(listData[position],it,position+1)
+
+
         }
 
 

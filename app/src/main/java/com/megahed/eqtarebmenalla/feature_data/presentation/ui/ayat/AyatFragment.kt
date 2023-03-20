@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -12,11 +13,16 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaAdapter
+import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.databinding.FragmentAyatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.feature_data.states.NewTaskSheet
+import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,12 +35,14 @@ class AyatFragment : Fragment(),MenuProvider {
     private var soraName:String?=null
     private var fromFavorite:Boolean=false
 
+    lateinit var  player : ExoPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         soraId = arguments?.let { AyatFragmentArgs.fromBundle(it).soraId }
         soraName = arguments?.let { AyatFragmentArgs.fromBundle(it).soraName }
         fromFavorite = arguments?.let { AyatFragmentArgs.fromBundle(it).fromFavorite }!!
+        player = ExoPlayer.Builder(requireContext()).build()
     }
 
     override fun onCreateView(
@@ -60,17 +68,38 @@ class AyatFragment : Fragment(),MenuProvider {
         binding.recyclerView.layoutManager = verticalLayoutManager
         binding.recyclerView.setHasFixedSize(true)
 
-        quranTextAdapter= AyaAdapter(requireContext(), object : OnMyItemClickListener<Aya> {
+        quranTextAdapter= AyaAdapter(requireContext(), object : OnItemWithFavClickListener<Aya> {
 
-            override fun onItemClick(itemObject: Aya, view: View?,position: Int) {
+            override fun onItemFavClick(itemObject: Aya, view: View?) {
                 //fav icon click
                 itemObject.isVaForte=!itemObject.isVaForte
                 ayaViewModel.updateAya(itemObject)
             }
 
-            override fun onItemLongClick(itemObject: Aya, view: View?,position: Int) {
-                val sheet= NewTaskSheet(itemObject,position.toString())
+            override fun onItemClick(itemObject: Aya, view: View?, position: Int) {
+                val sheet= NewTaskSheet(itemObject,itemObject.numberInSurah.toString())
                 sheet.show(requireActivity().supportFragmentManager,"sheet")
+            }
+
+            override fun onItemLongClick(itemObject: Aya, view: View?,position: Int) {
+                //play Aya
+                if (MethodHelper.isOnline(requireContext())) {
+                    player.stop()
+                    player.removeMediaItem(0)
+                    MethodHelper.toastMessage(getString(R.string.loading))
+                    val audioItem: MediaItem = MediaItem.fromUri(
+                        Uri.parse(
+                            "https://verse.mp3quran.net/arabic/mohammad_alminshawi/64/" + CommonUtils.convertSora(
+                                itemObject.soraId.toString(),
+                                itemObject.numberInSurah.toString()
+                            ) + ".mp3"
+                        )
+                    )
+                    player.addMediaItem(audioItem)
+                    player.prepare()
+                    player.play()
+                }
+                else MethodHelper.toastMessage(getString(R.string.checkConnection))
             }
         })
         binding.recyclerView.adapter = quranTextAdapter
@@ -124,6 +153,7 @@ class AyatFragment : Fragment(),MenuProvider {
 
         return  when (menuItem.itemId) {
             android.R.id.home -> {
+                player.stop()
                  Navigation.findNavController(requireView()).popBackStack()
             }
             else -> false

@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -73,12 +74,20 @@ class QuranImageFragment : Fragment() , MenuProvider {
             viewModel.getQuranImage(it)
             lifecycleScope.launch{
                 viewModel.state.collect{
+
                     val hash=HashSet<String>()
-                    it.quranImage.forEach {
-                        if (it.page!=null)
+                    it.quranImage.sortedBy { it.ayah }.forEach {
+                        if (it.page!=null) {
                             hash.add(it.page)
+                        }
                     }
-                    quranImageAdapter.setData(hash.toTypedArray())
+                    quranImageAdapter.setData(hash.sorted())
+                    if (it.isLoading){
+                        binding.progressBar.visibility=View.VISIBLE
+                    }
+                    else{
+                        binding.progressBar.visibility=View.GONE
+                    }
 
                 }
             }

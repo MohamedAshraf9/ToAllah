@@ -12,7 +12,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/_2sdp"
+    android:padding="@dimen/_1sdp"
     android:layout_margin="@dimen/_1sdp">
 
     <TextView
@@ -38,12 +38,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
-        android:padding="@dimen/_2sdp"
         android:src="@drawable/ic_baseline_favorite_border_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ayaTitle" />
+
+
+    <TextView
+        android:id="@+id/play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/type_soura_background"
+        android:fontFamily="@font/aref_ruqa_regular"
+        android:text="قراءه"
+        android:textAlignment="center"
+        android:textColor="@color/text_color"
+        android:textSize="@dimen/_12ssp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/fav"
+        app:layout_constraintHorizontal_bias="0.9"
+        app:layout_constraintStart_toEndOf="@id/ayaNumber"
         app:layout_constraintTop_toBottomOf="@+id/ayaTitle" />
 
     <TextView
@@ -53,7 +69,6 @@
         android:layout_margin="@dimen/_5sdp"
         android:padding="@dimen/_2sdp"
         android:textSize="@dimen/_11ssp"
-        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

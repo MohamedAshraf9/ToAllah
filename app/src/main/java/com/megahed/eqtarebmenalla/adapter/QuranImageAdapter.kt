@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -19,7 +20,7 @@ class QuranImageAdapter (private val context: Activity
     private var listData= mutableListOf<String>()
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(data:Array<String>){
+    fun setData(data:List<String>){
         listData.clear()
         listData.addAll(data)
         notifyDataSetChanged()
@@ -52,6 +53,7 @@ class QuranImageAdapter (private val context: Activity
 
         val uri: Uri =
             Uri.parse(aya)
+        //Log.d("sdsdsdsd",aya)
 
         //Glide.with(context).load(aya).dontTransform().error(R.drawable.allah).placeholder(R.drawable.allah).into(holder.image)
 

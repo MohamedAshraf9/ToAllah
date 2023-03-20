@@ -16,5 +16,9 @@
             android:id="@+id/projectLink"
             android:icon="@drawable/baseline_link_24"
             android:title="@string/projectLink" />
+        <item
+            android:id="@+id/setting"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:title="@string/settings" />
     </group>
 </menu>

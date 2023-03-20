@@ -81,6 +81,9 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
         binding.listOfRewat.onItemClickListener =
             OnItemClickListener { parent, view, position, id ->
                 binding.listSouraName.setText("")
+                binding.nbAya.setText("")
+                binding.nbEyaEnd.setText("")
+                binding.start.isEnabled = false
                 reader = parent.getItemAtPosition(position) as RecitersVerse
                 binding.soraStartSpinner.isEnabled = true
             }
@@ -235,6 +238,22 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
         if (binding.listSouraName.text.toString().trim().isNotEmpty()){
             binding.soraStartEditText.isEnabled = true
+
+            val soraNumber= Constants.SORA_OF_QURAN_WITH_NB_EYA[binding.listSouraName.text.toString().trim()]!!
+            soraNumbers.clear()
+            for (i in 1..soraNumber){
+                soraNumbers.add(i)
+            }
+            val adapter1= ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+            adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.nbAya.setAdapter(adapter1)
+
+            val adapter2= ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+            adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.nbEyaEnd.setAdapter(adapter2)
+
+            binding.soraStartEditText.isEnabled = true
+
         }
 
         if (binding.nbAya.text.toString().trim().isNotEmpty()){
