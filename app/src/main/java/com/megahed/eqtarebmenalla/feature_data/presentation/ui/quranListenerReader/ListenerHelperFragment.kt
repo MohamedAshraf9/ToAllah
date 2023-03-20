@@ -1,9 +1,11 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Color
 import android.opengl.Visibility
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
@@ -79,33 +81,18 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
 
 
-        job= lifecycleScope.launch {
-            mainViewModel.state.collect { ayaHefzState ->
-                val filter=ayaHefzState.recitersVerse.filter {
-                    (it.audio_url_bit_rate_32_.trim().isNotEmpty() && !it.audio_url_bit_rate_32_.trim().equals("0"))||
-                    (it.audio_url_bit_rate_64.trim().isNotEmpty() && !it.audio_url_bit_rate_64.trim().equals("0"))||
-                    (it.audio_url_bit_rate_128.trim().isNotEmpty() && !it.audio_url_bit_rate_128.trim().equals("0"))
-                }
-                readers.addAll(filter)
-                val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                binding.listOfRewat.setAdapter(adapter)
-
-            }
-        }
-
-
 
         binding.listOfRewat.onItemClickListener =
             OnItemClickListener { parent, view, position, id ->
-               reader = parent.getItemAtPosition(position) as RecitersVerse
+                binding.listSouraName.setText("")
+                reader = parent.getItemAtPosition(position) as RecitersVerse
                 binding.soraStartSpinner.isEnabled = true
             }
 
 
-        val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key })
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.listSouraName.setAdapter(adapter)
+
+
+
         binding.listSouraName.onItemClickListener =
             OnItemClickListener { parent, view, position, id ->
                 binding.nbAya.setText("")
@@ -175,12 +162,27 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
                         it.audio_url_bit_rate_128
                     }
 
-                    val action: NavDirections = ListenerHelperFragmentDirections
-                        .actionListenerHelperFragmentToHefzRepeatFragment(
-                            link,soraId.toString(),startAya.toString(),endAya.toString(),
-                            binding.nbAyaRepeat.text.toString().toInt(),
-                            binding.suraRepeat.text.toString().toInt(),reader?.name!!)
-                    Navigation.findNavController(requireView()).navigate(action)
+                    val ayaR=binding.nbAyaRepeat.text.toString()
+                    val soraR=binding.suraRepeat.text.toString()
+                    if (ayaR.trim().isEmpty()|| soraR.trim().isEmpty()){
+                        MethodHelper.toastMessage(getString(R.string.addValidData))
+                    }else{
+                        if (startAya>endAya){
+                            MethodHelper.toastMessage(getString(R.string.ayaWrong))
+                        }
+                        else{
+                            val action: NavDirections = ListenerHelperFragmentDirections
+                                .actionListenerHelperFragmentToHefzRepeatFragment(
+                                    link,soraId.toString(),startAya.toString(),endAya.toString(),
+                                    ayaR.toInt(),
+                                    soraR.toInt(),
+                                    reader?.name!!)
+                            Navigation.findNavController(requireView()).navigate(action)
+                        }
+
+                    }
+
+
 
 
                 }
@@ -236,43 +238,6 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
     }
 
 
-    fun soundRepeat(sura: List<Ayah>, nbAya: Int, abAyaEnd: Int, nbRepeat: Int, suraRepeat: Int){
-        player = ExoPlayer.Builder(requireContext()).build()
-
-        arrEytMP3.clear()
-        // Build the media items.
-        var audioItem: MediaItem
-for (r in 0..suraRepeat){
-
-
-        for(i in nbAya .. abAyaEnd){
-            for (j in 0 until nbRepeat){
-                if(sura[i].audioSecondary.size !=0){
-                    audioItem = MediaItem.fromUri(sura[i].audioSecondary.get(0))
-
-                }else{
-                    audioItem = MediaItem.fromUri(sura[i].audio)
-
-                }
-
-
-                player.addMediaItem(audioItem)
-            }
-        }
-}
-
-        for(i in nbAya .. abAyaEnd){
-            arrEytMP3.add(Eya(sura.get(i).text, sura.get(i).numberInSurah))
-
-        }
-
-        player.prepare();
-        player.play();
-        ayetAdapter.notifyDataSetChanged()
-
-
-    }
-
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
@@ -287,6 +252,28 @@ for (r in 0..suraRepeat){
         }
     }
 
+
+    override fun onStart() {
+        super.onStart()
+        job= lifecycleScope.launch {
+            mainViewModel.state.collect { ayaHefzState ->
+                val filter=ayaHefzState.recitersVerse.filter {
+                    (it.audio_url_bit_rate_32_.trim().isNotEmpty() && !it.audio_url_bit_rate_32_.trim().equals("0"))||
+                            (it.audio_url_bit_rate_64.trim().isNotEmpty() && !it.audio_url_bit_rate_64.trim().equals("0"))||
+                            (it.audio_url_bit_rate_128.trim().isNotEmpty() && !it.audio_url_bit_rate_128.trim().equals("0"))
+                }
+                readers.addAll(filter)
+                val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                binding.listOfRewat.setAdapter(adapter)
+
+            }
+        }
+
+        val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key })
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.listSouraName.setAdapter(adapter)
+    }
 
 
 

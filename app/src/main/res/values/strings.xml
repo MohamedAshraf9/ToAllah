@@ -138,5 +138,7 @@
     <string name="salahNow">حان الان موعد الصلاه</string>
 
     <string name="developed_by"> مطور بواسطة مجاهد </string>
+    <string name="start">إبدأ</string>
+    <string name="ayaWrong">نهايه السوره اكبر من البدايه</string>
 
 </resources>

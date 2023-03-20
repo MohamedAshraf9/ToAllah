@@ -49,9 +49,9 @@ object Constants {
         val arr=s.split(",")
         val ints=arr.map { it.toInt() }
         val list = mutableListOf<String>()
-            ints.forEach {
-                list.add(SORA_OF_QURAN[it])
-        }
+        ints.forEach {
+            list.add(SORA_OF_QURAN[it])
+    }
 
         return list
     }
@@ -167,7 +167,7 @@ object Constants {
         "البَينَة" to 8,
         "الزلزَلة" to 8,
         "العَادِيات" to 11,
-        "القَارِعة" to 1,
+        "القَارِعة" to 11,
         "التَّكَاثر" to 8,
         "العَصْر" to 3,
         "الهُمَزَة" to 9,
@@ -180,7 +180,7 @@ object Constants {
         "المَسَد" to 5,
         "الإخْلَاص" to 4,
         "الفَلَق" to 5,
-        "النَّاس" to 4
+        "النَّاس" to 6
     )
 
 
