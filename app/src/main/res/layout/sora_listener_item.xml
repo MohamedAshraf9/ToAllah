@@ -6,9 +6,8 @@
     android:layout_marginEnd="10dp"
     android:layout_marginStart="10dp"
     android:layout_marginTop="4dp"
-    android:layout_height="55dp"
+    android:layout_height="wrap_content"
     app:cardElevation="@dimen/_3sdp"
-    android:background="@drawable/soura_item_background"
 
     android:padding="@dimen/_2sdp"
     app:cardCornerRadius="8dp"
@@ -20,12 +19,12 @@
 
         <TextView
             android:id="@+id/soraNumber"
-            android:layout_width="25dp"
-            android:layout_height="40dp"
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_30sdp"
             android:gravity="center"
             android:text="أ"
             android:textSize="13sp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="@dimen/_3sdp"
             android:background="@drawable/id_soura_background"
             android:textColor="@android:color/white"
             android:textStyle="bold"
@@ -40,16 +39,16 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:gravity="start"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@+id/soraNumber"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/relative"
             app:layout_constraintStart_toEndOf="@+id/soraNumber"
-            app:layout_constraintTop_toTopOf="@+id/soraNumber">
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/soraName"
                 android:textSize="@dimen/_14ssp"
                 android:textStyle="bold"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_color"
                 android:fontFamily="@font/amiri_regular"
@@ -63,15 +62,15 @@
             android:id="@+id/relative"
             android:layout_width="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="@+id/linearLayout1"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/linearLayout1"
+            app:layout_constraintTop_toTopOf="parent"
             android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/fav"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/_25sdp"
+                android:layout_height="@dimen/_25sdp"
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:layout_margin="@dimen/_5sdp"
@@ -90,12 +89,10 @@
 
             <ImageView
                 android:id="@+id/download"
-                android:textSize="@dimen/_12ssp"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/kemenag"
+                android:layout_width="@dimen/_25sdp"
+                android:layout_height="@dimen/_25sdp"
                 android:text="@string/sora"
                 android:textAlignment="center"
                 android:layout_margin="@dimen/_1sdp"

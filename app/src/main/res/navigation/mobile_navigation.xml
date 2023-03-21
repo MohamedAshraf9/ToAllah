@@ -195,8 +195,8 @@
         android:label="fragment_listener_helper"
         tools:layout="@layout/fragment_listener_helper" >
         <action
-            android:id="@+id/action_listenerHelperFragment_to_hefzRepeatFragment"
-            app:destination="@id/hefzRepeatFragment"
+            android:id="@+id/action_listenerHelperFragment_to_hefzRepeatActivity"
+            app:destination="@id/hefzRepeatActivity"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -216,10 +216,22 @@
             app:destination="@id/navigation_home" />
     </fragment>
     <fragment
-        android:id="@+id/hefzRepeatFragment"
-        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.HefzRepeatFragment"
-        android:label="fragment_hefz_repeat"
-        tools:layout="@layout/fragment_hefz_repeat" >
+        android:id="@+id/quranImageFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.QuranImageFragment"
+        android:label="fragment_quran_image"
+        tools:layout="@layout/fragment_quran_image" >
+        <argument
+            android:name="soraId"
+            app:argType="integer" />
+        <argument
+            android:name="soraName"
+            app:argType="string" />
+    </fragment>
+    <activity
+        android:id="@+id/hefzRepeatActivity"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz.HefzRepeatActivity"
+        android:label="activity_hefz_repeat"
+        tools:layout="@layout/activity_hefz_repeat" >
         <argument
             android:name="link"
             app:argType="string" />
@@ -241,19 +253,7 @@
         <argument
             android:name="readerName"
             app:argType="string" />
-    </fragment>
-    <fragment
-        android:id="@+id/quranImageFragment"
-        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.QuranImageFragment"
-        android:label="fragment_quran_image"
-        tools:layout="@layout/fragment_quran_image" >
-        <argument
-            android:name="soraId"
-            app:argType="integer" />
-        <argument
-            android:name="soraName"
-            app:argType="string" />
-    </fragment>
+    </activity>
 
 
 </navigation>

@@ -6,11 +6,9 @@
     android:layout_marginEnd="10dp"
     android:layout_marginStart="10dp"
     android:layout_marginTop="6dp"
-    android:layout_height="55dp"
+    android:layout_height="wrap_content"
     app:cardElevation="@dimen/_3sdp"
-
-    app:cardCornerRadius="7dp"
-    android:background="@drawable/soura_item_background"
+    app:cardCornerRadius="@dimen/_5sdp"
     android:layout_width="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,8 +19,8 @@
 
         <TextView
             android:id="@+id/letter"
-            android:layout_width="25dp"
-            android:layout_height="40dp"
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_30sdp"
 
             android:layout_marginEnd="8dp"
             android:background="@drawable/id_soura_background"
@@ -42,33 +40,32 @@
         <LinearLayout
             android:id="@+id/linearLayout1"
             android:layout_width="0dp"
-            android:layout_height="@dimen/_55sdp"
-            android:layout_marginStart="15dp"
-
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_5sdp"
             android:gravity="start|center"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@+id/letter"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/relative"
             app:layout_constraintStart_toEndOf="@+id/letter"
-            app:layout_constraintTop_toTopOf="@+id/letter">
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/readerName"
                 android:textStyle="bold"
-                android:textSize="17sp"
+                android:textSize="@dimen/_13ssp"
                 android:textColor="@color/text_color"
                 android:fontFamily="@font/amiri_regular"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Al-Fatihah" />
 
             <TextView
                 android:id="@+id/rewayaInfo"
                 android:fontFamily="@font/aref_ruqa_regular"
-                android:layout_width="wrap_content"
-                android:textSize="13sp"
+                android:layout_width="match_parent"
+                android:textSize="@dimen/_10ssp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-8dp"
+                android:layout_marginTop="-5dp"
                 android:text="Mecca - 7 Ayah" />
 
         </LinearLayout>
@@ -78,26 +75,22 @@
             android:id="@+id/relative"
             android:layout_width="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="15dp"
-            app:layout_constraintBottom_toBottomOf="@+id/linearLayout1"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/linearLayout1"
+            app:layout_constraintTop_toTopOf="parent"
             android:layout_height="wrap_content">
 
 
             <TextView
                 android:id="@+id/count"
-                android:layout_width="70dp"
+                android:layout_width="@dimen/_55sdp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="@dimen/_1sdp"
                 android:layout_marginStart="@dimen/_12sdp"
-                android:layout_marginTop="8dp"
-
                 android:background="@drawable/type_soura_background"
                 android:fontFamily="@font/aref_ruqa_regular"
                 android:gravity="center"
-
                 android:padding="@dimen/_1sdp"
                 android:text="@string/sora"
                 android:textAlignment="center"

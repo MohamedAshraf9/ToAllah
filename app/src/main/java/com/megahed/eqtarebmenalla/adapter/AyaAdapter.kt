@@ -56,7 +56,7 @@ class AyaAdapter (private val context: Context,
         val aya= listData[position]
 
         holder.ayaTitle.text=aya.text
-        holder.ayaNumber.text="${aya.numberInSurah} | ${Constants.SORA_OF_QURAN[aya.soraId]}     اضغط للتفسير     "
+        holder.ayaNumber.text="${aya.numberInSurah} | ${Constants.SORA_OF_QURAN[aya.soraId]}   اضغط للتفسير   "
         if (aya.isVaForte){
             holder.fav.setImageResource(R.drawable.ic_favorite_red_24)
         }

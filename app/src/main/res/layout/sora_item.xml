@@ -16,8 +16,8 @@
 
         <TextView
             android:id="@+id/soraNumber"
-            android:layout_width="25dp"
-            android:layout_height="40dp"
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_30sdp"
             android:gravity="center"
             android:text="أ"
             android:textSize="13sp"
@@ -36,16 +36,16 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:gravity="start"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@+id/soraNumber"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/relative"
             app:layout_constraintStart_toEndOf="@+id/soraNumber"
-            app:layout_constraintTop_toTopOf="@+id/soraNumber">
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/soraNameAr"
                 android:textSize="@dimen/_14ssp"
                 android:textStyle="bold"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_color"
                 android:fontFamily="@font/amiri_regular"
@@ -59,9 +59,9 @@
             android:id="@+id/relative"
             android:layout_width="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="@+id/linearLayout1"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/linearLayout1"
+            app:layout_constraintTop_toTopOf="parent"
             android:layout_height="wrap_content">
 
             <TextView

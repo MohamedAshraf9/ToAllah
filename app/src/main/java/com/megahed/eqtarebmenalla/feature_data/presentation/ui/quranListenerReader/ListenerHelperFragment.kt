@@ -170,7 +170,7 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
                         }
                         else{
                             val action: NavDirections = ListenerHelperFragmentDirections
-                                .actionListenerHelperFragmentToHefzRepeatFragment(
+                                .actionListenerHelperFragmentToHefzRepeatActivity(
                                     link,soraId.toString(),startAya.toString(),endAya.toString(),
                                     ayaR.toInt(),
                                     soraR.toInt(),
