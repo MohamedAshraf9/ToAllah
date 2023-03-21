@@ -1,5 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.data.quranImage
 
+import com.google.errorprone.annotations.Keep
+
+@Keep
 data class QuranImageItem(
     val ayah: Int?=null,
     val end_time: Int?=null,

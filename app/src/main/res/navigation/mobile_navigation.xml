@@ -180,7 +180,15 @@
         android:id="@+id/soraFavoriteFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.SoraFavoriteFragment"
         android:label="fragment_sora_favorite"
-        tools:layout="@layout/fragment_sora_favorite" />
+        tools:layout="@layout/fragment_sora_favorite" >
+        <action
+            android:id="@+id/action_soraFavoriteFragment_to_songFragment"
+            app:destination="@id/songFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
     <fragment
         android:id="@+id/listenerHelperFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment"

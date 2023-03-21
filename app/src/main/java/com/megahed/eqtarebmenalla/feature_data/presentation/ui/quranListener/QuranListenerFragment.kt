@@ -125,9 +125,18 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         else{
             (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
             (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+            toolbar.title = getString(R.string.readerFav)
 
             lifecycleScope.launchWhenStarted {
                 quranListenerViewModel.getFavoriteQuranListenerReader().collect {
+                    if (it.isEmpty()){
+                        binding.progressBar.visibility=View.VISIBLE
+                        binding.recyclerView.visibility=View.GONE
+                    }
+                    else{
+                        binding.progressBar.visibility=View.GONE
+                        binding.recyclerView.visibility=View.VISIBLE
+                    }
                     quranListenerAdapter.setData(it)
                 }
 

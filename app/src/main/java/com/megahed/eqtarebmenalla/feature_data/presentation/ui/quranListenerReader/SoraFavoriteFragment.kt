@@ -1,6 +1,11 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
+import android.app.DownloadManager
+import android.content.Context
+import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
@@ -10,25 +15,40 @@ import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.SoraFavoriteAdapter
 import com.megahed.eqtarebmenalla.common.CommonUtils
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentSoraFavoriteBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import com.megahed.eqtarebmenalla.db.model.SoraSong
+import com.megahed.eqtarebmenalla.db.model.toSong
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerViewModel
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSongsViewModel
+import com.megahed.eqtarebmenalla.myListener.OnItemReaderClickListener
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 
 @AndroidEntryPoint
 class SoraFavoriteFragment : Fragment(), MenuProvider {
 
     private lateinit var binding: FragmentSoraFavoriteBinding
     private lateinit var soraFavoriteAdapter : SoraFavoriteAdapter
+    private lateinit var mainViewModel: MainSongsViewModel
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        mainViewModel = ViewModelProvider(this).get(MainSongsViewModel::class.java)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,11 +78,18 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
 
 
         soraFavoriteAdapter= SoraFavoriteAdapter(requireContext(), object :
-            OnItemWithFavClickListener<SoraSong> {
+            OnItemReaderClickListener<SoraSong> {
 
-            override fun onItemClick(itemObject: SoraSong, view: View?,position: Int) {
+            override fun onItemClickReader(itemObject: SoraSong, view: View?, readerName: String) {
+                mainViewModel.playOrToggleSong(itemObject.toSong(readerName),true)
+                val action: NavDirections = SoraFavoriteFragmentDirections.
+                actionSoraFavoriteFragmentToSongFragment()
+                Navigation.findNavController(requireView()).navigate(action)
+            }
 
-                CommonUtils.showMessage(requireContext(),"${itemObject.isVaForte}")
+            override fun onItemClick(itemObject: SoraSong, view: View?, position: Int) {
+
+
 
             }
 
@@ -73,6 +100,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
             }
 
             override fun onItemLongClick(itemObject: SoraSong, view: View?,position: Int) {
+
             }
         })
         binding.recyclerView.adapter = soraFavoriteAdapter
@@ -102,6 +130,10 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         }
 
     }
+
+
+
+
 
 
 }
