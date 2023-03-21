@@ -81,7 +81,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
             OnItemReaderClickListener<SoraSong> {
 
             override fun onItemClickReader(itemObject: SoraSong, view: View?, readerName: String) {
-                mainViewModel.playOrToggleSong(itemObject.toSong(readerName),true)
+                mainViewModel.playOrToggleSong(itemObject.toSong(readerName.trim()),true)
                 val action: NavDirections = SoraFavoriteFragmentDirections.
                 actionSoraFavoriteFragmentToSongFragment()
                 Navigation.findNavController(requireView()).navigate(action)
