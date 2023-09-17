@@ -75,16 +75,17 @@ class ElzekrFragment : Fragment(), MenuProvider {
         binding.recyclerView.adapter = elzekrAdapter
 
             if (!fromFavorite){
-                toolbar.title = azkarName
-                lifecycleScope.launchWhenStarted {
-                    azkarCatId?.let { it ->
-                        elzekrViewModel.getElZekrOfCatId(it).collect{ it1 ->
-                            elzekrAdapter.setData(it1)
+            toolbar.title = azkarName
+            lifecycleScope.launchWhenStarted {
+                azkarCatId?.let { it ->
+                    elzekrViewModel.getElZekrOfCatId(it).collect{ it1 ->
+                        elzekrAdapter.setData(it1)
 
-                        }
                     }
                 }
-            }else{
+            }
+            }
+            else{
                 toolbar.title = getString(R.string.favorite)
                 lifecycleScope.launchWhenStarted {
                     elzekrViewModel.getFavoriteElZekr().collect{
