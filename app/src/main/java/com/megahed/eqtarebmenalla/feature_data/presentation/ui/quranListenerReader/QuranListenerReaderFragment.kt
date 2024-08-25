@@ -1,15 +1,19 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
+import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -26,6 +30,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
+import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN
 import com.megahed.eqtarebmenalla.common.Constants.getSoraLink
@@ -127,7 +132,9 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             OnItemWithFavClickListener<SoraSong> {
 
             override fun onItemClick(itemObject: SoraSong, view: View?,position: Int) {
-                Log.d("etrtr","ddd")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    launchNotificationPermission()
+                }
                 mainViewModel.playOrToggleSong(itemObject.toSong(readerName),true)
                 val action: NavDirections = QuranListenerReaderFragmentDirections.
                 actionQuranListenerReaderFragmentToSongFragment()
@@ -204,7 +211,38 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun launchNotificationPermission(){
+        val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
+        if (!MethodHelper.hasPermissions(requireActivity(), perms)){
+            requestPermissionLauncher.launch(perms)
+        }
 
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+        // }
+    }
+
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all {
+            it.value
+        }
+        if (!granted) {
+            // PERMISSION GRANTED
+            showMessage(requireActivity(),getString(R.string.need_permissions))
+        }
+    }
 
     @Throws(Exception::class)
     private fun downloadTask(soraSong: SoraSong): Boolean {

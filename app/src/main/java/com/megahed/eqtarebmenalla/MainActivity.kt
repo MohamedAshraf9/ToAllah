@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -54,6 +55,12 @@ class MainActivity : AppCompatActivity(){
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            launchNotificationPermission()
+        }
 
        /* val mainViewModel = ViewModelProvider(this).get(IslamicViewModel::class.java)*/
         //val prayerTimeViewModel = ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
@@ -220,7 +227,37 @@ class MainActivity : AppCompatActivity(){
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun launchNotificationPermission(){
+        val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
+        if (!MethodHelper.hasPermissions(this, perms)){
+            requestPermissionLauncher.launch(perms)
+        }
+
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+        // }
+    }
 
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all {
+            it.value
+        }
+        if (!granted) {
+            // PERMISSION GRANTED
+            showMessage(this,getString(R.string.need_permissions))
+        }
+    }
 
 }

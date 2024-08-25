@@ -146,4 +146,7 @@
     <string name="dark_mode"> تمكين الوضع الداكن </string>
     <string name="settings">الاعدادات</string>
 
+    <string name="need_permissions">نحتاج الاذن</string>
+
+
 </resources>
