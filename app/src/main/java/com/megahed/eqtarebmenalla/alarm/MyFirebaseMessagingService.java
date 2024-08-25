@@ -64,7 +64,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         activityIntent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla"));
         //startActivity(intent);
         //activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 
 

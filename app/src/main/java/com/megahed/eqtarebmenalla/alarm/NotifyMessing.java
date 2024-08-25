@@ -78,8 +78,8 @@ public class NotifyMessing extends BroadcastReceiver {
         Intent activityIntent = new Intent(context, SplashScreenActivity.class);
         activityIntent.setAction(Constants.ACTION.MAIN_ACTION);
         activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        @SuppressLint("UnspecifiedImmutableFlag")
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, activityIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -140,7 +140,7 @@ public class NotifyMessing extends BroadcastReceiver {
         Intent intent = new Intent(context, NotifyMessing.class);
         intent.putExtras(bundle);
         intent.setAction("com.megahed.eqtarebmenalla.TIMEALARM");
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT| PendingIntent.FLAG_IMMUTABLE);
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         long triggerAtMillis = calendar.getTimeInMillis();

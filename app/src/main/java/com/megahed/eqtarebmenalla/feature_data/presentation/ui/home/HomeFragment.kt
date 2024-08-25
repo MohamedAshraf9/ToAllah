@@ -731,7 +731,6 @@ class HomeFragment : Fragment(), LocationListener {
         intent.putExtra("interval", "daily")
         intent.putExtra("notificationId", notificationId)
         intent.action = "com.megahed.eqtarebmenalla.TIMEALARM"
-        @SuppressLint("UnspecifiedImmutableFlag")
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             alarmId,
@@ -752,15 +751,15 @@ class HomeFragment : Fragment(), LocationListener {
     }
 
 
-    @SuppressLint("UnspecifiedImmutableFlag")
-    fun cancelAlarm(context: Context, alarmId: Int) {
+
+    private fun cancelAlarm(context: Context, alarmId: Int) {
         val intent = Intent(context, NotifyMessing::class.java)
         intent.action = "com.megahed.eqtarebmenalla.TIMEALARM"
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             alarmId,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)
