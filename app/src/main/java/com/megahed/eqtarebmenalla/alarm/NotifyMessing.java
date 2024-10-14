@@ -12,6 +12,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -55,9 +56,46 @@ public class NotifyMessing extends BroadcastReceiver {
             eventColor = bundle.getInt("AlarmColor", -49920);
             notificationId = bundle.getInt("notificationId", 0);
 
-
             showNotification();
-            setNewAlarm();
+
+            // Check if the alarm is still enabled before rescheduling
+            SharedPreferences prefs = context.getSharedPreferences("adhen", Context.MODE_PRIVATE);
+            boolean isAlarmEnabled = false;
+
+            switch (notificationId) {
+                case 10:
+                    isAlarmEnabled = prefs.getBoolean(Constants.AZAN.FAJR, false);
+                    if (isAlarmEnabled) {
+                        setNewAlarm();
+                    }
+                    break;
+                case 11:
+                    isAlarmEnabled = prefs.getBoolean(Constants.AZAN.DUHR, false);
+                    if (isAlarmEnabled) {
+                        setNewAlarm();
+                    }
+                    break;
+                case 12:
+                    isAlarmEnabled = prefs.getBoolean(Constants.AZAN.ASR, false);
+                    if (isAlarmEnabled) {
+                        setNewAlarm();
+                    }
+                    break;
+                case 13:
+                    isAlarmEnabled = prefs.getBoolean(Constants.AZAN.MAGREB, false);
+                    if (isAlarmEnabled) {
+                        setNewAlarm();
+                    }
+                    break;
+                case 14:
+                    isAlarmEnabled = prefs.getBoolean(Constants.AZAN.ISHA, false);
+                    if (isAlarmEnabled) {
+                        setNewAlarm();
+                    }
+                    break;
+            }
+
+            /*setNewAlarm();*/
         }
 
 
@@ -140,7 +178,12 @@ public class NotifyMessing extends BroadcastReceiver {
         Intent intent = new Intent(context, NotifyMessing.class);
         intent.putExtras(bundle);
         intent.setAction("com.megahed.eqtarebmenalla.TIMEALARM");
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT| PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                notificationId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT| PendingIntent.FLAG_IMMUTABLE
+        );
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         long triggerAtMillis = calendar.getTimeInMillis();
@@ -153,7 +196,8 @@ public class NotifyMessing extends BroadcastReceiver {
 
             }
             else {
-                alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerAtMillis,pendingIntent),pendingIntent);
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                //alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerAtMillis,pendingIntent),pendingIntent);
             }
 
 

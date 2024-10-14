@@ -742,9 +742,11 @@ class HomeFragment : Fragment(), LocationListener {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pendingIntent)
         } else {
-            alarmManager.setAlarmClock(
-                AlarmClockInfo(calendar1.timeInMillis, pendingIntent),
-                pendingIntent
+            val ccalender = Calendar.getInstance()
+            ccalender.add(Calendar.MINUTE, 1)
+
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,calendar1.timeInMillis, pendingIntent
             )
 
         }
