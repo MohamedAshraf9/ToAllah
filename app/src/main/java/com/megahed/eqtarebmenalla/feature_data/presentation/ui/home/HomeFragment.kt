@@ -34,6 +34,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -49,11 +55,14 @@ import com.megahed.eqtarebmenalla.db.model.PrayerTime
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.settings.SettingsActivity
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
+import com.megahed.eqtarebmenalla.worker.PrayerTimesScheduler
+import com.megahed.eqtarebmenalla.worker.PrayerTimesWorker
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.IOException
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 
@@ -495,6 +504,15 @@ class HomeFragment : Fragment(), LocationListener {
         return root
     }
 
+    private fun setPrayerTimesUpdateWorker() {
+        activity?.let {
+            lastLocation?.let { lastLocation ->
+                PrayerTimesScheduler.schedulePrayerTimesWork(it,
+                    lastLocation.latitude, lastLocation.longitude)
+            }
+        }
+    }
+
     private fun updateAzan(show:Boolean) {
         if (show)
             statusLocationCheck()
@@ -681,6 +699,7 @@ class HomeFragment : Fragment(), LocationListener {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
                     lastLocation = location
+                    setPrayerTimesUpdateWorker()
                     Log.d(
                         "myLocccc",
                         " last  " + lastLocation?.longitude + "  " + lastLocation?.latitude
@@ -742,9 +761,6 @@ class HomeFragment : Fragment(), LocationListener {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pendingIntent)
         } else {
-            val ccalender = Calendar.getInstance()
-            ccalender.add(Calendar.MINUTE, 1)
-
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,calendar1.timeInMillis, pendingIntent
             )
