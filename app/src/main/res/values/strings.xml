@@ -147,6 +147,7 @@
     <string name="settings">الاعدادات</string>
 
     <string name="need_permissions">نحتاج الاذن</string>
+    <string name="downloading_all_files" >جاري تحميل كل السور</string>
 
 
 </resources>

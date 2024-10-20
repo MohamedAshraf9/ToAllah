@@ -1,8 +1,11 @@
 package com.megahed.eqtarebmenalla.exoplayer
 
+import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -140,8 +143,21 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        // Restart the service if the task is removed
+        val restartServiceIntent = Intent(applicationContext, this.javaClass)
+        restartServiceIntent.setPackage(packageName)
+
+        val restartServicePendingIntent = PendingIntent.getService(
+            applicationContext, 1, restartServiceIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmService = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmService[AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000] =
+            restartServicePendingIntent
+
         super.onTaskRemoved(rootIntent)
-        exoPlayer.stop()
+
+        // Remove exoPlayer.stop() to prevent stopping playback when app is cleared
     }
 
     override fun onDestroy() {
@@ -184,6 +200,10 @@ class MusicService : MediaBrowserServiceCompat() {
             }
         }
     }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY // This ensures the service is restarted if killed
+       }
 }
 
 

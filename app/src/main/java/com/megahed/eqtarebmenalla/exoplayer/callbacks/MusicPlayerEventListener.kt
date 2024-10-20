@@ -48,12 +48,15 @@ class MusicPlayerEventListener(
                 // If playback is paused we remove the foreground state which allows the
                 // notification to be dismissed. An alternative would be to provide a "close"
                 // button in the notification which stops playback and clears the notification.
-                if (playbackState == Player.STATE_READY) {
+                if (playbackState == Player.STATE_READY && !player.playWhenReady) {
                     musicService.stopForeground(false)
                 }
             }
             else -> {
                 notificationManager.hideNotification()
+                if (!player.playWhenReady) {
+                    musicService.stopForeground(true)
+                }
             }
         }
     }
