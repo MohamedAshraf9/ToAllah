@@ -37,6 +37,7 @@ import com.megahed.eqtarebmenalla.common.Constants.getSoraLink
 import com.megahed.eqtarebmenalla.common.Constants.songs
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerReaderBinding
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
+import com.megahed.eqtarebmenalla.db.model.Sora
 import com.megahed.eqtarebmenalla.db.model.SoraSong
 import com.megahed.eqtarebmenalla.db.model.toSong
 import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
@@ -46,6 +47,11 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSong
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 @AndroidEntryPoint
@@ -60,6 +66,8 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
     private var readerId:String?=null
     private var readerName:String?=null
     private var quranListenerReader: QuranListenerReader?=null
+
+    private val quranReaderSoras: ArrayList<SoraSong> = arrayListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,6 +167,8 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
                 quranListenerReaderViewModel.getSongsOfSora(it).collect{
                     FirebaseMusicSource._audiosLiveData.value=it.map { it.toSong(readerName) }
                     quranListenerReaderAdapter.setData(it)
+                    quranReaderSoras.clear()
+                    quranReaderSoras.addAll(it)
                 }
             }
         }
@@ -173,6 +183,9 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
 
         }
 
+        binding.download.setOnClickListener {
+            downloadAllSoraSongs(quranReaderSoras, readerName.toString())
+        }
 
         val menuHost: MenuHost = requireActivity()
 
@@ -252,7 +265,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         }
         try {
 
-            val file= File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS)
+            val file= File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS + File.separator + readerName)
             if (!file.exists()) {
                 file.mkdirs()
             }
@@ -261,7 +274,7 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
             val request = DownloadManager.Request(Uri.parse(soraSong.url))
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
             request.setDestinationUri(Uri.fromFile(result))
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,result.name)
+           // request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS + File.separator + readerName, result.name)
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             downloadManager.enqueue(request)
             MethodHelper.toastMessage(getString(R.string.downloading))
@@ -280,6 +293,62 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         }
         return true
     }
+
+    @Throws(Exception::class)
+    private fun downloadAllSoraSongs(soraSongs: List<SoraSong>, folderName: String): Boolean {
+        try {
+            // Create a folder in the Downloads directory with the specific folder name
+            val directory = File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS + File.separator + folderName)
+            if (!directory.exists()) {
+                directory.mkdirs()  // Create the folder if it doesn't exist
+            }
+
+            val downloadManager = requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+            // Use a coroutine scope to throttle the download requests
+            CoroutineScope(Dispatchers.IO).launch {
+                // Loop through all SoraSongs and download them
+                for (soraSong in soraSongs) {
+                    if (!soraSong.url.startsWith("http")) {
+                        withContext(Dispatchers.Main) {
+                            MethodHelper.toastMessage(getString(R.string.error))
+                        }
+                        // Skip to the next file if the URL is invalid
+                        continue
+                    }
+
+                    // Create the file path for each download
+                    val result = File(
+                        directory.absolutePath + File.separator + SORA_OF_QURAN[soraSong.SoraId] + "_" + (readerName
+                            ?: "") + "." + soraSong.url.substringAfterLast('.', "")
+                    )
+
+                    val request = DownloadManager.Request(Uri.parse(soraSong.url))
+                    request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+                    request.setDestinationUri(Uri.fromFile(result))
+                    //request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS + File.separator + folderName, result.name)
+                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
+                    // Enqueue each download request
+                    downloadManager.enqueue(request)
+
+                    // Introduce a delay between downloads (e.g., 500 milliseconds)
+                    delay(500)
+                }
+
+                withContext(Dispatchers.Main) {
+                    MethodHelper.toastMessage(getString(R.string.downloading_all_files))
+                }
+            }
+            return true
+
+        } catch (e: Exception) {
+            MethodHelper.toastMessage(getString(R.string.error))
+            Log.d("k", "downloadAllSoraSongs: ${e.message}")
+            return false
+        }
+    }
+
 
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

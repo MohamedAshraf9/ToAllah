@@ -79,6 +79,7 @@
             android:name=".exoplayer.MusicService"
             android:foregroundServiceType="mediaPlayback"
             android:permission="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+            android:stopWithTask="false"
             android:exported="true"
             tools:ignore="ForegroundServicePermission">
             <intent-filter>
