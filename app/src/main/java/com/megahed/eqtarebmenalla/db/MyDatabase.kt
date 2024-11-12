@@ -1,8 +1,12 @@
 package com.megahed.eqtarebmenalla.db
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.megahed.eqtarebmenalla.db.dao.*
 import com.megahed.eqtarebmenalla.db.model.*
 
@@ -26,6 +30,13 @@ abstract class MyDatabase : RoomDatabase() {
 
     companion object{
         const val DATABASE_NAME="IslamicLocalDB"
+
+        val MIGRATION_1_3 = object : Migration(1, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add the 'url' column to the 'Aya' table
+                database.execSQL("ALTER TABLE Aya ADD COLUMN url TEXT")
+            }
+        }
     }
 
     abstract val prayerTime:PrayerTimeDao
@@ -38,6 +49,5 @@ abstract class MyDatabase : RoomDatabase() {
     abstract val tasbehDataDao:TasbehDataDao
     abstract val quranListenerReaderDao:QuranListenerReaderDao
     abstract val soraSongDao:SoraSongDao
-
 
 }

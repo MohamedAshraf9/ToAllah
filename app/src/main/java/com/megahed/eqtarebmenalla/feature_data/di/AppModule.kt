@@ -15,6 +15,7 @@ import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.db.MyDatabase
+import com.megahed.eqtarebmenalla.db.MyDatabase.Companion.MIGRATION_1_3
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.repository.*
@@ -88,6 +89,7 @@ object AppModule {
             app,
             MyDatabase::class.java,
             MyDatabase.DATABASE_NAME)
+            .addMigrations(MIGRATION_1_3)
             .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
