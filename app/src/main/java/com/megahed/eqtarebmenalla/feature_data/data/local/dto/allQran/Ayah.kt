@@ -12,7 +12,8 @@ data class Ayah(
     val page: Int,
     val ruku: Int,
     val sajda: Boolean,
-    val text: String
+    val text: String,
+    var url: String?
 )
 fun Ayah.toAya(soraId:Int): Aya {
     return Aya(
@@ -25,8 +26,8 @@ fun Ayah.toAya(soraId:Int): Aya {
         ruku=ruku,
         sajda=sajda,
         text=text,
-        soraId=soraId
-
+        soraId=soraId,
+        url = url
 
     )
 }

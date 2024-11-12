@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.megahed.eqtarebmenalla.exoplayer.MusicNotificationManager
@@ -56,6 +57,17 @@ class MusicPlayerEventListener(
                 notificationManager.hideNotification()
                 if (!player.playWhenReady) {
                     musicService.stopForeground(true)
+                }
+            }
+        }
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        mediaItem?.let {
+            if (mediaItem.mediaMetadata.description == "AYA") {
+                if (it.mediaId.isNotEmpty()) {
+                    val ayaId = it.mediaId.toInt() // Assuming media ID is the Aya ID
+                    musicService.updateMetadataForCurrentAya(ayaId)
                 }
             }
         }

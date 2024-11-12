@@ -97,7 +97,6 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-
         lifecycleScope.launchWhenStarted {
             readerId?.let {
                 quranListenerReaderViewModel.getQuranListenerReaderById(it)?.let {

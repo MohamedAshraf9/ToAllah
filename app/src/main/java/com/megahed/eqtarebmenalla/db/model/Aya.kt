@@ -28,5 +28,6 @@ data class Aya(
     val sajda: Boolean,
     val text: String,
     var isVaForte: Boolean=false,
-    val soraId:Int
+    val soraId:Int,
+    var url: String?
 )

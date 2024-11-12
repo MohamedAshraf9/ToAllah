@@ -134,7 +134,7 @@ class MainSongsViewModel @Inject constructor(
     fun playOrToggleSong(mediaItem: Song, toggle: Boolean = false) {
         val isPrepared = playbackState.value?.isPrepared ?: false
         if(isPrepared && mediaItem.mediaId ==
-            curPlayingSong.value?.getString(METADATA_KEY_MEDIA_ID)) {
+            curPlayingSong.value?.getString(METADATA_KEY_MEDIA_ID) && curPlayingSong.value?.description?.description != "AYA") {
             playbackState.value?.let { playbackState ->
                 when {
                     playbackState.isPlaying -> if(toggle) musicServiceConnection.transportControls.pause()

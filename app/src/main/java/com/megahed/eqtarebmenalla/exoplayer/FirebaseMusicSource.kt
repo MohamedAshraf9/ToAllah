@@ -5,28 +5,34 @@ import android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 import com.megahed.eqtarebmenalla.exoplayer.State.*
 
 class FirebaseMusicSource {
 
     var songs = emptyList<MediaMetadataCompat>()
+    var ayas = emptyList<MediaMetadataCompat>()
 
     //private val _audiosLiveData = MutableLiveData<List<MediaMetadataCompat>>()
     val audiosLiveData: LiveData<List<Song>> = _audiosLiveData
 
+    val ayasLiveData: LiveData<List<Aya>> = _ayasLiveData
 
     companion object{
          val _audiosLiveData = MutableLiveData<List<Song>>()
-
+        val _ayasLiveData = MutableLiveData<List<Aya>>()
     }
+
      fun fetchMediaData() {
         state = STATE_INITIALIZING
         //val allSongs = musicDatabase.getAllSongs()
@@ -48,15 +54,53 @@ class FirebaseMusicSource {
                     .build()
             }
             state = STATE_INITIALIZED
+            //Log.d("Firebase", "fetchMediaData: ayas: ${ayas[0].description}")
         }
         state = STATE_INITIALIZED
 
     }
 
+    fun fetchAyaMediaData() {
+        state = STATE_INITIALIZING
+        //val allSongs = musicDatabase.getAllSongs()
+
+        //_audiosLiveData.value= null
+        ayasLiveData.observeForever{
+            state = STATE_INITIALIZING
+            ayas = it.map { aya ->
+                val media = MediaMetadataCompat.Builder()
+                    .putString(METADATA_KEY_ARTIST, aya.soraId.toString())
+                    .putString(METADATA_KEY_MEDIA_ID, aya.ayaId.toString())
+                    .putString(METADATA_KEY_TITLE, aya.text.toString())
+                    .putString(METADATA_KEY_DISPLAY_TITLE, aya.text.toString())
+                    //.putString(METADATA_KEY_DISPLAY_ICON_URI, aya.imageUrl)
+                    .putString(METADATA_KEY_MEDIA_URI, aya.url)
+                    //.putString(METADATA_KEY_ALBUM_ART_URI, aya.imageUrl)
+                    .putString(METADATA_KEY_DISPLAY_SUBTITLE, "")
+                    .putString(METADATA_KEY_DISPLAY_DESCRIPTION, "AYA")
+                    .build()
+
+                return@map media
+            }
+
+            //Log.d("Firebase", "fetchAyaMediaData: ayas: ${ayas[0].description.description}")
+
+            state = STATE_INITIALIZED
+        }
+        state = STATE_INITIALIZED
+
+    }
+
+    fun getMetadataForAya(ayaId: Int): MediaMetadataCompat? {
+        return ayas.find { it.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) == ayaId.toString() }
+    }
+
+
     fun asMediaSource(dataSourceFactory: DefaultDataSource.Factory): ConcatenatingMediaSource {
         val concatenatingMediaSource = ConcatenatingMediaSource()
         songs.forEach { song ->
-            val mediaItem: MediaItem = MediaItem.fromUri(song.getString(METADATA_KEY_MEDIA_URI).toUri())
+            val mediaItem: MediaItem =
+                MediaItem.fromUri(song.getString(METADATA_KEY_MEDIA_URI).toUri())
             val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             concatenatingMediaSource.addMediaSource(mediaSource)
@@ -64,16 +108,48 @@ class FirebaseMusicSource {
         return concatenatingMediaSource
     }
 
-    fun asMediaItems() = songs.map { song ->
-        val desc = MediaDescriptionCompat.Builder()
-            .setMediaUri(song.getString(METADATA_KEY_MEDIA_URI).toUri())
-            .setTitle(song.description.title)
-            .setSubtitle(song.description.subtitle)
-            .setMediaId(song.description.mediaId)
-            .setIconUri(song.description.iconUri)
-            .build()
-        MediaBrowserCompat.MediaItem(desc, FLAG_PLAYABLE)
-    }.toMutableList()
+    fun asAyaMediaSource(dataSourceFactory: DefaultDataSource.Factory, repeatCount: Int): MediaSource {
+        val concatenatingMediaSource = ConcatenatingMediaSource()
+
+        ayas.forEach { aya ->
+            val mediaItem = MediaItem.fromUri(aya.getString(METADATA_KEY_MEDIA_URI).toUri())
+            val progressiveMediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(mediaItem)
+            //val loopingMediaSource = LoopingMediaSource(progressiveMediaSource, repeatCount)
+            repeat(repeatCount) {
+                concatenatingMediaSource.addMediaSource(progressiveMediaSource)
+            }
+        }
+
+        return concatenatingMediaSource
+    }
+
+
+    fun asMediaItems():  MutableList<MediaBrowserCompat.MediaItem> {
+            return songs.map { song ->
+                val desc = MediaDescriptionCompat.Builder()
+                    .setMediaUri(song.getString(METADATA_KEY_MEDIA_URI).toUri())
+                    .setTitle(song.description.title)
+                    .setSubtitle(song.description.subtitle)
+                    .setMediaId(song.description.mediaId)
+                    .setIconUri(song.description.iconUri)
+                    .build()
+                MediaBrowserCompat.MediaItem(desc, FLAG_PLAYABLE)
+            }.toMutableList()
+    }
+
+    fun asAyaMediaItems():  MutableList<MediaBrowserCompat.MediaItem> {
+            return ayas.map { aya ->
+                val desc = MediaDescriptionCompat.Builder()
+                    .setMediaUri(aya.getString(METADATA_KEY_MEDIA_URI).toUri())
+                    .setTitle(aya.description.title)
+                    .setSubtitle(aya.description.subtitle)
+                    .setMediaId(aya.description.mediaId)
+                    .setIconUri(aya.description.iconUri)
+                    .build()
+                MediaBrowserCompat.MediaItem(desc, FLAG_PLAYABLE)
+            }.toMutableList()
+    }
 
     private val onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 

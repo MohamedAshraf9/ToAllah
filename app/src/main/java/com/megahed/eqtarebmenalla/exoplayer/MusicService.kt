@@ -4,12 +4,15 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import androidx.media.MediaBrowserServiceCompat
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
@@ -18,8 +21,7 @@ import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.megahed.eqtarebmenalla.common.Constants.MEDIA_ROOT_ID
 import com.megahed.eqtarebmenalla.common.Constants.NETWORK_ERROR
-import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
-import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
+import com.megahed.eqtarebmenalla.common.Constants.NOTIFICATION_ID
 import com.megahed.eqtarebmenalla.exoplayer.callbacks.MusicPlaybackPreparer
 import com.megahed.eqtarebmenalla.exoplayer.callbacks.MusicPlayerEventListener
 import com.megahed.eqtarebmenalla.exoplayer.callbacks.MusicPlayerNotificationListener
@@ -31,7 +33,6 @@ private const val SERVICE_TAG = "MusicService"
 
 @AndroidEntryPoint
 class MusicService : MediaBrowserServiceCompat() {
-
 
     @Inject
     lateinit var dataSourceFactory: DefaultDataSource.Factory
@@ -59,9 +60,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private lateinit var musicPlayerEventListener: MusicPlayerEventListener
 
-    private var currentPlaylistItems: List<Song> = emptyList()
-
-
+    private lateinit var sharedPreferences: SharedPreferences
 
     companion object {
         var curSongDuration = 0L
@@ -70,9 +69,15 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(SERVICE_TAG, "onCreate: ***")
+
+        sharedPreferences = getSharedPreferences("playback_prefs", Context.MODE_PRIVATE)
+
         firebaseMusicSource= FirebaseMusicSource()
+
         serviceScope.launch {
             firebaseMusicSource.fetchMediaData()
+            firebaseMusicSource.fetchAyaMediaData()
         }
 
         val activityIntent = packageManager?.getLaunchIntentForPackage(packageName)?.let {
@@ -94,10 +99,11 @@ class MusicService : MediaBrowserServiceCompat() {
             curSongDuration = exoPlayer.duration
         }
 
-        val musicPlaybackPreparer = MusicPlaybackPreparer(firebaseMusicSource) {
-            curPlayingSong = it
+        val musicPlaybackPreparer = MusicPlaybackPreparer(sharedPreferences, firebaseMusicSource) {
+            if (sharedPreferences.getBoolean("isPlayingSora", true)) { curPlayingSong = it }
             preparePlayer(
                 firebaseMusicSource.songs,
+                firebaseMusicSource.ayas,
                 it,
                 true
             )
@@ -124,23 +130,62 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private inner class MusicQueueNavigator : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
-            return firebaseMusicSource.songs[windowIndex].description
+
+            //val actualIndex = player.currentMediaItemIndex
+
+            if (sharedPreferences.getBoolean("isPlayingSora", true)) {
+                return firebaseMusicSource.songs[windowIndex].description
+            }else {
+                val repeatCount = sharedPreferences.getInt("repeat_count", 1)
+                val actualIndex = windowIndex / repeatCount // Calculate the actual Aya index
+                val mediaList = firebaseMusicSource.ayas
+
+                // Ensure actualIndex is within bounds
+                return if (actualIndex in mediaList.indices) {
+                    mediaList[actualIndex].description
+                } else {
+                    MediaDescriptionCompat.Builder().setTitle("Unknown Aya").build()
+                }
+            }
         }
     }
 
+
     private fun preparePlayer(
         songs: List<MediaMetadataCompat>,
+        ayas: List<MediaMetadataCompat>?,
         itemToPlay: MediaMetadataCompat?,
         playNow: Boolean
     ) {
-        val curSongIndex = if(curPlayingSong == null) 0 else songs.indexOf(itemToPlay)
-        //exoPlayer.prepare(firebaseMusicSource.asMediaSource(dataSourceFactory))
-        exoPlayer.setMediaSource(firebaseMusicSource.asMediaSource(dataSourceFactory))
-        exoPlayer.seekTo(curSongIndex, 0L)
-        exoPlayer.prepare()
-        exoPlayer.playWhenReady = playNow
-        //musicNotificationManager.showNotification(exoPlayer)
+        clearPlayer()
+
+        if (sharedPreferences.getBoolean("isPlayingSora", true)) {
+            var curSongIndex = 0
+            curSongIndex = if (curPlayingSong == null) 0 else songs.indexOf(itemToPlay)
+            //exoPlayer.prepare(firebaseMusicSource.asMediaSource(dataSourceFactory))
+            val mediaSource = firebaseMusicSource.asMediaSource(dataSourceFactory)
+            exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.seekTo(curSongIndex, 0L)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = playNow
+        }else {
+            Log.d(SERVICE_TAG, "preparePlayer: is this??")
+            val repeatCount = sharedPreferences.getInt("repeat_count", 1)
+            val mediaSource = firebaseMusicSource.asAyaMediaSource(dataSourceFactory, repeatCount)
+            exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = playNow
+        }
     }
+
+    private fun clearPlayer() {
+        exoPlayer.stop()
+        exoPlayer.clearMediaItems()  // Clears any previously loaded media items
+        exoPlayer.playWhenReady = false  // Reset play state
+        //firebaseMusicSource.clearAyas()
+        //curPlayingSong = null  // Reset current playing item
+    }
+
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         // Restart the service if the task is removed
@@ -154,6 +199,8 @@ class MusicService : MediaBrowserServiceCompat() {
         val alarmService = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmService[AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000] =
             restartServicePendingIntent
+
+        //exoPlayer.clearMediaItems()
 
         super.onTaskRemoved(rootIntent)
 
@@ -184,9 +231,19 @@ class MusicService : MediaBrowserServiceCompat() {
             MEDIA_ROOT_ID -> {
                 val resultsSent = firebaseMusicSource.whenReady { isInitialized ->
                     if(isInitialized) {
+                        if (sharedPreferences.getBoolean("isPlayingSora", true)) {
                         result.sendResult(firebaseMusicSource.asMediaItems())
-                        if(!isPlayerInitialized && firebaseMusicSource.songs.isNotEmpty()) {
-                            preparePlayer(firebaseMusicSource.songs, firebaseMusicSource.songs[0], false)
+                        }else {
+                            result.sendResult(firebaseMusicSource.asAyaMediaItems())
+                        }
+
+                        if(!isPlayerInitialized && (firebaseMusicSource.songs.isNotEmpty() || firebaseMusicSource.ayas.isNotEmpty())) {
+                            preparePlayer(
+                                firebaseMusicSource.songs,
+                                firebaseMusicSource.ayas,
+                                firebaseMusicSource.songs[0],
+                                false
+                            )
                             isPlayerInitialized = true
                         }
                     } else {
@@ -197,13 +254,37 @@ class MusicService : MediaBrowserServiceCompat() {
                 if(!resultsSent) {
                     result.detach()
                 }
+                Log.d("MusicService", "onLoadChildren: MEDIA_ROOT_ID")
+            }
+            else -> {
+                Log.d("MusicService", "onLoadChildren: Not MEDIA_ROOT_ID")
             }
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("MusicService", "onStartCommand: service is starting?!")
+
         return START_STICKY // This ensures the service is restarted if killed
        }
+
+    fun updateMetadataForCurrentAya(ayaId: Int) {
+        // Get metadata for the current Aya from firebaseMusicSource
+        val metadata = firebaseMusicSource.getMetadataForAya(ayaId)
+        if (metadata != null) {
+            mediaSession.setMetadata(metadata)
+
+            // Update playback state to refresh the notification
+            val playbackState = PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.currentPosition, 1f)
+                .setActions(
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                )
+                .build()
+            mediaSession.setPlaybackState(playbackState)
+        }
+    }
+
 }
 
 

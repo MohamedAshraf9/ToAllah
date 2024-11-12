@@ -1,5 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -37,9 +39,13 @@ class QuranListenerFragment : Fragment() , MenuProvider {
     private lateinit var quranListenerAdapter : QuranListenerAdapter
     private var fromFavorite:Boolean=false
 
+    private lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         fromFavorite = arguments?.let { QuranListenerFragmentArgs.fromBundle(it).fromFavorite }!!
+
+        sharedPreferences = requireActivity().getSharedPreferences("playback_prefs", Context.MODE_PRIVATE)
     }
 
     override fun onCreateView(
@@ -66,6 +72,9 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnItemWithFavClickListener<QuranListenerReader> {
 
             override fun onItemClick(itemObject: QuranListenerReader, view: View?,position: Int) {
+                val editor = sharedPreferences.edit()
+                editor.putBoolean("isPlayingSora", true)
+                editor.apply()
                 val action: NavDirections = QuranListenerFragmentDirections.
                 actionNavigationListenerToQuranListenerReaderFragment(
                   id = itemObject.id,
