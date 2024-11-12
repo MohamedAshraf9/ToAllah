@@ -1,15 +1,18 @@
 package com.megahed.eqtarebmenalla.exoplayer.callbacks
 
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
 
 class MusicPlaybackPreparer(
+    private val sharedPreferences: SharedPreferences,
     private val firebaseMusicSource: FirebaseMusicSource,
     private val playerPrepared: (MediaMetadataCompat?) -> Unit
 ) : MediaSessionConnector.PlaybackPreparer {
@@ -26,7 +29,13 @@ class MusicPlaybackPreparer(
 
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
         firebaseMusicSource.whenReady {
-            val itemToPlay = firebaseMusicSource.songs.find { mediaId == it.description.mediaId }
+            var itemToPlay: MediaMetadataCompat? = null
+            if (sharedPreferences.getBoolean("isPlayingSora", true)) {
+                itemToPlay = firebaseMusicSource.songs.find { mediaId == it.description.mediaId }
+            }else {
+                itemToPlay = firebaseMusicSource.ayas.find { mediaId == it.description.mediaId }
+            }
+
             playerPrepared(itemToPlay)
         }
 

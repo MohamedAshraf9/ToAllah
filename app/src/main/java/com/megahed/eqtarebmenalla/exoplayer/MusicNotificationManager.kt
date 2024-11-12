@@ -51,7 +51,6 @@ class MusicNotificationManager(
     }
 
 
-
     private inner class DescriptionAdapter(
         private val mediaController: MediaControllerCompat
     ) : PlayerNotificationManager.MediaDescriptionAdapter {

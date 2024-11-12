@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import com.megahed.eqtarebmenalla.common.Constants.NETWORK_ERROR
 import com.megahed.eqtarebmenalla.common.Event
 import com.megahed.eqtarebmenalla.common.Resource
+import com.megahed.eqtarebmenalla.db.model.Aya
 
 
 class MusicServiceConnection(

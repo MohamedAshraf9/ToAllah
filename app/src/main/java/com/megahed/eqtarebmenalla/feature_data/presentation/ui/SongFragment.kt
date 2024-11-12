@@ -128,7 +128,7 @@ class SongFragment : Fragment() , MenuProvider {
                         result.data?.let { songs ->
                             if(curPlayingSong == null && songs.isNotEmpty()) {
                                 curPlayingSong = songs[0]
-                              //  updateTitleAndSongImage(songs[0])
+                                //  updateTitleAndSongImage(songs[0])
                             }
                         }
 

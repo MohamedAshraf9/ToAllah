@@ -2,6 +2,8 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerRea
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.opengl.Visibility
 import android.os.Bundle
@@ -56,6 +58,14 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
     var reader:RecitersVerse?=null
     private val mainViewModel : HefzViewModel by activityViewModels()
     var job:Job?=null
+
+    private lateinit var sharedPreferences: SharedPreferences
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        sharedPreferences = requireActivity().getSharedPreferences("playback_prefs", Context.MODE_PRIVATE)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -145,6 +155,7 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
 
 
         binding.start.setOnClickListener {
+
             if (MethodHelper.isOnline(requireContext())){
                 reader?.let {
 
@@ -169,6 +180,12 @@ class ListenerHelperFragment : Fragment() , MenuProvider {
                             MethodHelper.toastMessage(getString(R.string.ayaWrong))
                         }
                         else{
+                            val editor = sharedPreferences.edit()
+                            editor.putBoolean("isPlayingSora", false)
+                            editor.putInt("repeat_count", ayaR.toInt())
+                            editor.putInt("all_repeat", soraR.toInt())
+                            editor.apply()
+
                             val action: NavDirections = ListenerHelperFragmentDirections
                                 .actionListenerHelperFragmentToHefzRepeatActivity(
                                     link,soraId.toString(),startAya.toString(),endAya.toString(),
