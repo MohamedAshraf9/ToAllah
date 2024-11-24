@@ -60,6 +60,7 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout"
+            android:windowSoftInputMode="stateHidden|adjustPan"
             android:exported="false">
 
         </activity>

@@ -4,7 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -26,11 +31,8 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerBinding
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
-import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.Reciter
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
-import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class QuranListenerFragment : Fragment() , MenuProvider {
@@ -72,6 +74,7 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnItemWithFavClickListener<QuranListenerReader> {
 
             override fun onItemClick(itemObject: QuranListenerReader, view: View?,position: Int) {
+                Log.d("QuranListenerFragment", "onItemClick: reader & id: ${itemObject.name} - ${itemObject.id}")
                 val editor = sharedPreferences.edit()
                 editor.putBoolean("isPlayingSora", true)
                 editor.apply()

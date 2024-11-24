@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.data.repository
 
+import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.feature_data.data.quranImage.QuranImage
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.QuranListenApi
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.QuranListen
@@ -20,5 +21,9 @@ class QuranListenerRepositoryImp @Inject constructor(
 
     override suspend fun getSoraImages(surah: Int, read: Int): QuranImage {
         return quranListenApi.getSoraImages(surah, read)
+    }
+
+    override suspend fun getReadersWithAyatTimings(): List<QuranListenerReader> {
+        return quranListenApi.getReadersWithAyatTimings()
     }
 }

@@ -2,17 +2,12 @@ package com.megahed.eqtarebmenalla.adapter
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou
-import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.databinding.QuranImageItemBinding
-import com.megahed.eqtarebmenalla.feature_data.data.quranImage.QuranImageItem
 
 class QuranImageAdapter (private val context: Activity
 ) : RecyclerView.Adapter<QuranImageAdapter.MyHolder>() {
@@ -28,13 +23,9 @@ class QuranImageAdapter (private val context: Activity
 
 
     class MyHolder(binding: QuranImageItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
         val image=binding.image
 
         val root = binding.root
-
-
-
     }
 
 
@@ -66,6 +57,14 @@ class QuranImageAdapter (private val context: Activity
 
 
 
+    }
+
+    fun getItemAt(position: Int): String? {
+
+        if (position >= 0 && position < listData.size) {
+            return listData[position]
+        }
+        return null
     }
 
     override fun getItemCount(): Int {
