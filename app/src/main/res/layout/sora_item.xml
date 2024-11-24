@@ -59,6 +59,7 @@
             android:id="@+id/relative"
             android:layout_width="wrap_content"
             android:orientation="horizontal"
+            android:gravity="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -76,19 +77,37 @@
                 android:textAlignment="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/fav"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.47" />
 
-            <ImageView
-                android:id="@+id/read"
-                android:layout_width="@dimen/_30sdp"
-                android:layout_height="@dimen/_25sdp"
-                android:layout_gravity="center"
-                android:gravity="center"
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/_3sdp"
-                android:src="@drawable/baseline_menu_book_24" />
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/proper_read_icon"
+                    app:tint="@color/primary_color"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:id="@+id/read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:padding="@dimen/_2sdp"
+                    android:src="@drawable/baseline_menu_book_24"
+                    app:tint="@color/white" />
+
+            </FrameLayout>
 
 
             <!-- <ImageView

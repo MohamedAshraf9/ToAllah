@@ -32,6 +32,7 @@ class MusicPlaybackPreparer(
             var itemToPlay: MediaMetadataCompat? = null
             if (sharedPreferences.getBoolean("isPlayingSora", true)) {
                 itemToPlay = firebaseMusicSource.songs.find { mediaId == it.description.mediaId }
+                Log.d("MusicPlaybackPreparer", "onPrepareFromMediaId: itemToPlay: ${itemToPlay?.description}")
             }else {
                 itemToPlay = firebaseMusicSource.ayas.find { mediaId == it.description.mediaId }
             }

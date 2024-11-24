@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".feature_data.presentation.ui.QuranImageFragment">
 
@@ -20,7 +22,60 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/playerCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="@dimen/_3sdp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:layout_margin="8dp">
+
+        <ImageView
+            android:id="@+id/playImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play"
+            android:rotation="180"
+            app:tint="@color/primary_color"
+            android:layout_gravity="center"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp" />
+
+        <TextView
+            android:id="@+id/readerNameTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/chooseReader"
+            android:gravity="start"
+            android:layout_gravity="center"
+            android:fontFamily="@font/amiri_bold"
+            android:textColor="@color/text_color"
+            android:textSize="18sp"
+            android:layout_marginStart="16dp"
+            android:includeFontPadding="false"/>
+
+        <ImageView
+            android:id="@+id/listeningOptionsImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_settings_24"
+            app:tint="@color/primary_color"
+            android:layout_gravity="center"
+            android:layout_marginStart="16dp"/>
+
+    </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 
 
 </LinearLayout>

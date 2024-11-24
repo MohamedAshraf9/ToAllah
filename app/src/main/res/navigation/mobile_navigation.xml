@@ -226,7 +226,28 @@
         <argument
             android:name="soraName"
             app:argType="string" />
+
+        <action
+            android:id="@+id/action_quranImageFragment_to_readersListFragment"
+            app:destination="@id/readersListFragment" />
+
     </fragment>
+    <fragment
+        android:id="@+id/readersListFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.readersList.ReadersListFragment"
+        android:label="fragment_readers_list"
+        tools:layout="@layout/fragment_readers_list" >
+
+        <argument
+            android:name="soraId"
+            app:argType="integer" />
+
+        <action
+            android:id="@+id/action_readersListFragment_to_quranImageFragment"
+            app:destination="@id/quranImageFragment" />
+
+    </fragment>
+
     <activity
         android:id="@+id/hefzRepeatActivity"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz.HefzRepeatActivity"

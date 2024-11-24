@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.domain.repository
 
+import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.feature_data.data.quranImage.QuranImage
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.QuranListen
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.verse.VerseReaders
@@ -13,4 +14,6 @@ interface QuranListenerRepository {
       surah:Int,
       read:Int
     ): QuranImage
+
+    suspend fun getReadersWithAyatTimings(): List<QuranListenerReader>
 }

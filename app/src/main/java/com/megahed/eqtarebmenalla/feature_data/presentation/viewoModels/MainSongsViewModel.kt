@@ -7,14 +7,19 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Constants.MEDIA_ROOT_ID
 import com.megahed.eqtarebmenalla.common.Resource
 import com.megahed.eqtarebmenalla.exoplayer.MusicServiceConnection
+import com.megahed.eqtarebmenalla.exoplayer.currentPlaybackPosition
 import com.megahed.eqtarebmenalla.exoplayer.isPlayEnabled
 import com.megahed.eqtarebmenalla.exoplayer.isPlaying
 import com.megahed.eqtarebmenalla.exoplayer.isPrepared
 import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,6 +34,8 @@ class MainSongsViewModel @Inject constructor(
     val networkError = musicServiceConnection.networkError
     val curPlayingSong = musicServiceConnection.curPlayingSong
     val playbackState = musicServiceConnection.playbackState
+
+    private var currentPosition: Long = 0L
 
     init {
 
@@ -101,6 +108,10 @@ class MainSongsViewModel @Inject constructor(
         else musicServiceConnection.transportControls.play()
     }
 
+    fun stopPlayback() {
+        musicServiceConnection.transportControls.stop()
+    }
+
 
     fun skipToNext() {
         musicServiceConnection.transportControls.skipToNext()
@@ -146,6 +157,47 @@ class MainSongsViewModel @Inject constructor(
             musicServiceConnection.transportControls.playFromMediaId(mediaItem.mediaId, null)
         }
     }
+
+    suspend fun playSoraSegment(
+        mediaItem: Song,
+        toggle: Boolean = false,
+        startTime: Int,
+        endTime: Int
+    ) {
+        val currentMediaId = curPlayingSong.value?.getString(METADATA_KEY_MEDIA_ID)
+        val isSameSong = mediaItem.mediaId == currentMediaId
+
+        if (isSameSong) {
+            // Seek and play the segment dynamically
+            musicServiceConnection.transportControls.seekTo(startTime.toLong())
+            musicServiceConnection.transportControls.play()
+        } else {
+            // Prepare the new media item and play from the desired segment
+            musicServiceConnection.transportControls.playFromMediaId(mediaItem.mediaId, null)
+            musicServiceConnection.transportControls.seekTo(startTime.toLong())
+        }
+
+        // Monitor playback to dynamically stop or move to the next step at `endTime`
+        monitorPlaybackSegment(endTime.toLong())
+    }
+
+    private var positionCheckJob: Job? = null
+
+    private suspend fun monitorPlaybackSegment(endTime: Long) {
+        delay(500)
+        positionCheckJob?.cancel() // Cancel any previous monitoring jobs
+        positionCheckJob = viewModelScope.launch {
+            while (isActive) {
+                val playbackPosition = musicServiceConnection.playbackState.value?.currentPlaybackPosition
+                if (playbackPosition != null && playbackPosition >= endTime) {
+                    musicServiceConnection.transportControls.pause() // Stop playback at `endTime`
+                    break // Exit the loop
+                }
+                delay(100) // Check every 100ms for precise control
+            }
+        }
+    }
+
 
     override fun onCleared() {
         super.onCleared()
