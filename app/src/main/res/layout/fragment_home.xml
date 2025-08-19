@@ -38,7 +38,6 @@
         android:paddingBottom="@dimen/_15sdp"
         android:src="@drawable/ic_qibla"
         app:tint="@color/white"
-
         tools:layout_editor_absoluteX="346dp" />
 
 
@@ -71,36 +70,38 @@
         android:id="@+id/salahName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_5sdp"
         android:text="@string/loading"
         android:textColor="@color/white"
-        android:textSize="@dimen/_16ssp"
+        android:textSize="@dimen/_32ssp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/prayer_time"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/iv_prayer_widget"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentLocation" />
 
     <TextView
         android:id="@+id/prayer_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_5sdp"
+        android:layout_marginVertical="@dimen/_5sdp"
         android:text="@string/loading"
         android:textColor="@color/white"
-        android:textSize="@dimen/_13ssp"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_prayer_widget"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="@dimen/_32ssp"
+        app:layout_constraintEnd_toEndOf="@+id/salahName"
+        app:layout_constraintStart_toStartOf="@+id/salahName"
+        app:layout_constraintTop_toBottomOf="@+id/salahName" />
 
     <TextView
         android:id="@+id/prayer_countdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_5sdp"
+        android:layout_marginVertical="@dimen/_5sdp"
         android:text="@string/loading"
         android:textColor="@color/white"
-        android:textSize="@dimen/_13ssp"
+        android:textSize="@dimen/_24ssp"
         app:layout_constraintBottom_toBottomOf="@+id/iv_prayer_widget"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/prayer_time"
+        app:layout_constraintStart_toStartOf="@+id/prayer_time"
+        app:layout_constraintTop_toBottomOf="@+id/prayer_time" />
 
 
     <LinearLayout
@@ -372,8 +373,8 @@
                                     android:textStyle="bold" />
                             </TableRow>
                         </TableLayout>
-                        
-                        
+
+
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
@@ -391,7 +392,7 @@
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
