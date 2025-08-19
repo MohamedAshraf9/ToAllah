@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context=".feature_data.presentation.ui.tasbeh.TasbehFragment">
+    tools:context=".feature_data.presentation.ui.tasbeh.TasbehFragment"
+    android:fitsSystemWindows="true">
 
     <ScrollView
         android:layout_width="match_parent"
