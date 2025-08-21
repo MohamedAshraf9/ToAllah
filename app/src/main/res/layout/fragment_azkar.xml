@@ -5,7 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_height="match_parent"
-    tools:context=".feature_data.presentation.ui.azkar.AzkarFragment">
+    tools:context=".feature_data.presentation.ui.azkar.AzkarFragment"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"

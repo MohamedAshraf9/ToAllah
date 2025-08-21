@@ -39,17 +39,10 @@ object CommonUtils {
         val hours = (dd / 1000).toInt() / 3600
         val minutes = (dd / 1000 % 3600).toInt() / 60
         val seconds = (dd / 1000).toInt() % 60
-        val timeLeftFormatted: String = if (hours > 0) {
-            String.format(
+        val timeLeftFormatted: String = String.format(
                 Locale.getDefault(),
-                "%d:%02d:%02d", hours, minutes, seconds
+                "%02d:%02d:%02d", hours, minutes, seconds
             )
-        } else {
-            String.format(
-                Locale.getDefault(),
-                "%02d:%02d", minutes, seconds
-            )
-        }
 
         return timeLeftFormatted
     }

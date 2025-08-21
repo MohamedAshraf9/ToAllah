@@ -3,21 +3,13 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.home
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.*
-import android.app.AlarmManager.AlarmClockInfo
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.SharedPreferences
-import android.graphics.Color
-import android.location.Address
-import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.net.Uri
 import android.os.*
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,15 +23,11 @@ import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -56,415 +44,411 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.ui.settings.Settings
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.IslamicViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.PrayerTimeViewModel
 import com.megahed.eqtarebmenalla.worker.PrayerTimesScheduler
-import com.megahed.eqtarebmenalla.worker.PrayerTimesWorker
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.IOException
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
-
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), LocationListener {
+class HomeFragment : Fragment() {
 
-    var prayerTimeAlarm:PrayerTime= PrayerTime()
+    companion object {
+        private const val LOCATION_REQUEST_CODE = 1
+        private const val PREF_LATITUDE = "saved_latitude"
+        private const val PREF_LONGITUDE = "saved_longitude"
+        private const val PREF_LOCATION_NAME = "saved_location_name"
+        private const val PREF_LOCATION_SAVED = "location_saved"
+    }
 
-    lateinit var  sharedPreference : SharedPreferences
-
-
+    private var prayerTimeAlarm: PrayerTime = PrayerTime()
+    private lateinit var sharedPreference: SharedPreferences
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
-    private var lastLocation: Location?=null
     private lateinit var locationRequest: LocationRequest
     private lateinit var mLocationCallback: LocationCallback
-
-    lateinit var builder : Notification.Builder
-
-
-    private val mainViewModel : IslamicViewModel by activityViewModels()
-
-
+    private val mainViewModel: IslamicViewModel by activityViewModels()
     private lateinit var binding: FragmentHomeBinding
-    private var timeStarted : Long = 0
-    private var timeElapsed : Long = 0
+
+    private var countDownTimer: CountDownTimer? = null
+    private var timeStarted: Long = 0
+    private var timeElapsed: Long = 0
+    private var isUpdatingLocation = false
+    private var isLocationUpdateRequested = false
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var elapsedTimeRunnable: Runnable? = null
+
     @RequiresApi(Build.VERSION_CODES.S)
     @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
-        val prayerTimeViewModel =
-            ViewModelProvider(this).get(PrayerTimeViewModel::class.java)
-
+        val prayerTimeViewModel = ViewModelProvider(this)[PrayerTimeViewModel::class.java]
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
 
-        // create loading alert
-
-        //loadingAlert = LoadingAlert(requireActivity())
-        //loadingAlert.startLoadingAlert()
-
-
-        sharedPreference =  requireActivity().getSharedPreferences("adhen",Context.MODE_PRIVATE)
-        var editor = sharedPreference.edit()
-
-
-
-        if (!sharedPreference.getBoolean("firstTime", false) ){
-            val alert = Alert(requireActivity()).startLoadingAlert()
-            editor.putBoolean("firstTime", true)
-            editor.apply()
-
-        }
-       binding.dayDetails.text= DateFormat.getDateInstance(DateFormat.FULL).format(Date())
-
-        lifecycleScope.launchWhenStarted {
-            mainViewModel.state.collect{ islamicListState ->
-                islamicListState.let { islamicInfo ->
-                    islamicInfo.islamicInfo.data?.let {
-                        val prayerTime= PrayerTime(1,it.date.gregorian.date,it.timings.Asr,it.timings.Dhuhr,
-                            it.timings.Fajr,it.timings.Isha,it.timings.Maghrib,it.timings.Sunrise)
-                        //isDataAdded=true
-                        prayerTimeViewModel.insertPrayerTime(prayerTime)
-
-
-                    }
-                }
-            }
-
-
-        }
-
-        lifecycleScope.launchWhenStarted {
-            prayerTimeViewModel.getPrayerTimeById().collect {
-                it?.let {
-                    //if (isDataAdded) {
-
-                    prayerTimeAlarm=it
-                    binding.fajrTime.text = CommonUtils.convertSalahTime(it.Fajr)
-                    binding.sunriseTime.text = CommonUtils.convertSalahTime(it.Sunrise)
-                    binding.dhuhrTime.text = CommonUtils.convertSalahTime(it.Dhuhr)
-                    binding.asrTime.text = CommonUtils.convertSalahTime(it.Asr)
-                    binding.maghribTime.text = CommonUtils.convertSalahTime(it.Maghrib)
-                    binding.ishaTime.text = CommonUtils.convertSalahTime(it.Isha)
-                    if (MethodHelper.isOnline(requireContext()))
-                        updateAzan(false)
-                    //loadingAlert.dismissDialog()
-
-
-                    val currentTime = CommonUtils.getCurrentTime()
-                    if (CommonUtils.getTimeLong(it.Fajr, false) >= CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        )
-                    ) {
-
-                        setDataView(
-                            getString(R.string.fajr), CommonUtils.convertSalahTime(it.Fajr),
-                            CommonUtils.getTimeLong(it.Fajr, false) - CommonUtils.getTimeLong(
-                                currentTime,
-                                true
-                            ), true
-                        )
-
-                    } else if (CommonUtils.getTimeLong(
-                            it.Sunrise,
-                            false
-                        ) >= CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        )
-                    ) {
-                        setDataView(
-                            getString(R.string.sunrise), CommonUtils.convertSalahTime(it.Sunrise),
-                            CommonUtils.getTimeLong(it.Sunrise, false) - CommonUtils.getTimeLong(
-                                currentTime,
-                                true
-                            ), true
-                        )
-
-                    } else if (CommonUtils.getTimeLong(it.Dhuhr, false) >= CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        )
-                    ) {
-
-                        setDataView(
-                            getString(R.string.duhr), CommonUtils.convertSalahTime(it.Dhuhr),
-                            CommonUtils.getTimeLong(it.Dhuhr, false) - CommonUtils.getTimeLong(
-                                currentTime,
-                                true
-                            ), true
-                        )
-
-                    } else if (CommonUtils.getTimeLong(it.Asr, false) >= CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        )
-                    ) {
-
-                        setDataView(
-                            getString(R.string.asr), CommonUtils.convertSalahTime(it.Asr),
-                            CommonUtils.getTimeLong(
-                                it.Asr,
-                                false
-                            ) - CommonUtils.getTimeLong(currentTime, true), true
-                        )
-
-                    } else if (CommonUtils.getTimeLong(
-                            it.Maghrib,
-                            false
-                        ) >= CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        )
-                    ) {
-                        setDataView(
-                            getString(R.string.maghreb), CommonUtils.convertSalahTime(it.Maghrib),
-                            CommonUtils.getTimeLong(it.Maghrib, false) - CommonUtils.getTimeLong(
-                                currentTime,
-                                true
-                            ), true
-                        )
-
-
-                    } else if (CommonUtils.getTimeLong(it.Isha, false) >= CommonUtils.getTimeLong(
-                            currentTime,
-                            true
-                        )
-                    ) {
-                        setDataView(
-                            getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
-                            CommonUtils.getTimeLong(it.Isha, false) - CommonUtils.getTimeLong(
-                                currentTime,
-                                true
-                            ), true
-                        )
-                    } else {
-                        setDataView(
-                            getString(R.string.isha), CommonUtils.convertSalahTime(it.Isha),
-                            0, false
-                        )
-
-                        timeStarted = CommonUtils.getTimeLong(it.Isha, false)
-                        startCoroutineTimer()
-
-                    }
-
-                //}
-            }
-                 ?: run {
-                binding.fajrTime.text = getString(R.string.loading)
-                binding.sunriseTime.text = getString(R.string.loading)
-                binding.dhuhrTime.text = getString(R.string.loading)
-                binding.asrTime.text = getString(R.string.loading)
-                binding.maghribTime.text = getString(R.string.loading)
-                binding.ishaTime.text = getString(R.string.loading)
-                binding.salahName.text = getString(R.string.loading)
-                binding.prayerTime.text = getString(R.string.loading)
-                binding.prayerCountdown.text = getString(R.string.loading)
-            }
-            }
-        }
-
-
+        sharedPreference = requireActivity().getSharedPreferences("adhen", Context.MODE_PRIVATE)
+        val editor = sharedPreference.edit()
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        setupLocationRequest()
 
-        locationRequest= LocationRequest
-            .Builder(Priority.PRIORITY_HIGH_ACCURACY,100)
+        if (!sharedPreference.getBoolean("firstTime", false)) {
+            editor.putBoolean("firstTime", true)
+            editor.apply()
+        }
+
+        binding.dayDetails.text = DateFormat.getDateInstance(DateFormat.FULL).format(Date())
+
+        loadSavedLocationOrRequest()
+
+        setupViewModelObservers(prayerTimeViewModel)
+
+        setupPrayerNotificationCheckboxes(editor)
+
+        setupClickListeners(drawerLayout, navView)
+
+        return root
+    }
+
+    private fun setupLocationRequest() {
+        locationRequest = LocationRequest
+            .Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(100)
             .setMaxUpdateDelayMillis(800)
             .build()
 
-
         mLocationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
-                    // Update UI with location data
-                    //Log.d("gfdgdfg lastLocation.isMock", ""+ location.isMock)
-                    lastLocation = location
-                    lastLocation?.let {
-                        getCountryFromLocation(it)
-
-
-                        mainViewModel.getAzanData(it.latitude,it.longitude)
-
-                    }
-                    Log.d(
-                        "myLocccc",
-                        " callback location " + lastLocation?.longitude + "  " + lastLocation?.latitude
-                    )
+                    Log.d("HomeFragment", "Location received: ${location.latitude}, ${location.longitude}")
+                    handleLocationUpdate(location)
+                    stopLocationUpdates()
+                    break
                 }
             }
-
         }
+    }
 
-
-
-        if (sharedPreference.getBoolean(Constants.AZAN.FAJR,false) ){
-            binding.cbFajr.isChecked = true
+    private fun stopLocationUpdates() {
+        if (::mLocationCallback.isInitialized) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+            isUpdatingLocation = false
+            isLocationUpdateRequested = false
+            Log.d("HomeFragment", "Location updates stopped")
         }
-        if (sharedPreference.getBoolean(Constants.AZAN.DUHR,false) ){
-            binding.cbDhuhr.isChecked = true
-        }
-        if (sharedPreference.getBoolean(Constants.AZAN.ASR,false) ){
-            binding.cbAsr.isChecked = true
-        }
-        if (sharedPreference.getBoolean(Constants.AZAN.MAGREB,false) ){
-            binding.cbMaghrib.isChecked = true
-        }
+    }
 
-        if (sharedPreference.getBoolean(Constants.AZAN.ISHA,false) ){
-            binding.cbIsha.isChecked = true
-        }
+    private fun loadSavedLocationOrRequest() {
+        if (!isLocationUpdateRequested && sharedPreference.getBoolean(PREF_LOCATION_SAVED, false)) {
+            val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
+            val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
+            val savedLocationName = sharedPreference.getString(PREF_LOCATION_NAME, "Unknown Location")
 
+            binding.currentLocation.text = savedLocationName
 
-
-        binding.cbFajr.setOnCheckedChangeListener { compoundButton, b ->
-            if(binding.cbFajr.isChecked){
-
-                editor.putBoolean(Constants.AZAN.FAJR,true)
-                editor.apply()
-
-
-               notifyAzan(requireContext(),prayerTimeAlarm.Fajr,10,getString(R.string.fajr),getString(R.string.salahNow),10)
-
-
-
+            if (MethodHelper.isOnline(requireContext())) {
+                mainViewModel.getAzanData(savedLatitude, savedLongitude)
             }
-            else{
-                editor.putBoolean(Constants.AZAN.FAJR,false)
-                editor.apply()
 
-                cancelAlarm(requireContext(),10)
+            Log.d("HomeFragment", "Using saved location: $savedLatitude, $savedLongitude")
+        } else {
+            requestLocationUpdate()
+        }
+    }
 
+    @SuppressLint("SetTextI18n")
+    private fun requestLocationUpdate() {
+        isUpdatingLocation = true
+        isLocationUpdateRequested = true
+        binding.currentLocation.text = "Updating location..."
+        statusLocationCheck()
+    }
 
-            }
+    private fun handleLocationUpdate(location: Location) {
+        val editor = sharedPreference.edit()
+
+        editor.putFloat(PREF_LATITUDE, location.latitude.toFloat())
+        editor.putFloat(PREF_LONGITUDE, location.longitude.toFloat())
+        editor.putBoolean(PREF_LOCATION_SAVED, true)
+
+        getCountryFromLocation(location) { locationName ->
+
+            editor.putString(PREF_LOCATION_NAME, locationName)
+            editor.apply()
+
+            binding.currentLocation.text = locationName
+            Log.d("HomeFragment", "Location name saved: $locationName")
         }
 
-        binding.cbDhuhr.setOnCheckedChangeListener { compoundButton, b ->
-            if(binding.cbDhuhr.isChecked){
+        setPrayerTimesUpdateWorker(location)
 
-                editor.putBoolean(Constants.AZAN.DUHR,true)
-                editor.apply()
-
-                notifyAzan(requireContext(),prayerTimeAlarm.Dhuhr,11,getString(R.string.duhr),getString(R.string.salahNow),11)
-
-
-
-
-            }
-            else {
-                editor.putBoolean(Constants.AZAN.DUHR, false)
-                editor.apply()
-
-                cancelAlarm(requireContext(),11)
+        if (MethodHelper.isOnline(requireContext())) {
+            mainViewModel.getAzanData(location.latitude, location.longitude)
+        } else {
+            if (isLocationUpdateRequested) {
+                showNoInternetWarning()
             }
         }
 
+        isUpdatingLocation = false
+        isLocationUpdateRequested = false
+        Log.d("HomeFragment", "Location updated and saved: ${location.latitude}, ${location.longitude}")
+    }
 
-        binding.cbAsr.setOnCheckedChangeListener { compoundButton, b ->
-            if(binding.cbAsr.isChecked){
-
-                editor.putBoolean(Constants.AZAN.ASR,true)
-                editor.apply()
-
-
-
-                notifyAzan(requireContext(),prayerTimeAlarm.Asr,12,getString(R.string.asr),getString(R.string.salahNow),12)
-
-
-
-            }
-            else {
-                editor.putBoolean(Constants.AZAN.ASR, false)
-                editor.apply()
-
-                cancelAlarm(requireContext(),12)
-            }
-        }
-
-
-        binding.cbMaghrib.setOnCheckedChangeListener { compoundButton, b ->
-            if(binding.cbMaghrib.isChecked){
-
-                editor.putBoolean(Constants.AZAN.MAGREB,true)
-                editor.apply()
-
-                notifyAzan(requireContext(),prayerTimeAlarm.Maghrib,13,getString(R.string.maghreb),getString(R.string.salahNow),13)
-
-
-
-
-            }
-            else {
-                editor.putBoolean(Constants.AZAN.MAGREB, false)
-                editor.apply()
-
-                cancelAlarm(requireContext(),13)
+    private fun setupViewModelObservers(prayerTimeViewModel: PrayerTimeViewModel) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.state.collect { islamicListState ->
+                    islamicListState.let { islamicInfo ->
+                        islamicInfo.islamicInfo.data?.let {
+                            val prayerTime = PrayerTime(
+                                1,
+                                it.date.gregorian.date,
+                                it.timings.Asr,
+                                it.timings.Dhuhr,
+                                it.timings.Fajr,
+                                it.timings.Isha,
+                                it.timings.Maghrib,
+                                it.timings.Sunrise
+                            )
+                            prayerTimeViewModel.insertPrayerTime(prayerTime)
+                        }
+                    }
+                }
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                prayerTimeViewModel.getPrayerTimeById().collect { prayerTime ->
+                    prayerTime?.let {
+                        prayerTimeAlarm = it
+                        updatePrayerTimesUI(it)
+                        updateCurrentPrayerStatus(it)
 
-        binding.cbIsha.setOnCheckedChangeListener { compoundButton, b ->
-            if(binding.cbIsha.isChecked){
-
-                editor.putBoolean(Constants.AZAN.ISHA,true)
-                editor.apply()
-
-                notifyAzan(requireContext(),prayerTimeAlarm.Isha,14,getString(R.string.isha),getString(R.string.salahNow),14)
-
-
-
+                        if (MethodHelper.isOnline(requireContext()) && !isUpdatingLocation) {
+                            updateAzan()
+                        }
+                    } ?: run {
+                        if (!isUpdatingLocation) {
+                            showLoadingState()
+                        }
+                    }
+                }
             }
-            else {
-                editor.putBoolean(Constants.AZAN.ISHA, false)
-                editor.apply()
+        }
+    }
 
-                cancelAlarm(requireContext(),14)
+    private fun updatePrayerTimesUI(prayerTime: PrayerTime) {
+        binding.fajrTime.text = CommonUtils.convertSalahTime(prayerTime.Fajr)
+        binding.sunriseTime.text = CommonUtils.convertSalahTime(prayerTime.Sunrise)
+        binding.dhuhrTime.text = CommonUtils.convertSalahTime(prayerTime.Dhuhr)
+        binding.asrTime.text = CommonUtils.convertSalahTime(prayerTime.Asr)
+        binding.maghribTime.text = CommonUtils.convertSalahTime(prayerTime.Maghrib)
+        binding.ishaTime.text = CommonUtils.convertSalahTime(prayerTime.Isha)
+    }
+
+    private fun updateCurrentPrayerStatus(prayerTime: PrayerTime) {
+        val currentTime = CommonUtils.getCurrentTime()
+        val currentTimeLong = CommonUtils.getTimeLong(currentTime, true)
+
+        stopAllTimers()
+
+        when {
+            CommonUtils.getTimeLong(prayerTime.Fajr, false) >= currentTimeLong -> {
+                setDataViewWithCountdown(
+                    getString(R.string.fajr),
+                    CommonUtils.convertSalahTime(prayerTime.Fajr),
+                    CommonUtils.getTimeLong(prayerTime.Fajr, false) - currentTimeLong
+                )
+            }
+            CommonUtils.getTimeLong(prayerTime.Sunrise, false) >= currentTimeLong -> {
+                setDataViewWithCountdown(
+                    getString(R.string.sunrise),
+                    CommonUtils.convertSalahTime(prayerTime.Sunrise),
+                    CommonUtils.getTimeLong(prayerTime.Sunrise, false) - currentTimeLong
+                )
+            }
+            CommonUtils.getTimeLong(prayerTime.Dhuhr, false) >= currentTimeLong -> {
+                setDataViewWithCountdown(
+                    getString(R.string.duhr),
+                    CommonUtils.convertSalahTime(prayerTime.Dhuhr),
+                    CommonUtils.getTimeLong(prayerTime.Dhuhr, false) - currentTimeLong
+                )
+            }
+            CommonUtils.getTimeLong(prayerTime.Asr, false) >= currentTimeLong -> {
+                setDataViewWithCountdown(
+                    getString(R.string.asr),
+                    CommonUtils.convertSalahTime(prayerTime.Asr),
+                    CommonUtils.getTimeLong(prayerTime.Asr, false) - currentTimeLong
+                )
+            }
+            CommonUtils.getTimeLong(prayerTime.Maghrib, false) >= currentTimeLong -> {
+                setDataViewWithCountdown(
+                    getString(R.string.maghreb),
+                    CommonUtils.convertSalahTime(prayerTime.Maghrib),
+                    CommonUtils.getTimeLong(prayerTime.Maghrib, false) - currentTimeLong
+                )
+            }
+            CommonUtils.getTimeLong(prayerTime.Isha, false) >= currentTimeLong -> {
+                setDataViewWithCountdown(
+                    getString(R.string.isha),
+                    CommonUtils.convertSalahTime(prayerTime.Isha),
+                    CommonUtils.getTimeLong(prayerTime.Isha, false) - currentTimeLong
+                )
+            }
+            else -> {
+                binding.salahName.text = getString(R.string.isha)
+                binding.prayerTime.text = CommonUtils.convertSalahTime(prayerTime.Isha)
+                timeStarted = CommonUtils.getTimeLong(prayerTime.Isha, false)
+                startElapsedTimeCounter()
+            }
+        }
+    }
+
+    private fun setDataViewWithCountdown(prayerName: String, prayerTime: String, timeRemaining: Long) {
+        binding.salahName.text = prayerName
+        binding.prayerTime.text = prayerTime
+
+        countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
+            @SuppressLint("SetTextI18n")
+            override fun onTick(millisUntilFinished: Long) {
+                binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
             }
 
+            @SuppressLint("SetTextI18n")
+            override fun onFinish() {
+                binding.prayerCountdown.text = "- 00:00:00"
+            }
+        }
+        countDownTimer?.start()
+    }
+
+    private fun startElapsedTimeCounter() {
+        elapsedTimeRunnable = object : Runnable {
+            @SuppressLint("SetTextI18n")
+            override fun run() {
+                timeElapsed = CommonUtils.getTimeLong(CommonUtils.getCurrentTime(), true) - timeStarted
+                binding.prayerCountdown.text = "+ ${CommonUtils.updateCountDownText(timeElapsed)}"
+                handler.postDelayed(this, 1000)
+            }
+        }
+        elapsedTimeRunnable?.let { handler.post(it) }
+    }
+
+    private fun stopAllTimers() {
+        countDownTimer?.cancel()
+        countDownTimer = null
+
+        elapsedTimeRunnable?.let {
+            handler.removeCallbacks(it)
+            elapsedTimeRunnable = null
+        }
+    }
+
+    private fun showLoadingState() {
+        binding.fajrTime.text = getString(R.string.loading)
+        binding.sunriseTime.text = getString(R.string.loading)
+        binding.dhuhrTime.text = getString(R.string.loading)
+        binding.asrTime.text = getString(R.string.loading)
+        binding.maghribTime.text = getString(R.string.loading)
+        binding.ishaTime.text = getString(R.string.loading)
+        binding.salahName.text = getString(R.string.loading)
+        binding.prayerTime.text = getString(R.string.loading)
+        binding.prayerCountdown.text = getString(R.string.loading)
+    }
+
+    private fun setupPrayerNotificationCheckboxes(editor: SharedPreferences.Editor) {
+
+        binding.cbFajr.isChecked = sharedPreference.getBoolean(Constants.AZAN.FAJR, false)
+        binding.cbDhuhr.isChecked = sharedPreference.getBoolean(Constants.AZAN.DUHR, false)
+        binding.cbAsr.isChecked = sharedPreference.getBoolean(Constants.AZAN.ASR, false)
+        binding.cbMaghrib.isChecked = sharedPreference.getBoolean(Constants.AZAN.MAGREB, false)
+        binding.cbIsha.isChecked = sharedPreference.getBoolean(Constants.AZAN.ISHA, false)
+
+
+        binding.cbFajr.setOnCheckedChangeListener { _, isChecked ->
+            editor.putBoolean(Constants.AZAN.FAJR, isChecked).apply()
+            if (isChecked) {
+                notifyAzan(requireContext(), prayerTimeAlarm.Fajr, 10, getString(R.string.fajr), getString(R.string.salahNow), 10)
+            } else {
+                cancelAlarm(requireContext(), 10)
+            }
         }
 
+        binding.cbDhuhr.setOnCheckedChangeListener { _, isChecked ->
+            editor.putBoolean(Constants.AZAN.DUHR, isChecked).apply()
+            if (isChecked) {
+                notifyAzan(requireContext(), prayerTimeAlarm.Dhuhr, 11, getString(R.string.duhr), getString(R.string.salahNow), 11)
+            } else {
+                cancelAlarm(requireContext(), 11)
+            }
+        }
 
+        binding.cbAsr.setOnCheckedChangeListener { _, isChecked ->
+            editor.putBoolean(Constants.AZAN.ASR, isChecked).apply()
+            if (isChecked) {
+                notifyAzan(requireContext(), prayerTimeAlarm.Asr, 12, getString(R.string.asr), getString(R.string.salahNow), 12)
+            } else {
+                cancelAlarm(requireContext(), 12)
+            }
+        }
 
+        binding.cbMaghrib.setOnCheckedChangeListener { _, isChecked ->
+            editor.putBoolean(Constants.AZAN.MAGREB, isChecked).apply()
+            if (isChecked) {
+                notifyAzan(requireContext(), prayerTimeAlarm.Maghrib, 13, getString(R.string.maghreb), getString(R.string.salahNow), 13)
+            } else {
+                cancelAlarm(requireContext(), 13)
+            }
+        }
+
+        binding.cbIsha.setOnCheckedChangeListener { _, isChecked ->
+            editor.putBoolean(Constants.AZAN.ISHA, isChecked).apply()
+            if (isChecked) {
+                notifyAzan(requireContext(), prayerTimeAlarm.Isha, 14, getString(R.string.isha), getString(R.string.salahNow), 14)
+            } else {
+                cancelAlarm(requireContext(), 14)
+            }
+        }
+    }
+
+    private fun setupClickListeners(drawerLayout: DrawerLayout, navView: NavigationView) {
         binding.update.setOnClickListener {
-            updateAzan(true)
+            if (!MethodHelper.isOnline(requireContext())) {
+                showNoInternetDialog()
+                return@setOnClickListener
+            }
 
-            Toast.makeText(requireContext(), "جارى تحديث أوقات الصلاة", Toast.LENGTH_LONG).show()
+            stopLocationUpdates()
+            requestLocationUpdate()
+            Toast.makeText(requireContext(), "جارى تحديث أوقات الصلاة", Toast.LENGTH_SHORT).show()
         }
-
 
         binding.qibla.setOnClickListener {
+            val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
+            val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
 
-//            val intent = Intent(requireContext(), QiblaActivity::class.java)
-//            requireContext().startActivity(intent)
-
-           lastLocation?.let {
-               if (MethodHelper.isOnline(requireContext())){
-                   val bundle = Bundle()
-                   bundle.putString("altitude", lastLocation?.altitude.toString())
-                   bundle.putString("longitude", lastLocation?.longitude.toString())
-
-                   findNavController().navigate(R.id.action_navigation_home_to_qiblaFragment2, bundle)
-               }
-               else{
-                   MethodHelper.toastMessage(getString(R.string.checkConnection))
-               }
-           }?:run {
-               MethodHelper.toastMessage(getString(R.string.requiredLocation))
-           }
-
-
-
-
+            if (savedLatitude != 0.0 && savedLongitude != 0.0) {
+                if (MethodHelper.isOnline(requireContext())) {
+                    val bundle = Bundle()
+                    bundle.putString("altitude", savedLatitude.toString())
+                    bundle.putString("longitude", savedLongitude.toString())
+                    findNavController().navigate(R.id.action_navigation_home_to_qiblaFragment2, bundle)
+                } else {
+                    MethodHelper.toastMessage(getString(R.string.checkConnection))
+                }
+            } else {
+                MethodHelper.toastMessage(getString(R.string.requiredLocation))
+            }
         }
 
         binding.openDrawable.setOnClickListener {
@@ -473,187 +457,62 @@ class HomeFragment : Fragment(), LocationListener {
 
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.rateApp -> {
-                    rateApp()
-                }
-                R.id.projectLink -> {
-                   projectLink()
-                }
+                R.id.rateApp -> rateApp()
+                R.id.projectLink -> projectLink()
                 R.id.shareApp -> {
                     MethodHelper.shareApp(
                         requireContext(), getString(R.string.app_name),
                         "https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla"
                     )
-
                 }
-               R.id.setting ->{
-                    val intent=Intent(requireContext(), SettingsActivity::class.java)
+                R.id.setting -> {
+                    val intent = Intent(requireContext(), SettingsActivity::class.java)
                     startActivity(intent)
                     drawerLayout.close()
-
                 }
                 else -> {
                     drawerLayout.closeDrawers()
                 }
-
             }
-
             true
         }
-
-        return root
     }
 
-    private fun setPrayerTimesUpdateWorker() {
+    private fun setPrayerTimesUpdateWorker(location: Location) {
         activity?.let {
-            lastLocation?.let { lastLocation ->
-                PrayerTimesScheduler.schedulePrayerTimesWork(it,
-                    lastLocation.latitude, lastLocation.longitude)
-            }
+            PrayerTimesScheduler.schedulePrayerTimesWork(it, location.latitude, location.longitude)
         }
     }
 
-    private fun updateAzan(show:Boolean) {
-        if (show)
-            statusLocationCheck()
+    private fun updateAzan() {
 
-        if (sharedPreference.getBoolean(Constants.AZAN.FAJR,false) ){
+        val azanSettings = mapOf(
+            Constants.AZAN.FAJR to Triple(prayerTimeAlarm.Fajr, 10, getString(R.string.fajr)),
+            Constants.AZAN.DUHR to Triple(prayerTimeAlarm.Dhuhr, 11, getString(R.string.duhr)),
+            Constants.AZAN.ASR to Triple(prayerTimeAlarm.Asr, 12, getString(R.string.asr)),
+            Constants.AZAN.MAGREB to Triple(prayerTimeAlarm.Maghrib, 13, getString(R.string.maghreb)),
+            Constants.AZAN.ISHA to Triple(prayerTimeAlarm.Isha, 14, getString(R.string.isha))
+        )
 
-            notifyAzan(requireContext(),prayerTimeAlarm.Fajr,10,getString(R.string.fajr),getString(R.string.salahNow),10)
-
-        }
-
-        if (sharedPreference.getBoolean(Constants.AZAN.DUHR,false) ){
-
-            notifyAzan(requireContext(),prayerTimeAlarm.Dhuhr,11,getString(R.string.duhr),getString(R.string.salahNow),11)
-
-
-        }
-
-        if (sharedPreference.getBoolean(Constants.AZAN.ASR,false) ){
-            notifyAzan(requireContext(),prayerTimeAlarm.Asr,12,getString(R.string.asr),getString(R.string.salahNow),12)
-
-
-        }
-
-
-        if (sharedPreference.getBoolean(Constants.AZAN.MAGREB,false) ){
-
-            notifyAzan(requireContext(),prayerTimeAlarm.Maghrib,13,getString(R.string.maghreb),getString(R.string.salahNow),13)
-
-
-        }
-
-        if (sharedPreference.getBoolean(Constants.AZAN.ISHA,false) ){
-            notifyAzan(requireContext(),prayerTimeAlarm.Isha,14,getString(R.string.isha),getString(R.string.salahNow),14)
-
-
+        azanSettings.forEach { (key, value) ->
+            if (sharedPreference.getBoolean(key, false)) {
+                notifyAzan(requireContext(), value.first, value.second, value.third, getString(R.string.salahNow), value.second)
+            }
         }
     }
 
     private fun rateApp() {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data =
-            Uri.parse("https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla")
+            "https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla".toUri()
         startActivity(intent)
     }
+
     private fun projectLink() {
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.data =
-            Uri.parse("https://github.com/MohamedAshraf9/ToAllah")
+        intent.data = "https://github.com/MohamedAshraf9/ToAllah".toUri()
         startActivity(intent)
     }
-
-    fun getSpannable(text: String): Spannable? {
-        val spannable: Spannable = SpannableString(text)
-        val REGEX = "لل"
-        val p = Pattern.compile(REGEX)
-        val m = p.matcher(text)
-        var start: Int
-        var end: Int
-
-        //region allah match
-        while (m.find()) {
-            start = m.start()
-            while (text[start] != ' ' && start != 0) {
-                start--
-            }
-            end = m.end()
-            while (text[end] != ' ') {
-                end++
-            }
-            spannable.setSpan(
-                ForegroundColorSpan(Color.RED),
-                start,
-                end,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-        }
-        //endregion
-        return spannable
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-    }
-
-
-
-    private fun setDataView(prayerName: String, prayerTime: String, time:Long, countDown:Boolean) {
-        binding.salahName.text= prayerName
-        binding.prayerTime.text= prayerTime
-
-
-        if (countDown) {
-            val timer = object : CountDownTimer(
-                time, 1000
-            ) {
-                @SuppressLint("SetTextI18n")
-                override fun onTick(millisUntilFinished: Long) {
-                    binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
-                }
-
-                override fun onFinish() {
-
-                }
-
-
-            }
-            timer.start()
-        }
-    }
-
-
-
-    private val handler = Handler(Looper.getMainLooper())
-    private var runnable: Runnable = object : Runnable {
-        override fun run() {
-            timeElapsed = CommonUtils.getTimeLong(CommonUtils.getCurrentTime(),true) - timeStarted
-            binding.prayerCountdown.text="+ ${CommonUtils.updateCountDownText(timeElapsed)}"
-            // Repeat every 1 second
-            handler.postDelayed(this, 1000)
-        }
-    }
-
-    private fun startCoroutineTimer() {
-        handler.post(runnable)
-    }
-
-
-
-
-
-    override fun onStart() {
-        super.onStart()
-        statusLocationCheck()
-        //checkLocationPermission()
-    }
-    override fun onPause() {
-        super.onPause()
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-    }
-
-
 
     @SuppressLint("MissingPermission")
     private fun checkLocationPermission() {
@@ -662,113 +521,85 @@ class HomeFragment : Fragment(), LocationListener {
             Manifest.permission.ACCESS_FINE_LOCATION
         )
         if (MethodHelper.hasPermissions(requireContext(), perms)) {
-
-            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback,  Looper.getMainLooper())
-
             startGetLocation()
         } else {
-            //statusLocationCheck()
             requestPermissionLauncher.launch(perms)
-
         }
     }
 
-
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "SetTextI18n")
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val granted = permissions.entries.all {
-            it.value
-        }
+        val granted = permissions.entries.all { it.value }
         if (granted) {
-            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
             startGetLocation()
-            // PERMISSION GRANTED
         } else {
-            // PERMISSION NOT GRANTED
+            binding.currentLocation.text = "Location permission denied"
+            isUpdatingLocation = false
+            isLocationUpdateRequested = false
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun startGetLocation() {
-        mFusedLocationClient.lastLocation
-            .addOnSuccessListener(
-                requireActivity()
-            ) { location ->
-                // Got last known location. In some rare situations this can be null.
-                if (location != null) {
-                    lastLocation = location
-                    setPrayerTimesUpdateWorker()
-                    Log.d(
-                        "myLocccc",
-                        " last  " + lastLocation?.longitude + "  " + lastLocation?.latitude
-                    )
+        Log.d("HomeFragment", "Starting location updates...")
+        mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper())
 
+        mFusedLocationClient.lastLocation
+            .addOnSuccessListener(requireActivity()) { location ->
+                location?.let {
+                    Log.d("HomeFragment", "Got last known location: ${it.latitude}, ${it.longitude}")
+                    val locationTime = System.currentTimeMillis() - it.time
+                    if (locationTime < 300000 && isUpdatingLocation) {
+                        handleLocationUpdate(it)
+                        stopLocationUpdates()
+                    }
                 }
             }
-            .addOnFailureListener(
-                requireActivity()
-            ) { e ->
-                Log.w("myLocccc", "getLastLocation:exception " + e.message)
+            .addOnFailureListener(requireActivity()) { e ->
+                Log.w("HomeFragment", "getLastLocation:exception " + e.message)
             }
-
     }
-
-
-    override fun onLocationChanged(location: Location) {
-        lastLocation = location
-        lastLocation?.let {
-            mainViewModel.getAzanData(it.latitude,it.longitude)
-        }
-
-    }
-
 
     @SuppressLint("SimpleDateFormat")
-    fun notifyAzan(context: Context, myTime: String, alarmId: Int, title:String, desc:String, notificationId:Int) {
+    fun notifyAzan(context: Context, myTime: String, alarmId: Int, title: String, desc: String, notificationId: Int) {
         val df = SimpleDateFormat("HH:mm")
         val d: Date = df.parse(myTime)!!
         val cal = Calendar.getInstance()
         cal.time = d
-        val calendar=Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY,cal.get(Calendar.HOUR_OF_DAY))
-        calendar.set(Calendar.MINUTE,cal.get(Calendar.MINUTE))
-        calendar.set(Calendar.SECOND,0)
-
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY))
+        calendar.set(Calendar.MINUTE, cal.get(Calendar.MINUTE))
+        calendar.set(Calendar.SECOND, 0)
 
         val now = Calendar.getInstance()
-        if (now.time>=calendar.time)
+        if (now.time >= calendar.time)
             calendar.add(Calendar.DAY_OF_MONTH, 1)
 
-        Log.d("sdsdsd",calendar.time.time.toString())
         val calendar1 = calendar.clone() as Calendar
         val intent = Intent(context, NotifyMessing::class.java)
         intent.putExtra("AlarmTitle", title)
-        intent.putExtra("AlarmNote",desc+"\n"+ com.megahed.eqtarebmenalla.common.Constants.maw3idha[(0..10).random()])
+        intent.putExtra("AlarmNote", desc + "\n" + com.megahed.eqtarebmenalla.common.Constants.maw3idha[(0..10).random()])
         intent.putExtra("AlarmColor", ContextCompat.getColor(App.getInstance(), R.color.colorPrimary))
         intent.putExtra("interval", "daily")
         intent.putExtra("notificationId", notificationId)
         intent.action = "com.megahed.eqtarebmenalla.TIMEALARM"
+
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             alarmId,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val alarmManager =
-            (App.getInstance().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+
+        val alarmManager = (App.getInstance().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pendingIntent)
         } else {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,calendar1.timeInMillis, pendingIntent
-            )
-
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pendingIntent)
         }
     }
-
-
 
     private fun cancelAlarm(context: Context, alarmId: Int) {
         val intent = Intent(context, NotifyMessing::class.java)
@@ -784,132 +615,99 @@ class HomeFragment : Fragment(), LocationListener {
         pendingIntent.cancel()
     }
 
-
     private fun statusLocationCheck() {
-            val manager =
-                requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
-            if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                turnGPSOn()
-                //buildAlertMessageNoGps()
-
-            } else {
-                checkLocationPermission()
-            }
-
+        val manager = requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            turnGPSOn()
+        } else {
+            checkLocationPermission()
+        }
     }
 
-
     private fun turnGPSOn() {
-        //val builder = LocationSettingsRequest.Builder()
         val builder = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
 
         val client: SettingsClient = LocationServices.getSettingsClient(requireActivity())
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
-
-
         task.addOnCompleteListener {
             checkLocationPermission()
-
         }
+
         task.addOnSuccessListener {
             checkLocationPermission()
         }
 
-
         task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException){
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
+            if (exception is ResolvableApiException) {
                 try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
-                    exception.startResolutionForResult(requireActivity(),
-                        1)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    // Ignore the error.
+                    exception.startResolutionForResult(requireActivity(), LOCATION_REQUEST_CODE)
+                } catch (_: IntentSender.SendIntentException) {
                 }
             }
         }
-    }
-
-    private fun buildAlertMessageNoGps() {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setMessage(getString(R.string.openLocation))
-            .setCancelable(false)
-            .setPositiveButton(
-                getString(R.string.openSettings)
-            ) { dialog, id ->
-
-                //startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-            }
-            .setNegativeButton(
-                getString(R.string.cancel)
-            ) { dialog, id ->
-                dialog.cancel()
-
-            }
-        val alert = builder.create()
-        alert.show()
     }
 
     @SuppressLint("SetTextI18n")
-    private fun getCountryFromLocation(location: Location) {
-        //val local = Locale("en")
-        val geocoder = Geocoder(requireContext())
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            geocoder.getFromLocation(location.latitude,location.longitude,1,object : Geocoder.GeocodeListener{
-                override fun onGeocode(addresses: MutableList<Address>) {
-                    // code
-                    if (addresses.size > 0) {
-                        val country = addresses[0].adminArea
-                        val city = addresses[0].subAdminArea
-                        binding.currentLocation.text = "$city,$country"
-                        //Log.d("eyrtewew",addresses.toString())
-
-                        //Toast.makeText(requireContext(),"$city,$country ", Toast.LENGTH_LONG).show()
-                    }
-                }
-                override fun onError(errorMessage: String?) {
-                    super.onError(errorMessage)
-
-                }
-
-            })
+    private fun getCountryFromLocation(location: Location, onLocationNameReceived: (String) -> Unit) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val locationName = GeocodingHelper.getAddressFromLocation(
+                requireContext(),
+                location.latitude,
+                location.longitude
+            )
+            onLocationNameReceived(locationName ?: "Unknown Location")
         }
-        else{
-            try {
-                Geocoder.isPresent()
-                val addresses = geocoder.getFromLocation(
-                    location.latitude, location.longitude, 1
-                )
-
-                if (addresses != null && addresses.size > 0) {
-                    val country = addresses[0].adminArea
-                    val city = addresses[0].subAdminArea
-                    binding.currentLocation.text = "$city,$country"
-
-                    //Log.d("eyrtewew",addresses.toString())
-                    //Toast.makeText(requireContext(),"$city,$country ", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: IOException) {
-                e.message?.let { Log.d("myLocccc Exception  ", it) }
-            }
-        }
-
-        //Log.d("eyrtewew",binding.currentLocation.text.toString())
-
-        //var country: String=""
-
-        //return country?.lowercase()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        stopAllTimers()
+        stopLocationUpdates()
+    }
 
+    private fun showNoInternetDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("لا يوجد إتصال بالإنترنت")
+            .setMessage("يلزم الاتصال بالإنترنت لتحديث أوقات الصلاة. يُرجى الاتصال بالإنترنت والمحاولة مرة أخرى.")
+            .setPositiveButton("حسناً") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton("الإعدادات") { dialog, _ ->
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_SETTINGS)
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e("HomeFragment", "Could not open settings: ${e.message}")
+                }
+                dialog.dismiss()
+            }
+            .setCancelable(true)
+            .show()
+    }
 
-        var lang = ""
-        var lati = ""
-
-
+    private fun showNoInternetWarning() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Location Updated")
+            .setMessage("Your location has been updated, but internet connection is required to fetch the latest prayer times. Please connect to the internet to get updated prayer times.")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton("Retry") { dialog, _ ->
+                if (MethodHelper.isOnline(requireContext())) {
+                    val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
+                    val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
+                    if (savedLatitude != 0.0 && savedLongitude != 0.0) {
+                        mainViewModel.getAzanData(savedLatitude, savedLongitude)
+                        Toast.makeText(requireContext(), "Updating prayer times...", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    showNoInternetDialog()
+                }
+                dialog.dismiss()
+            }
+            .setCancelable(true)
+            .show()
+    }
 }
