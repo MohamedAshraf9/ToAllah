@@ -8,6 +8,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
         <TextView
+            android:id="@+id/chooseWhatYouNeed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -15,94 +16,86 @@
             android:padding="@dimen/_12sdp"
             android:textSize="@dimen/_16ssp"
             android:textStyle="bold"
-            android:id="@+id/chooseWhatYouNeed"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textColor="@color/text_color"
-            android:text="@string/chooseWhatYouNeed"/>
-
-    
-
+            android:text="@string/chooseWhatYouNeed"
+            android:textColor="?attr/colorOnSurface"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
+            android:id="@+id/readerFav"
             android:layout_width="0dp"
             android:layout_height="@dimen/_30sdp"
             android:layout_marginTop="@dimen/_16sdp"
             android:gravity="center"
-            android:id="@+id/readerFav"
             android:src="@drawable/ic_favorite_red_24"
             app:layout_constraintEnd_toStartOf="@+id/soraFav"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed" />
 
         <ImageView
+            android:id="@+id/soraFav"
             android:layout_width="0dp"
             android:layout_height="@dimen/_30sdp"
             android:layout_marginTop="@dimen/_16sdp"
             android:gravity="center"
-            android:textSize="@dimen/_14ssp"
-            android:textStyle="bold"
-            android:id="@+id/soraFav"
             android:src="@drawable/ic_favorite_red_24"
             app:layout_constraintEnd_toStartOf="@+id/listeningToSave"
             app:layout_constraintStart_toEndOf="@+id/readerFav"
-            app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed"
-            android:textColor="@color/text_color" />
+            app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed" />
+
         <ImageView
+            android:id="@+id/listeningToSave"
             android:layout_width="0dp"
             android:layout_height="@dimen/_30sdp"
             android:layout_marginTop="@dimen/_16sdp"
             android:gravity="center"
-            android:textSize="@dimen/_14ssp"
-            android:textStyle="bold"
-            android:id="@+id/listeningToSave"
             android:src="@drawable/ic_baseline_hearing_24"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/soraFav"
-            app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed"
-            android:textColor="@color/text_color" />
+            app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed" />
+
         <TextView
+            android:id="@+id/following"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_1sdp"
             android:gravity="center"
             android:layout_marginBottom="@dimen/_25sdp"
             android:textSize="@dimen/_12ssp"
-            android:id="@+id/following"
+            android:text="@string/readerFav"
+            android:textColor="?attr/colorOnSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/readerFav"
             app:layout_constraintStart_toStartOf="@+id/readerFav"
-            app:layout_constraintTop_toBottomOf="@id/readerFav"
-            android:textColor="@color/text_color"
-            android:text="@string/readerFav"/>
+            app:layout_constraintTop_toBottomOf="@id/readerFav" />
+
         <TextView
+            android:id="@+id/followers"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_1sdp"
             android:gravity="center"
             android:layout_marginBottom="@dimen/_25sdp"
             android:textSize="@dimen/_12ssp"
-            android:id="@+id/followers"
+            android:text="@string/soraFav"
+            android:textColor="?attr/colorOnSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/soraFav"
             app:layout_constraintStart_toStartOf="@+id/soraFav"
-            app:layout_constraintTop_toBottomOf="@id/soraFav"
-            android:textColor="@color/text_color"
-            android:text="@string/soraFav"/>
+            app:layout_constraintTop_toBottomOf="@id/soraFav" />
+
         <TextView
+            android:id="@+id/points"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_1sdp"
             android:gravity="center"
             android:layout_marginBottom="@dimen/_25sdp"
             android:textSize="@dimen/_12ssp"
-            android:id="@+id/points"
+            android:text="@string/listeningToSave"
+            android:textColor="?attr/colorOnSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/listeningToSave"
             app:layout_constraintStart_toStartOf="@+id/listeningToSave"
-            app:layout_constraintTop_toBottomOf="@id/listeningToSave"
-            android:textColor="@color/text_color"
-            android:text="@string/listeningToSave"/>
-
-
+            app:layout_constraintTop_toBottomOf="@id/listeningToSave" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

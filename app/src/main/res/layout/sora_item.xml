@@ -23,7 +23,7 @@
             android:textSize="13sp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/id_soura_background"
-            android:textColor="@android:color/white"
+            android:textColor="@color/text_color"
             android:textStyle="bold"
             android:textAlignment="center"
             app:layout_constraintStart_toStartOf="parent"
