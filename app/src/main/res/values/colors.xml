@@ -28,10 +28,10 @@
     <color name="purple_100">#fff5ff</color>
 
     <color name="halfTransparentBackground">#aacccccc</color>
-    <color name="primary_color">#42A5F5</color>
+    <color name="primary_color">#A0CAFF</color>
 
     <color name="seed">#008ff1</color>
-    <color name="md_theme_light_primary">#42A5F5</color>
+    <color name="md_theme_light_primary">#A0CAFF</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
     <color name="md_theme_light_primaryContainer">#D2E4FF</color>
     <color name="md_theme_light_onPrimaryContainer">#001C37</color>
