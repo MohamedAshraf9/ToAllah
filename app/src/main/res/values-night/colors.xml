@@ -2,9 +2,16 @@
 <resources>
 
     <color name="background_color">#2E2D2D</color>
-    <color name="text_color">#ffffff</color>
-    <color name="primary_color">#A0CAFF</color>
-
-    <color name="colorPrimary">#A0CAFF</color>
+    <color name="primary_color">#C5A43C</color>
+    <color name="colorPrimary">#C5A43C</color>
+    <color name="gradientStart">#C5A43C</color>
+    <color name="gradientCenter">#7A6A2A</color>
+    <color name="gradientEnd">#5A4C20</color>
+    <color name="text_primary_light">#121212</color>
+    <color name="text_disabled_light">#888888</color>
+    <color name="text_pressed_light">#03A9F4</color>
+    <color name="text_primary_dark">#D4B445</color>
+    <color name="text_disabled_dark">#666666</color>
+    <color name="text_pressed_dark">#B9972C</color>
 
 </resources>
