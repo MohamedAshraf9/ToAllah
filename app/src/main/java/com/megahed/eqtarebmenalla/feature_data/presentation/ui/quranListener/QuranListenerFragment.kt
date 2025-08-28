@@ -109,7 +109,7 @@ class QuranListenerFragment : Fragment() , MenuProvider {
                         binding.recyclerView.visibility = View.GONE
                         binding.lottieView.visibility = View.VISIBLE
                         binding.progressBar.visibility = View.GONE
-                        binding.loadingText.visibility = View.VISIBLE
+                        binding.loadingText.visibility = View.GONE
                     } else {
                         binding.loadingContainer.visibility = View.GONE
                         binding.recyclerView.visibility = View.VISIBLE
@@ -147,20 +147,14 @@ class QuranListenerFragment : Fragment() , MenuProvider {
             lifecycleScope.launchWhenStarted {
                 quranListenerViewModel.getFavoriteQuranListenerReader().collect {
                     if (it.isEmpty()) {
-                        // Show loading state
                         binding.loadingContainer.visibility = View.VISIBLE
                         binding.recyclerView.visibility = View.GONE
-
-                        // Individual loading elements
                         binding.lottieView.visibility = View.VISIBLE
                         binding.progressBar.visibility = View.GONE
                         binding.loadingText.visibility = View.VISIBLE
                     } else {
-                        // Show content
                         binding.loadingContainer.visibility = View.GONE
                         binding.recyclerView.visibility = View.VISIBLE
-
-                        // Hide individual loading elements
                         binding.lottieView.visibility = View.GONE
                         binding.progressBar.visibility = View.GONE
                         binding.loadingText.visibility = View.GONE
