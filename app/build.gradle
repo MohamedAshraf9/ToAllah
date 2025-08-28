@@ -135,6 +135,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-inappmessaging-display:21.0.0'
 
 
+    implementation 'com.airbnb.android:lottie:6.6.7'
 
     implementation 'com.github.corouteam:GlideToVectorYou:v2.0.0'
 
