@@ -151,6 +151,7 @@
     <string name="no_fav_reciter">لا يوجد قراء مفضلين بعد</string>
     <string name="no_fav_surah">لا يوجد سور مفضلة بعد</string>
     <string name="no_fav_ayat">لا يوجد آيات مفضلة بعد</string>
+    <string name="no_fav_azkar">لا يوجد أذكار مفضلة بعد</string>
 
 
 </resources>
