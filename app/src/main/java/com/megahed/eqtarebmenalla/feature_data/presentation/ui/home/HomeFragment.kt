@@ -118,11 +118,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupLocationRequest() {
+        // Updated to use PRIORITY_BALANCED_POWER_ACCURACY for approximate location
         locationRequest = LocationRequest
-            .Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
+            .Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 30000) // 30 seconds interval
             .setWaitForAccurateLocation(false)
-            .setMinUpdateIntervalMillis(100)
-            .setMaxUpdateDelayMillis(800)
+            .setMinUpdateIntervalMillis(30000)
+            .setMaxUpdateDelayMillis(60000)
             .build()
 
         mLocationCallback = object : LocationCallback() {
@@ -306,11 +307,82 @@ class HomeFragment : Fragment() {
                 )
             }
             else -> {
-                binding.salahName.text = getString(R.string.isha)
-                binding.prayerTime.text = CommonUtils.convertSalahTime(prayerTime.Isha)
-                timeStarted = CommonUtils.getTimeLong(prayerTime.Isha, false)
-                startElapsedTimeCounter()
+                // After Isha, show countdown to next day's Fajr
+                showCountdownToNextDayFajr(prayerTime)
             }
+        }
+    }
+
+    private fun showCountdownToNextDayFajr(prayerTime: PrayerTime) {
+        binding.salahName.text = getString(R.string.fajr)
+
+        // Calculate next day's Fajr time
+        val nextDayFajrTimeMillis = getNextDayFajrTime(prayerTime.Fajr)
+        val currentTimeMillis = System.currentTimeMillis()
+        val timeRemaining = nextDayFajrTimeMillis - currentTimeMillis
+
+        binding.prayerTime.text = CommonUtils.convertSalahTime(prayerTime.Fajr)
+
+        Log.d("HomeFragment", "Next Fajr millis: $nextDayFajrTimeMillis")
+        Log.d("HomeFragment", "Current millis: $currentTimeMillis")
+        Log.d("HomeFragment", "Time remaining: $timeRemaining")
+
+        if (timeRemaining > 0) {
+            countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
+                @SuppressLint("SetTextI18n")
+                override fun onTick(millisUntilFinished: Long) {
+                    binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
+                }
+
+                @SuppressLint("SetTextI18n")
+                override fun onFinish() {
+                    binding.prayerCountdown.text = "- 00:00:00"
+                    // Refresh prayer times for the new day
+                    if (MethodHelper.isOnline(requireContext())) {
+                        val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
+                        val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
+                        if (savedLatitude != 0.0 && savedLongitude != 0.0) {
+                            mainViewModel.getAzanData(savedLatitude, savedLongitude)
+                        }
+                    }
+                }
+            }
+            countDownTimer?.start()
+        } else {
+            binding.prayerCountdown.text = "- 00:00:00"
+        }
+    }
+
+    private fun getNextDayFajrTime(fajrTime: String): Long {
+        try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val fajrDate = sdf.parse(fajrTime) ?: return 0L
+
+            // Get current date and time
+            val currentCalendar = Calendar.getInstance()
+
+            // Create calendar for tomorrow's Fajr
+            val nextDayCalendar = Calendar.getInstance()
+            nextDayCalendar.add(Calendar.DAY_OF_MONTH, 1) // Move to next day
+
+            // Extract hour and minute from Fajr time string
+            val fajrCalendar = Calendar.getInstance()
+            fajrCalendar.time = fajrDate
+
+            // Set tomorrow's date with Fajr time
+            nextDayCalendar.set(Calendar.HOUR_OF_DAY, fajrCalendar.get(Calendar.HOUR_OF_DAY))
+            nextDayCalendar.set(Calendar.MINUTE, fajrCalendar.get(Calendar.MINUTE))
+            nextDayCalendar.set(Calendar.SECOND, 0)
+            nextDayCalendar.set(Calendar.MILLISECOND, 0)
+
+            Log.d("HomeFragment", "Current time: ${currentCalendar.time}")
+            Log.d("HomeFragment", "Next Fajr time: ${nextDayCalendar.time}")
+            Log.d("HomeFragment", "Time difference in millis: ${nextDayCalendar.timeInMillis - currentCalendar.timeInMillis}")
+
+            return nextDayCalendar.timeInMillis
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Error calculating next day Fajr time: ${e.message}")
+            return 0L
         }
     }
 
@@ -517,8 +589,8 @@ class HomeFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private fun checkLocationPermission() {
         val perms = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            // Only request coarse location for approximate location
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
         if (MethodHelper.hasPermissions(requireContext(), perms)) {
             startGetLocation()
