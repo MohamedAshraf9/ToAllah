@@ -35,7 +35,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="16dp"
             android:text="@string/no_fav_azkar"
-            android:textColor="@color/primary_color"
             android:textSize="24sp"
             android:fontFamily="sans-serif-medium" />
 
