@@ -210,6 +210,7 @@ class HomeFragment : Fragment() {
                 mainViewModel.state.collect { islamicListState ->
                     islamicListState.let { islamicInfo ->
                         islamicInfo.islamicInfo.data?.let {
+
                             val prayerTime = PrayerTime(
                                 1,
                                 it.date.gregorian.date,
@@ -221,6 +222,8 @@ class HomeFragment : Fragment() {
                                 it.timings.Sunrise
                             )
                             prayerTimeViewModel.insertPrayerTime(prayerTime)
+
+                            binding.hijriDate.text = formatHijriDate(it.date.hijri.date)
                         }
                     }
                 }
@@ -246,6 +249,34 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+    }
+    fun formatHijriDate(hijriDate: String): String {
+
+        val parts = hijriDate.split("-")
+        if (parts.size != 3) return hijriDate
+
+        val day = parts[0].toIntOrNull() ?: return hijriDate
+        val month = parts[1].toIntOrNull() ?: return hijriDate
+        val year = parts[2]
+
+        val hijriMonths = arrayOf(
+            "Muharram",
+            "Safar",
+            "Rabi' al-Awwal",
+            "Rabi' al-Thani",
+            "Jumada al-Awwal",
+            "Jumada al-Thani",
+            "Rajab",
+            "Sha'ban",
+            "Ramadan",
+            "Shawwal",
+            "Dhu al-Qi'dah",
+            "Dhu al-Hijjah"
+        )
+
+        val monthName = if (month in 1..12) hijriMonths[month - 1] else "Unknown"
+
+        return "$day $monthName $year"
     }
 
     private fun updatePrayerTimesUI(prayerTime: PrayerTime) {
