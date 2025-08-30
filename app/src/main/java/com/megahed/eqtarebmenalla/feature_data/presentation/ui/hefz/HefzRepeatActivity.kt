@@ -2,15 +2,13 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz
 
 import android.Manifest
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -22,15 +20,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaHefzPagerAdapter
 import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
-import com.megahed.eqtarebmenalla.common.Resource
 import com.megahed.eqtarebmenalla.databinding.ActivityHefzRepeatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
-import com.megahed.eqtarebmenalla.exoplayer.FirebaseMusicSource
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyaViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -39,7 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
+class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private lateinit var binding: ActivityHefzRepeatBinding
 
@@ -50,16 +51,19 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
     private var readerName: String? = null
     private var ayaRepeat: Int? = null
     private var allRepeat: Int? = null
+    private var skipToNext = false
 
     private lateinit var ayaHefzPagerAdapter: AyaHefzPagerAdapter
     private var ayaList = mutableListOf<Aya>()
 
     private var isMemorizationStopped = false
     private var isMemorizationPaused = false
-
-    private val hefzRepeatViewModel: HefzRepeatViewModel by viewModels()
+    private var currentVerseIndex = 0
+    private var currentRepeatIndex = 0
 
     private lateinit var sharedPreferences: SharedPreferences
+    private var exoPlayer: SimpleExoPlayer? = null
+    private lateinit var dataSourceFactory: DefaultDataSource.Factory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +74,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
         extractIntentExtras()
         setupToolbar()
         setupViewPager()
+        initializePlayer()
 
         val ayaViewModel = ViewModelProvider(this)[AyaViewModel::class.java]
         observeConnection(ayaViewModel)
@@ -81,6 +86,13 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
         updatePauseResumeButtonState()
     }
 
+    private fun initializePlayer() {
+        exoPlayer = SimpleExoPlayer.Builder(this).build()
+        dataSourceFactory = DefaultDataSource.Factory(this)
+        exoPlayer?.addListener(this)
+    }
+
+
     override fun onBackPressed() {
         stopMemorization()
         super.onBackPressed()
@@ -88,6 +100,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
 
     override fun onDestroy() {
         stopMemorization()
+        exoPlayer?.release()
+        exoPlayer = null
         super.onDestroy()
     }
 
@@ -137,31 +151,20 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
 
     private fun observeConnection(ayaViewModel: AyaViewModel) {
         soraId?.let { id ->
-            hefzRepeatViewModel.isConnected.observe(this) { eventResource ->
-                eventResource?.peekContent()?.let { resource ->
-                    when (resource) {
-                        is Resource.Success -> if (resource.data == true) {
-                            lifecycleScope.launchWhenStarted {
-                                ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
-                                    ayaList.clear()
-                                    for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
-                                        ayaResult[i].url = link!! + CommonUtils.convertSora(
-                                            soraId!!, (i + 1).toString()
-                                        ) + ".mp3"
-                                        ayaList.add(ayaResult[i])
-                                    }
-                                    ayaHefzPagerAdapter.setData(ayaList)
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        launchNotificationPermission()
-                                    }
-                                    FirebaseMusicSource._ayasLiveData.value = ayaList
-                                    startMemorizationProcess()
-                                }
-                            }
-                        }
-                        is Resource.Error -> Log.e("PlaybackDebug", "Connection error: ${resource.message}")
-                        is Resource.Loading -> Log.d("PlaybackDebug", "Connecting...")
+            lifecycleScope.launchWhenStarted {
+                ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
+                    ayaList.clear()
+                    for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
+                        ayaResult[i].url = link!! + CommonUtils.convertSora(
+                            soraId!!, (i + 1).toString()
+                        ) + ".mp3"
+                        ayaList.add(ayaResult[i])
                     }
+                    ayaHefzPagerAdapter.setData(ayaList)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        launchNotificationPermission()
+                    }
+                    startMemorizationProcess()
                 }
             }
         }
@@ -169,61 +172,164 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
 
     private fun startMemorizationProcess() {
         CoroutineScope(Dispatchers.Main).launch {
+
+            currentVerseIndex = 0
+
             for (k in 0 until allRepeat!!) {
                 if (isMemorizationStopped) break
 
                 for (i in 0 until ayaList.size) {
                     if (isMemorizationStopped) break
+
+                    currentVerseIndex = i
+
+
                     val aya = ayaList[i]
+
                     binding.viewPager.setCurrentItem(i, true)
+                    delay(300)
 
                     for (j in 0 until ayaRepeat!!) {
                         if (isMemorizationStopped) break
-                        while (isMemorizationPaused && !isMemorizationStopped) delay(100)
+                        currentRepeatIndex = j
+                        while (isMemorizationPaused && !isMemorizationStopped) {
+                            delay(100)
+                        }
+
                         if (isMemorizationStopped) break
 
-                        hefzRepeatViewModel.playOrToggleAya(aya)
+                        playAya(aya)
                         awaitAyaCompletion()
-                        if (j < ayaRepeat!! - 1) delay(500)
+
+                        if (skipToNext) {
+                            skipToNext = false
+                            break
+                        }
+
+                        if (j < ayaRepeat!! - 1) {
+                            delay(500)
+                        }
                     }
+
                 }
+
                 if (!isMemorizationStopped) {
                     sharedPreferences.edit { putInt("all_repeat_counter", k + 1) }
                     delay(1000)
                 }
             }
+
             if (!isMemorizationStopped) {
                 showMessage(this@HefzRepeatActivity, "تم إكمال الحفظ بنجاح")
+                updateUIForCompletion()
             }
         }
     }
 
     private suspend fun awaitAyaCompletion() {
-        var hasStartedPlaying = false
-        while (true) {
-            if (isMemorizationStopped) break
-            while (isMemorizationPaused && !isMemorizationStopped) delay(100)
-            if (isMemorizationStopped) break
+        exoPlayer?.let { player ->
+            var waitCount = 0
+            val maxWaitCount = 500
 
-            val playbackState = hefzRepeatViewModel.playbackState.value?.state
-            if (playbackState == PlaybackStateCompat.STATE_PLAYING) hasStartedPlaying = true
-            if (hasStartedPlaying &&
-                (playbackState == PlaybackStateCompat.STATE_STOPPED ||
-                        playbackState == PlaybackStateCompat.STATE_PAUSED ||
-                        playbackState == PlaybackStateCompat.STATE_NONE)
-            ) break
+            while (player.playbackState != Player.STATE_READY &&
+                player.playbackState != Player.STATE_BUFFERING &&
+                waitCount < maxWaitCount &&
+                !isMemorizationStopped &&
+                !skipToNext) {
+                delay(100)
+                waitCount++
+            }
 
-            delay(100)
+            if (skipToNext) {
+                player.stop()
+                return
+            }
+
+            waitCount = 0
+            while (player.playbackState != Player.STATE_ENDED &&
+                waitCount < maxWaitCount &&
+                !isMemorizationStopped &&
+                !skipToNext) {
+
+                while (isMemorizationPaused && !isMemorizationStopped && !skipToNext) {
+                    delay(100)
+                }
+
+                if (isMemorizationStopped || skipToNext) break
+
+                delay(100)
+                waitCount++
+            }
+
+            if (skipToNext) {
+                player.stop()
+            }
+
+            if (waitCount >= maxWaitCount) {
+                player.stop()
+            }
+        }
+    }
+
+    private fun updateUIForCompletion() {
+        runOnUiThread {
+            binding.stopMemorization.isEnabled = false
+            binding.skipForwardButton.isEnabled = false
+            binding.cancel.isEnabled = true
+            binding.pauseResumeButton.text = "تكرار"
+            binding.pauseResumeButton.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_repeat, theme)
+            binding.pauseResumeButton.isEnabled = true
+            binding.pauseResumeButton.setOnClickListener {
+                repeatMemorization()
+            }
+        }
+    }
+
+    private fun repeatMemorization() {
+        isMemorizationStopped = false
+        isMemorizationPaused = false
+        skipToNext = false
+
+        binding.stopMemorization.isEnabled = true
+        binding.skipForwardButton.isEnabled = true
+        binding.cancel.isEnabled = true
+
+        binding.pauseResumeButton.text = "إيقاف مؤقت"
+        binding.pauseResumeButton.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_pause, theme)
+        binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
+        exoPlayer?.stop()
+        binding.viewPager.setCurrentItem(0, true)
+        startMemorizationProcess()
+    }
+
+    private fun playAya(aya: Aya) {
+        exoPlayer?.let { player ->
+            player.stop()
+            player.clearMediaItems()
+
+            val mediaItem = MediaItem.fromUri(Uri.parse(aya.url))
+            val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(mediaItem)
+            player.setMediaSource(mediaSource)
+            player.prepare()
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(100)
+                player.playWhenReady = true
+            }
         }
     }
 
     private fun togglePauseResume() {
         if (isMemorizationPaused) {
             isMemorizationPaused = false
-            hefzRepeatViewModel.resumePlayback()
+            exoPlayer?.playWhenReady = true
+
+            if (binding.viewPager.currentItem != currentVerseIndex) {
+                binding.viewPager.setCurrentItem(currentVerseIndex, true)
+            }
         } else {
             isMemorizationPaused = true
-            hefzRepeatViewModel.pausePlayback()
+            exoPlayer?.playWhenReady = false
         }
         updatePauseResumeButtonState()
     }
@@ -241,18 +347,14 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
     }
 
     private fun skipToNextVerse() {
-        val repeats = ayaRepeat ?: 1
-        val current = binding.viewPager.currentItem
-        if (current < ayaList.size - 1) {
-            binding.viewPager.setCurrentItem(current + 1, true)
-            repeat(repeats) { hefzRepeatViewModel.skipToNextAya() }
-        }
+        skipToNext = true
+        exoPlayer?.stop()
     }
 
     private fun stopMemorization() {
         isMemorizationStopped = true
         isMemorizationPaused = false
-        hefzRepeatViewModel.stopPlayback()
+        exoPlayer?.stop()
 
         binding.stopMemorization.apply {
             isEnabled = false
@@ -272,7 +374,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
         binding.positionIndicator.text = "$currentAya / $totalAyas"
     }
 
-    // === Permissions ===
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun launchNotificationPermission() {
         val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -287,6 +388,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
             requestPermissionLauncher.launch(perms)
         }
     }
+
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
