@@ -1,7 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz
 
 import android.Manifest
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -15,16 +14,17 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.edit
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
-import com.megahed.eqtarebmenalla.adapter.AyaHefzAdapter
+import com.megahed.eqtarebmenalla.adapter.AyaHefzPagerAdapter
 import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.common.Resource
@@ -36,25 +36,26 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-
 @AndroidEntryPoint
-class HefzRepeatActivity : AppCompatActivity() , MenuProvider {
+class HefzRepeatActivity : AppCompatActivity(), MenuProvider {
 
     private lateinit var binding: ActivityHefzRepeatBinding
 
-    private var link:String?=null
-    private var soraId:String?=null
-    private var startAya:String?=null
-    private var readerName:String?=null
-    private var endAya:String?=null
-    private var ayaRepeat:Int?=null
-    private var allRepeat:Int?=null
-    private lateinit var quranTextAdapter : AyaHefzAdapter
+    private var link: String? = null
+    private var soraId: String? = null
+    private var startAya: String? = null
+    private var endAya: String? = null
+    private var readerName: String? = null
+    private var ayaRepeat: Int? = null
+    private var allRepeat: Int? = null
+
+    private lateinit var ayaHefzPagerAdapter: AyaHefzPagerAdapter
+    private var ayaList = mutableListOf<Aya>()
+
+    private var isMemorizationStopped = false
+    private var isMemorizationPaused = false
 
     private val hefzRepeatViewModel: HefzRepeatViewModel by viewModels()
 
@@ -65,179 +66,243 @@ class HefzRepeatActivity : AppCompatActivity() , MenuProvider {
         binding = ActivityHefzRepeatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        sharedPreferences = getSharedPreferences("playback_prefs", Context.MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences("playback_prefs", MODE_PRIVATE)
+        extractIntentExtras()
+        setupToolbar()
+        setupViewPager()
 
-        link = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).link }
-        soraId = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).soraId }
-        startAya = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).startAya }
-        endAya = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).endAya }
-        ayaRepeat = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).ayaRepeat }
-        allRepeat = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).allRepeat }
-        readerName = intent.extras?.let { HefzRepeatActivityArgs.fromBundle(it).readerName }
+        val ayaViewModel = ViewModelProvider(this)[AyaViewModel::class.java]
+        observeConnection(ayaViewModel)
 
+        val menuHost: MenuHost = this
+        menuHost.addMenuProvider(this, this, Lifecycle.State.RESUMED)
 
+        setupClickListeners()
+        updatePauseResumeButtonState()
+    }
 
+    override fun onBackPressed() {
+        stopMemorization()
+        super.onBackPressed()
+    }
+
+    override fun onDestroy() {
+        stopMemorization()
+        super.onDestroy()
+    }
+
+    private fun extractIntentExtras() {
+        intent.extras?.let {
+            val args = HefzRepeatActivityArgs.fromBundle(it)
+            link = args.link
+            soraId = args.soraId
+            startAya = args.startAya
+            endAya = args.endAya
+            ayaRepeat = args.ayaRepeat
+            allRepeat = args.allRepeat
+            readerName = args.readerName
+        }
+    }
+
+    private fun setupToolbar() {
         val toolbar: Toolbar = binding.toolbar.toolbar
-         setSupportActionBar(toolbar)
-         supportActionBar?.setDisplayShowHomeEnabled(true)
-         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.title = getString(R.string.listeningToSave)
+    }
 
-        toolbar.title=getString(R.string.listeningToSave)
+    private fun setupViewPager() {
+        ayaHefzPagerAdapter = AyaHefzPagerAdapter(this)
+        binding.viewPager.adapter = ayaHefzPagerAdapter
+        binding.viewPager.isUserInputEnabled = true
 
-        val verticalLayoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.recyclerView.layoutManager = verticalLayoutManager
-        binding.recyclerView.setHasFixedSize(true)
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                updatePositionIndicator(position)
+            }
+        })
+    }
 
-        quranTextAdapter= AyaHefzAdapter(this)
+    private fun setupClickListeners() {
+        binding.cancel.setOnClickListener {
+            stopMemorization()
+            finish()
+        }
+        binding.stopMemorization.setOnClickListener { stopMemorization() }
+        binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
+        binding.skipForwardButton.setOnClickListener { skipToNextVerse() }
+    }
 
-        binding.recyclerView.adapter = quranTextAdapter
-
-        val ayaViewModel =
-            ViewModelProvider(this).get(AyaViewModel::class.java)
-
-        soraId?.let { it ->
-            hefzRepeatViewModel.isConnected.observe(this@HefzRepeatActivity) { eventResource ->
+    private fun observeConnection(ayaViewModel: AyaViewModel) {
+        soraId?.let { id ->
+            hefzRepeatViewModel.isConnected.observe(this) { eventResource ->
                 eventResource?.peekContent()?.let { resource ->
                     when (resource) {
-                        is Resource.Success -> {
-                            if (resource.data == true) {
-
-                                val ayaList = mutableListOf<Aya>()
-
-                                lifecycleScope.launchWhenStarted {
-                                    ayaViewModel.getAyaOfSoraId(it.toInt()).collect { it1 ->
-                                        for (i in startAya?.toInt()!! - 1 until endAya?.toInt()!!) {
-                                            it1[i].url = link!! + CommonUtils.convertSora(
-                                                soraId!!,
-                                                (i + 1).toString()
-                                            ) + ".mp3"
-                                            ayaList.add(it1[i])
-                                        }
-                                        quranTextAdapter.setData(ayaList)
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                            launchNotificationPermission()
-                                        }
-                                        FirebaseMusicSource._ayasLiveData.value = ayaList
-
-
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            for (k in 0 until allRepeat!!) {
-                                                for (i in startAya!!.toInt()..endAya?.toInt()!!) {
-                                                    //for (j in 0 until ayaRepeat!!) {
-                                                        val aya = ayaList[i - startAya!!.toInt()] // Adjust Aya index for startAya
-                                                        hefzRepeatViewModel.playOrToggleAya(aya)
-                                                }
-                                                sharedPreferences.edit().putInt("all_repeat_counter", k + 1).apply()
-                                                awaitAyaCompletion()
-                                            }
-                                        }
-                                        }
+                        is Resource.Success -> if (resource.data == true) {
+                            lifecycleScope.launchWhenStarted {
+                                ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
+                                    ayaList.clear()
+                                    for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
+                                        ayaResult[i].url = link!! + CommonUtils.convertSora(
+                                            soraId!!, (i + 1).toString()
+                                        ) + ".mp3"
+                                        ayaList.add(ayaResult[i])
                                     }
-
-
+                                    ayaHefzPagerAdapter.setData(ayaList)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        launchNotificationPermission()
+                                    }
+                                    FirebaseMusicSource._ayasLiveData.value = ayaList
+                                    startMemorizationProcess()
                                 }
                             }
-                        is Resource.Error -> {
-                            Log.e("PlaybackDebug", "Connection error: ${resource.message}")
                         }
-                        is Resource.Loading -> {
-                            Log.d("PlaybackDebug", "Connecting...")
-                        }
+                        is Resource.Error -> Log.e("PlaybackDebug", "Connection error: ${resource.message}")
+                        is Resource.Loading -> Log.d("PlaybackDebug", "Connecting...")
                     }
                 }
             }
         }
+    }
 
-        val menuHost: MenuHost = this
+    private fun startMemorizationProcess() {
+        CoroutineScope(Dispatchers.Main).launch {
+            for (k in 0 until allRepeat!!) {
+                if (isMemorizationStopped) break
 
-        menuHost.addMenuProvider(this, this, Lifecycle.State.RESUMED)
+                for (i in 0 until ayaList.size) {
+                    if (isMemorizationStopped) break
+                    val aya = ayaList[i]
+                    binding.viewPager.setCurrentItem(i, true)
 
-        binding.cancel.setOnClickListener {
-           finish()
+                    for (j in 0 until ayaRepeat!!) {
+                        if (isMemorizationStopped) break
+                        while (isMemorizationPaused && !isMemorizationStopped) delay(100)
+                        if (isMemorizationStopped) break
+
+                        hefzRepeatViewModel.playOrToggleAya(aya)
+                        awaitAyaCompletion()
+                        if (j < ayaRepeat!! - 1) delay(500)
+                    }
+                }
+                if (!isMemorizationStopped) {
+                    sharedPreferences.edit { putInt("all_repeat_counter", k + 1) }
+                    delay(1000)
+                }
+            }
+            if (!isMemorizationStopped) {
+                showMessage(this@HefzRepeatActivity, "تم إكمال الحفظ بنجاح")
+            }
         }
-
-
-
-
-
     }
 
     private suspend fun awaitAyaCompletion() {
         var hasStartedPlaying = false
-
         while (true) {
+            if (isMemorizationStopped) break
+            while (isMemorizationPaused && !isMemorizationStopped) delay(100)
+            if (isMemorizationStopped) break
+
             val playbackState = hefzRepeatViewModel.playbackState.value?.state
-
-            // Wait for playback to start
-            if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
-                hasStartedPlaying = true
-            }
-
-            // Once playback has started, wait for it to stop or pause
+            if (playbackState == PlaybackStateCompat.STATE_PLAYING) hasStartedPlaying = true
             if (hasStartedPlaying &&
                 (playbackState == PlaybackStateCompat.STATE_STOPPED ||
                         playbackState == PlaybackStateCompat.STATE_PAUSED ||
-                        playbackState == PlaybackStateCompat.STATE_NONE)) {
-                break
-            }
+                        playbackState == PlaybackStateCompat.STATE_NONE)
+            ) break
 
-            delay(100) // Polling interval for state change
+            delay(100)
         }
     }
 
+    private fun togglePauseResume() {
+        if (isMemorizationPaused) {
+            isMemorizationPaused = false
+            hefzRepeatViewModel.resumePlayback()
+        } else {
+            isMemorizationPaused = true
+            hefzRepeatViewModel.pausePlayback()
+        }
+        updatePauseResumeButtonState()
+    }
+
+    private fun updatePauseResumeButtonState() {
+        if (isMemorizationPaused) {
+            binding.pauseResumeButton.text = "استكمال"
+            binding.pauseResumeButton.icon =
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_play, theme)
+        } else {
+            binding.pauseResumeButton.text = "إيقاف مؤقت"
+            binding.pauseResumeButton.icon =
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_pause, theme)
+        }
+    }
+
+    private fun skipToNextVerse() {
+        val repeats = ayaRepeat ?: 1
+        val current = binding.viewPager.currentItem
+        if (current < ayaList.size - 1) {
+            binding.viewPager.setCurrentItem(current + 1, true)
+            repeat(repeats) { hefzRepeatViewModel.skipToNextAya() }
+        }
+    }
+
+    private fun stopMemorization() {
+        isMemorizationStopped = true
+        isMemorizationPaused = false
+        hefzRepeatViewModel.stopPlayback()
+
+        binding.stopMemorization.apply {
+            isEnabled = false
+            text = "تم الإيقاف"
+        }
+        binding.pauseResumeButton.apply {
+            isEnabled = false
+            text = "تم الإيقاف"
+            icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_stop, theme)
+        }
+        binding.skipForwardButton.isEnabled = false
+    }
+
+    private fun updatePositionIndicator(position: Int) {
+        val currentAya = position + 1
+        val totalAyas = ayaList.size
+        binding.positionIndicator.text = "$currentAya / $totalAyas"
+    }
+
+    // === Permissions ===
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun launchNotificationPermission(){
+    fun launchNotificationPermission() {
         val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             arrayOf(
-                Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
             )
         } else {
-            arrayOf(
-                Manifest.permission.POST_NOTIFICATIONS
-            )
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
         }
-        if (!MethodHelper.hasPermissions(this, perms)){
+        if (!MethodHelper.hasPermissions(this, perms)) {
             requestPermissionLauncher.launch(perms)
         }
-
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-        // }
     }
 
-
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = permissions.entries.all {
-            it.value
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions.entries.all { it.value }
+            if (!granted) showMessage(this, getString(R.string.need_permissions))
         }
-        if (!granted) {
-            // PERMISSION GRANTED
-            showMessage(this,getString(R.string.need_permissions))
-        }
-    }
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-
-    }
-
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {}
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-
-        return  when (menuItem.itemId) {
+        return when (menuItem.itemId) {
             android.R.id.home -> {
+                stopMemorization()
                 finish()
                 true
             }
             else -> false
         }
     }
-
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
-
-
 }

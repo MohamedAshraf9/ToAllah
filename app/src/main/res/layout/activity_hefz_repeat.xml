@@ -6,21 +6,98 @@
     android:layout_height="match_parent"
     tools:context=".feature_data.presentation.ui.hefz.HefzRepeatActivity">
 
-
-
-    <include layout="@layout/custom_toolbar"
+    <include
+        layout="@layout/custom_toolbar"
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_width="match_parent"
-        android:id="@+id/toolbar"/>
+        android:layout_alignParentTop="true" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <!-- Position indicator -->
+    <TextView
+        android:id="@+id/position_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_above="@+id/cancel"
-        android:layout_height="match_parent" />
+        android:layout_centerHorizontal="true"
+        android:layout_margin="@dimen/_10sdp"
+        android:background="@drawable/custom_button"
+        android:padding="@dimen/_5sdp"
+        android:text="1 / 1"
+        android:textColor="@color/text_color"
+        android:textSize="@dimen/_14ssp" />
 
+    <!-- ViewPager2 for single verse display with swiping -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/position_indicator"
+        android:layout_above="@+id/control_buttons_layout" />
+
+    <!-- Control buttons layout -->
+    <LinearLayout
+        android:id="@+id/control_buttons_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/cancel"
+        android:layout_margin="@dimen/_5sdp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stop_memorization"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/_2sdp"
+            android:background="@drawable/custom_button"
+            android:padding="@dimen/_5sdp"
+            android:text="إيقاف نهائي"
+            android:textAllCaps="false"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/_12ssp"
+            app:backgroundTint="@null"
+            app:iconSize="24dp"
+            app:icon="@drawable/ic_stop"
+            app:iconGravity="top" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pause_resume_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/_1sdp"
+            android:layout_marginEnd="@dimen/_1sdp"
+            android:background="@drawable/custom_button"
+            android:padding="@dimen/_5sdp"
+            android:text="إيقاف مؤقت"
+            android:textAllCaps="false"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/_12ssp"
+            app:backgroundTint="@null"
+            app:iconSize="24dp"
+            app:icon="@drawable/ic_pause"
+            app:iconGravity="top" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/skip_forward_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/_2sdp"
+            android:background="@drawable/custom_button"
+            android:padding="@dimen/_5sdp"
+            android:text="الآية التالية"
+            android:textAllCaps="false"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/_12ssp"
+            app:backgroundTint="@null"
+            app:iconSize="24dp"
+            app:icon="@drawable/ic_skip_next"
+            app:iconGravity="top" />
+
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/cancel"
@@ -28,8 +105,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/_5sdp"
-        android:padding="@dimen/_3sdp"
         android:background="@drawable/custom_button"
+        android:padding="@dimen/_3sdp"
         android:text="@string/cancel"
         android:textAllCaps="false"
         android:textColor="@color/text_color"
