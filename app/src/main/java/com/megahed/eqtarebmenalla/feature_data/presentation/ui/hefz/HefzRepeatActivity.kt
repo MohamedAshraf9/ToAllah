@@ -92,7 +92,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         exoPlayer?.addListener(this)
     }
 
-
     override fun onBackPressed() {
         stopMemorization()
         super.onBackPressed()
@@ -123,7 +122,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.title = getString(R.string.listeningToSave)
+        toolbar.title = getString(R.string.listening_to_save)
     }
 
     private fun setupViewPager() {
@@ -172,55 +171,38 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private fun startMemorizationProcess() {
         CoroutineScope(Dispatchers.Main).launch {
-
             currentVerseIndex = 0
-
             for (k in 0 until allRepeat!!) {
                 if (isMemorizationStopped) break
-
                 for (i in 0 until ayaList.size) {
                     if (isMemorizationStopped) break
-
                     currentVerseIndex = i
-
-
                     val aya = ayaList[i]
-
                     binding.viewPager.setCurrentItem(i, true)
                     delay(300)
-
                     for (j in 0 until ayaRepeat!!) {
                         if (isMemorizationStopped) break
                         currentRepeatIndex = j
                         while (isMemorizationPaused && !isMemorizationStopped) {
                             delay(100)
                         }
-
                         if (isMemorizationStopped) break
-
                         playAya(aya)
                         awaitAyaCompletion()
-
                         if (skipToNext) {
                             skipToNext = false
                             break
                         }
-
-                        if (j < ayaRepeat!! - 1) {
-                            delay(500)
-                        }
+                        if (j < ayaRepeat!! - 1) delay(500)
                     }
-
                 }
-
                 if (!isMemorizationStopped) {
                     sharedPreferences.edit { putInt("all_repeat_counter", k + 1) }
                     delay(1000)
                 }
             }
-
             if (!isMemorizationStopped) {
-                showMessage(this@HefzRepeatActivity, "تم إكمال الحفظ بنجاح")
+                showMessage(this@HefzRepeatActivity, getString(R.string.memorization_completed))
                 updateUIForCompletion()
             }
         }
@@ -250,24 +232,15 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 waitCount < maxWaitCount &&
                 !isMemorizationStopped &&
                 !skipToNext) {
-
                 while (isMemorizationPaused && !isMemorizationStopped && !skipToNext) {
                     delay(100)
                 }
-
                 if (isMemorizationStopped || skipToNext) break
-
                 delay(100)
                 waitCount++
             }
 
-            if (skipToNext) {
-                player.stop()
-            }
-
-            if (waitCount >= maxWaitCount) {
-                player.stop()
-            }
+            if (skipToNext || waitCount >= maxWaitCount) player.stop()
         }
     }
 
@@ -276,12 +249,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             binding.stopMemorization.isEnabled = false
             binding.skipForwardButton.isEnabled = false
             binding.cancel.isEnabled = true
-            binding.pauseResumeButton.text = "تكرار"
-            binding.pauseResumeButton.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_repeat, theme)
+            binding.pauseResumeButton.text = getString(R.string.repeat)
+            binding.pauseResumeButton.icon =
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_repeat, theme)
             binding.pauseResumeButton.isEnabled = true
-            binding.pauseResumeButton.setOnClickListener {
-                repeatMemorization()
-            }
+            binding.pauseResumeButton.setOnClickListener { repeatMemorization() }
         }
     }
 
@@ -294,8 +266,9 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         binding.skipForwardButton.isEnabled = true
         binding.cancel.isEnabled = true
 
-        binding.pauseResumeButton.text = "إيقاف مؤقت"
-        binding.pauseResumeButton.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_pause, theme)
+        binding.pauseResumeButton.text = getString(R.string.pause)
+        binding.pauseResumeButton.icon =
+            ResourcesCompat.getDrawable(resources, R.drawable.ic_pause, theme)
         binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
         exoPlayer?.stop()
         binding.viewPager.setCurrentItem(0, true)
@@ -306,7 +279,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         exoPlayer?.let { player ->
             player.stop()
             player.clearMediaItems()
-
             val mediaItem = MediaItem.fromUri(Uri.parse(aya.url))
             val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
@@ -323,7 +295,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         if (isMemorizationPaused) {
             isMemorizationPaused = false
             exoPlayer?.playWhenReady = true
-
             if (binding.viewPager.currentItem != currentVerseIndex) {
                 binding.viewPager.setCurrentItem(currentVerseIndex, true)
             }
@@ -336,11 +307,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private fun updatePauseResumeButtonState() {
         if (isMemorizationPaused) {
-            binding.pauseResumeButton.text = "استكمال"
+            binding.pauseResumeButton.text = getString(R.string.resume)
             binding.pauseResumeButton.icon =
                 ResourcesCompat.getDrawable(resources, R.drawable.ic_play, theme)
         } else {
-            binding.pauseResumeButton.text = "إيقاف مؤقت"
+            binding.pauseResumeButton.text = getString(R.string.pause)
             binding.pauseResumeButton.icon =
                 ResourcesCompat.getDrawable(resources, R.drawable.ic_pause, theme)
         }
@@ -358,11 +329,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
         binding.stopMemorization.apply {
             isEnabled = false
-            text = "تم الإيقاف"
+            text = getString(R.string.stopped)
         }
         binding.pauseResumeButton.apply {
             isEnabled = false
-            text = "تم الإيقاف"
+            text = getString(R.string.stopped)
             icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_stop, theme)
         }
         binding.skipForwardButton.isEnabled = false
@@ -371,7 +342,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private fun updatePositionIndicator(position: Int) {
         val currentAya = position + 1
         val totalAyas = ayaList.size
-        binding.positionIndicator.text = "$currentAya / $totalAyas"
+        binding.positionIndicator.text = getString(R.string.position_format, currentAya, totalAyas)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -388,7 +359,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             requestPermissionLauncher.launch(perms)
         }
     }
-
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
