@@ -50,6 +50,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.net.toUri
+import java.text.NumberFormat
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -118,9 +119,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupLocationRequest() {
-        // Updated to use PRIORITY_BALANCED_POWER_ACCURACY for approximate location
         locationRequest = LocationRequest
-            .Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 30000) // 30 seconds interval
+            .Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 30000)
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(30000)
             .setMaxUpdateDelayMillis(60000)
@@ -251,15 +251,14 @@ class HomeFragment : Fragment() {
         }
     }
     fun formatHijriDate(hijriDate: String): String {
-
         val parts = hijriDate.split("-")
         if (parts.size != 3) return hijriDate
 
         val day = parts[0].toIntOrNull() ?: return hijriDate
         val month = parts[1].toIntOrNull() ?: return hijriDate
-        val year = parts[2]
+        val year = parts[2].toIntOrNull() ?: return hijriDate
 
-        val hijriMonths = arrayOf(
+        val hijriMonthsEn = arrayOf(
             "Muharram",
             "Safar",
             "Rabi' al-Awwal",
@@ -274,18 +273,61 @@ class HomeFragment : Fragment() {
             "Dhu al-Hijjah"
         )
 
+        val hijriMonthsAr = arrayOf(
+            "مُحَرَّم",
+            "صَفَر",
+            "ربيع الأول",
+            "ربيع الآخر",
+            "جمادى الأولى",
+            "جمادى الآخرة",
+            "رجب",
+            "شعبان",
+            "رمضان",
+            "شوّال",
+            "ذو القعدة",
+            "ذو الحجة"
+        )
+
+        val isArabic = Locale.getDefault().language == "ar"
+        val hijriMonths = if (isArabic) hijriMonthsAr else hijriMonthsEn
         val monthName = if (month in 1..12) hijriMonths[month - 1] else "Unknown"
 
-        return "$day $monthName $year"
+        val numberFormat = NumberFormat.getInstance(Locale.getDefault())
+        numberFormat.isGroupingUsed = false
+        return "${numberFormat.format(day)} $monthName ${numberFormat.format(year)}"
     }
 
+    fun formatSalahTimeForLocale(time: String): String {
+        return try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.ENGLISH)
+            val date = sdf.parse(time) ?: return time
+
+            val cal = Calendar.getInstance()
+            cal.time = date
+
+            val hour = cal.get(Calendar.HOUR_OF_DAY)
+            val minute = cal.get(Calendar.MINUTE)
+
+            val numberFormat = NumberFormat.getInstance(Locale.getDefault())
+            numberFormat.isGroupingUsed = false
+
+            val hourStr = numberFormat.format(hour)
+            val minuteStr = String.format(Locale.getDefault(), "%02d", minute)
+
+            "$hourStr:$minuteStr"
+        } catch (e: Exception) {
+            time
+        }
+    }
+
+
     private fun updatePrayerTimesUI(prayerTime: PrayerTime) {
-        binding.fajrTime.text = CommonUtils.convertSalahTime(prayerTime.Fajr)
-        binding.sunriseTime.text = CommonUtils.convertSalahTime(prayerTime.Sunrise)
-        binding.dhuhrTime.text = CommonUtils.convertSalahTime(prayerTime.Dhuhr)
-        binding.asrTime.text = CommonUtils.convertSalahTime(prayerTime.Asr)
-        binding.maghribTime.text = CommonUtils.convertSalahTime(prayerTime.Maghrib)
-        binding.ishaTime.text = CommonUtils.convertSalahTime(prayerTime.Isha)
+        binding.fajrTime.text = formatSalahTimeForLocale(prayerTime.Fajr)
+        binding.sunriseTime.text = formatSalahTimeForLocale(prayerTime.Sunrise)
+        binding.dhuhrTime.text = formatSalahTimeForLocale(prayerTime.Dhuhr)
+        binding.asrTime.text = formatSalahTimeForLocale(prayerTime.Asr)
+        binding.maghribTime.text = formatSalahTimeForLocale(prayerTime.Maghrib)
+        binding.ishaTime.text = formatSalahTimeForLocale(prayerTime.Isha)
     }
 
     private fun updateCurrentPrayerStatus(prayerTime: PrayerTime) {
@@ -338,7 +380,6 @@ class HomeFragment : Fragment() {
                 )
             }
             else -> {
-                // After Isha, show countdown to next day's Fajr
                 showCountdownToNextDayFajr(prayerTime)
             }
         }
@@ -347,12 +388,11 @@ class HomeFragment : Fragment() {
     private fun showCountdownToNextDayFajr(prayerTime: PrayerTime) {
         binding.salahName.text = getString(R.string.fajr)
 
-        // Calculate next day's Fajr time
         val nextDayFajrTimeMillis = getNextDayFajrTime(prayerTime.Fajr)
         val currentTimeMillis = System.currentTimeMillis()
         val timeRemaining = nextDayFajrTimeMillis - currentTimeMillis
 
-        binding.prayerTime.text = CommonUtils.convertSalahTime(prayerTime.Fajr)
+        binding.prayerTime.text = formatSalahTimeForLocale(prayerTime.Fajr)
 
         Log.d("HomeFragment", "Next Fajr millis: $nextDayFajrTimeMillis")
         Log.d("HomeFragment", "Current millis: $currentTimeMillis")
@@ -368,7 +408,6 @@ class HomeFragment : Fragment() {
                 @SuppressLint("SetTextI18n")
                 override fun onFinish() {
                     binding.prayerCountdown.text = "- 00:00:00"
-                    // Refresh prayer times for the new day
                     if (MethodHelper.isOnline(requireContext())) {
                         val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
                         val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
@@ -419,7 +458,7 @@ class HomeFragment : Fragment() {
 
     private fun setDataViewWithCountdown(prayerName: String, prayerTime: String, timeRemaining: Long) {
         binding.salahName.text = prayerName
-        binding.prayerTime.text = prayerTime
+        binding.prayerTime.text = formatSalahTimeForLocale(prayerTime)
 
         countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
             @SuppressLint("SetTextI18n")
