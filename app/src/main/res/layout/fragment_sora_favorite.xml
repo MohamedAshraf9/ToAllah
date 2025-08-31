@@ -11,6 +11,35 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:id="@+id/toolbar"/>
+    <RelativeLayout
+        android:id="@+id/loading_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_view"
+            android:layout_width="345dp"
+            android:layout_height="423dp"
+            android:layout_centerInParent="true"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/reciter"
+            app:lottie_speed="1.5" />
+
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/lottie_view"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:text="@string/no_fav_surah"
+            android:textColor="@color/primary_color"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif-medium" />
+
+    </RelativeLayout>
 
 
     <androidx.recyclerview.widget.RecyclerView

@@ -104,13 +104,18 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
             lifecycleScope.launchWhenStarted {
                 quranListenerViewModel.getAllQuranListenerReader().collect {
-                    if (it.isEmpty()){
-                        binding.progressBar.visibility=View.VISIBLE
-                        binding.recyclerView.visibility=View.GONE
-                    }
-                    else{
-                        binding.progressBar.visibility=View.GONE
-                        binding.recyclerView.visibility=View.VISIBLE
+                    if (it.isEmpty()) {
+                        binding.loadingContainer.visibility = View.VISIBLE
+                        binding.recyclerView.visibility = View.GONE
+                        binding.lottieView.visibility = View.VISIBLE
+                        binding.progressBar.visibility = View.GONE
+                        binding.loadingText.visibility = View.GONE
+                    } else {
+                        binding.loadingContainer.visibility = View.GONE
+                        binding.recyclerView.visibility = View.VISIBLE
+                        binding.lottieView.visibility = View.GONE
+                        binding.progressBar.visibility = View.GONE
+                        binding.loadingText.visibility = View.GONE
                     }
                     quranListenerAdapter.setData(it)
                 }
@@ -141,13 +146,18 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
             lifecycleScope.launchWhenStarted {
                 quranListenerViewModel.getFavoriteQuranListenerReader().collect {
-                    if (it.isEmpty()){
-                        binding.progressBar.visibility=View.VISIBLE
-                        binding.recyclerView.visibility=View.GONE
-                    }
-                    else{
-                        binding.progressBar.visibility=View.GONE
-                        binding.recyclerView.visibility=View.VISIBLE
+                    if (it.isEmpty()) {
+                        binding.loadingContainer.visibility = View.VISIBLE
+                        binding.recyclerView.visibility = View.GONE
+                        binding.lottieView.visibility = View.VISIBLE
+                        binding.progressBar.visibility = View.GONE
+                        binding.loadingText.visibility = View.VISIBLE
+                    } else {
+                        binding.loadingContainer.visibility = View.GONE
+                        binding.recyclerView.visibility = View.VISIBLE
+                        binding.lottieView.visibility = View.GONE
+                        binding.progressBar.visibility = View.GONE
+                        binding.loadingText.visibility = View.GONE
                     }
                     quranListenerAdapter.setData(it)
                 }

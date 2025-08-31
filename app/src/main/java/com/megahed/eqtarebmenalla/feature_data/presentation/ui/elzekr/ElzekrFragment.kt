@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
@@ -38,6 +39,7 @@ class ElzekrFragment : Fragment(), MenuProvider {
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -78,8 +80,19 @@ class ElzekrFragment : Fragment(), MenuProvider {
             toolbar.title = azkarName
             lifecycleScope.launchWhenStarted {
                 azkarCatId?.let { it ->
-                    elzekrViewModel.getElZekrOfCatId(it).collect{ it1 ->
-                        elzekrAdapter.setData(it1)
+                    elzekrViewModel.getElZekrOfCatId(it).collect{ azkarList ->
+                        if (azkarList.isEmpty()) {
+                            binding.loadingContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                            binding.lottieView.visibility = View.VISIBLE
+                            binding.loadingText.visibility = View.GONE
+                        } else {
+                            binding.loadingContainer.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                            binding.lottieView.visibility = View.GONE
+                            binding.loadingText.visibility = View.GONE
+                        }
+                        elzekrAdapter.setData(azkarList)
 
                     }
                 }
@@ -88,8 +101,19 @@ class ElzekrFragment : Fragment(), MenuProvider {
             else{
                 toolbar.title = getString(R.string.favorite)
                 lifecycleScope.launchWhenStarted {
-                    elzekrViewModel.getFavoriteElZekr().collect{
-                        elzekrAdapter.setData(it)
+                    elzekrViewModel.getFavoriteElZekr().collect{azkarFavList->
+                        if (azkarFavList.isEmpty()) {
+                            binding.loadingContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                            binding.lottieView.visibility = View.VISIBLE
+                            binding.loadingText.visibility = View.VISIBLE
+                        } else {
+                            binding.loadingContainer.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                            binding.lottieView.visibility = View.GONE
+                            binding.loadingText.visibility = View.GONE
+                        }
+                        elzekrAdapter.setData(azkarFavList)
                     }
                 }
             }

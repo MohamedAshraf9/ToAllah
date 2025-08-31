@@ -50,6 +50,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.net.toUri
+import java.text.NumberFormat
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -119,10 +120,10 @@ class HomeFragment : Fragment() {
 
     private fun setupLocationRequest() {
         locationRequest = LocationRequest
-            .Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
+            .Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 30000)
             .setWaitForAccurateLocation(false)
-            .setMinUpdateIntervalMillis(100)
-            .setMaxUpdateDelayMillis(800)
+            .setMinUpdateIntervalMillis(30000)
+            .setMaxUpdateDelayMillis(60000)
             .build()
 
         mLocationCallback = object : LocationCallback() {
@@ -209,6 +210,7 @@ class HomeFragment : Fragment() {
                 mainViewModel.state.collect { islamicListState ->
                     islamicListState.let { islamicInfo ->
                         islamicInfo.islamicInfo.data?.let {
+
                             val prayerTime = PrayerTime(
                                 1,
                                 it.date.gregorian.date,
@@ -220,6 +222,8 @@ class HomeFragment : Fragment() {
                                 it.timings.Sunrise
                             )
                             prayerTimeViewModel.insertPrayerTime(prayerTime)
+
+                            binding.hijriDate.text = formatHijriDate(it.date.hijri.date)
                         }
                     }
                 }
@@ -246,14 +250,84 @@ class HomeFragment : Fragment() {
             }
         }
     }
+    fun formatHijriDate(hijriDate: String): String {
+        val parts = hijriDate.split("-")
+        if (parts.size != 3) return hijriDate
+
+        val day = parts[0].toIntOrNull() ?: return hijriDate
+        val month = parts[1].toIntOrNull() ?: return hijriDate
+        val year = parts[2].toIntOrNull() ?: return hijriDate
+
+        val hijriMonthsEn = arrayOf(
+            "Muharram",
+            "Safar",
+            "Rabi' al-Awwal",
+            "Rabi' al-Thani",
+            "Jumada al-Awwal",
+            "Jumada al-Thani",
+            "Rajab",
+            "Sha'ban",
+            "Ramadan",
+            "Shawwal",
+            "Dhu al-Qi'dah",
+            "Dhu al-Hijjah"
+        )
+
+        val hijriMonthsAr = arrayOf(
+            "مُحَرَّم",
+            "صَفَر",
+            "ربيع الأول",
+            "ربيع الآخر",
+            "جمادى الأولى",
+            "جمادى الآخرة",
+            "رجب",
+            "شعبان",
+            "رمضان",
+            "شوّال",
+            "ذو القعدة",
+            "ذو الحجة"
+        )
+
+        val isArabic = Locale.getDefault().language == "ar"
+        val hijriMonths = if (isArabic) hijriMonthsAr else hijriMonthsEn
+        val monthName = if (month in 1..12) hijriMonths[month - 1] else "Unknown"
+
+        val numberFormat = NumberFormat.getInstance(Locale.getDefault())
+        numberFormat.isGroupingUsed = false
+        return "${numberFormat.format(day)} $monthName ${numberFormat.format(year)}"
+    }
+
+    fun formatSalahTimeForLocale(time: String): String {
+        return try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.ENGLISH)
+            val date = sdf.parse(time) ?: return time
+
+            val cal = Calendar.getInstance()
+            cal.time = date
+
+            val hour = cal.get(Calendar.HOUR_OF_DAY)
+            val minute = cal.get(Calendar.MINUTE)
+
+            val numberFormat = NumberFormat.getInstance(Locale.getDefault())
+            numberFormat.isGroupingUsed = false
+
+            val hourStr = numberFormat.format(hour)
+            val minuteStr = String.format(Locale.getDefault(), "%02d", minute)
+
+            "$hourStr:$minuteStr"
+        } catch (e: Exception) {
+            time
+        }
+    }
+
 
     private fun updatePrayerTimesUI(prayerTime: PrayerTime) {
-        binding.fajrTime.text = CommonUtils.convertSalahTime(prayerTime.Fajr)
-        binding.sunriseTime.text = CommonUtils.convertSalahTime(prayerTime.Sunrise)
-        binding.dhuhrTime.text = CommonUtils.convertSalahTime(prayerTime.Dhuhr)
-        binding.asrTime.text = CommonUtils.convertSalahTime(prayerTime.Asr)
-        binding.maghribTime.text = CommonUtils.convertSalahTime(prayerTime.Maghrib)
-        binding.ishaTime.text = CommonUtils.convertSalahTime(prayerTime.Isha)
+        binding.fajrTime.text = formatSalahTimeForLocale(prayerTime.Fajr)
+        binding.sunriseTime.text = formatSalahTimeForLocale(prayerTime.Sunrise)
+        binding.dhuhrTime.text = formatSalahTimeForLocale(prayerTime.Dhuhr)
+        binding.asrTime.text = formatSalahTimeForLocale(prayerTime.Asr)
+        binding.maghribTime.text = formatSalahTimeForLocale(prayerTime.Maghrib)
+        binding.ishaTime.text = formatSalahTimeForLocale(prayerTime.Isha)
     }
 
     private fun updateCurrentPrayerStatus(prayerTime: PrayerTime) {
@@ -306,17 +380,85 @@ class HomeFragment : Fragment() {
                 )
             }
             else -> {
-                binding.salahName.text = getString(R.string.isha)
-                binding.prayerTime.text = CommonUtils.convertSalahTime(prayerTime.Isha)
-                timeStarted = CommonUtils.getTimeLong(prayerTime.Isha, false)
-                startElapsedTimeCounter()
+                showCountdownToNextDayFajr(prayerTime)
             }
+        }
+    }
+
+    private fun showCountdownToNextDayFajr(prayerTime: PrayerTime) {
+        binding.salahName.text = getString(R.string.fajr)
+
+        val nextDayFajrTimeMillis = getNextDayFajrTime(prayerTime.Fajr)
+        val currentTimeMillis = System.currentTimeMillis()
+        val timeRemaining = nextDayFajrTimeMillis - currentTimeMillis
+
+        binding.prayerTime.text = formatSalahTimeForLocale(prayerTime.Fajr)
+
+        Log.d("HomeFragment", "Next Fajr millis: $nextDayFajrTimeMillis")
+        Log.d("HomeFragment", "Current millis: $currentTimeMillis")
+        Log.d("HomeFragment", "Time remaining: $timeRemaining")
+
+        if (timeRemaining > 0) {
+            countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
+                @SuppressLint("SetTextI18n")
+                override fun onTick(millisUntilFinished: Long) {
+                    binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
+                }
+
+                @SuppressLint("SetTextI18n")
+                override fun onFinish() {
+                    binding.prayerCountdown.text = "- 00:00:00"
+                    if (MethodHelper.isOnline(requireContext())) {
+                        val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
+                        val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
+                        if (savedLatitude != 0.0 && savedLongitude != 0.0) {
+                            mainViewModel.getAzanData(savedLatitude, savedLongitude)
+                        }
+                    }
+                }
+            }
+            countDownTimer?.start()
+        } else {
+            binding.prayerCountdown.text = "- 00:00:00"
+        }
+    }
+
+    private fun getNextDayFajrTime(fajrTime: String): Long {
+        try {
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val fajrDate = sdf.parse(fajrTime) ?: return 0L
+
+            // Get current date and time
+            val currentCalendar = Calendar.getInstance()
+
+            // Create calendar for tomorrow's Fajr
+            val nextDayCalendar = Calendar.getInstance()
+            nextDayCalendar.add(Calendar.DAY_OF_MONTH, 1) // Move to next day
+
+            // Extract hour and minute from Fajr time string
+            val fajrCalendar = Calendar.getInstance()
+            fajrCalendar.time = fajrDate
+
+            // Set tomorrow's date with Fajr time
+            nextDayCalendar.set(Calendar.HOUR_OF_DAY, fajrCalendar.get(Calendar.HOUR_OF_DAY))
+            nextDayCalendar.set(Calendar.MINUTE, fajrCalendar.get(Calendar.MINUTE))
+            nextDayCalendar.set(Calendar.SECOND, 0)
+            nextDayCalendar.set(Calendar.MILLISECOND, 0)
+
+            Log.d("HomeFragment", "Current time: ${currentCalendar.time}")
+            Log.d("HomeFragment", "Next Fajr time: ${nextDayCalendar.time}")
+            Log.d("HomeFragment", "Time difference in millis: ${nextDayCalendar.timeInMillis - currentCalendar.timeInMillis}")
+
+            return nextDayCalendar.timeInMillis
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Error calculating next day Fajr time: ${e.message}")
+            return 0L
         }
     }
 
     private fun setDataViewWithCountdown(prayerName: String, prayerTime: String, timeRemaining: Long) {
         binding.salahName.text = prayerName
-        binding.prayerTime.text = prayerTime
+        binding.prayerTime.text = formatSalahTimeForLocale(prayerTime)
 
         countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
             @SuppressLint("SetTextI18n")
@@ -517,8 +659,8 @@ class HomeFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private fun checkLocationPermission() {
         val perms = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            // Only request coarse location for approximate location
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
         if (MethodHelper.hasPermissions(requireContext(), perms)) {
             startGetLocation()

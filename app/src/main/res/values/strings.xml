@@ -148,6 +148,18 @@
 
     <string name="need_permissions">نحتاج الاذن</string>
     <string name="downloading_all_files">جاري تحميل كل السور</string>
+    <string name="no_fav_reciter">لا يوجد قراء مفضلين بعد</string>
+    <string name="no_fav_surah">لا يوجد سور مفضلة بعد</string>
+    <string name="no_fav_ayat">لا يوجد آيات مفضلة بعد</string>
+    <string name="no_fav_azkar">لا يوجد أذكار مفضلة بعد</string>
+
+    <string name="listening_to_save">الاستماع للحفظ</string>
+    <string name="memorization_completed">تم إكمال الحفظ بنجاح</string>
+    <string name="repeat">تكرار</string>
+    <string name="pause">إيقاف مؤقت</string>
+    <string name="resume">استكمال</string>
+    <string name="stopped">تم الإيقاف</string>
+    <string name="position_format">%1$d / %2$d</string>
 
 
 </resources>

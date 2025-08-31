@@ -112,8 +112,19 @@ class AyatFragment : Fragment(),MenuProvider {
             lifecycleScope.launchWhenStarted {
 
                 soraId?.let { it ->
-                    ayaViewModel.getAyaOfSoraId(it).collect{it1 ->
-                        quranTextAdapter.setData(it1)
+                    ayaViewModel.getAyaOfSoraId(it).collect{ayatList ->
+                        if (ayatList.isEmpty()) {
+                            binding.loadingContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                            binding.lottieView.visibility = View.VISIBLE
+                            binding.loadingText.visibility = View.GONE
+                        } else {
+                            binding.loadingContainer.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                            binding.lottieView.visibility = View.GONE
+                            binding.loadingText.visibility = View.GONE
+                        }
+                        quranTextAdapter.setData(ayatList)
 
                     }
                 }
@@ -125,8 +136,19 @@ class AyatFragment : Fragment(),MenuProvider {
 
             lifecycleScope.launchWhenStarted {
 
-                    ayaViewModel.getFavoriteAya().collect{
-                        quranTextAdapter.setData(it)
+                    ayaViewModel.getFavoriteAya().collect{ayatFavList->
+                        if (ayatFavList.isEmpty()) {
+                            binding.loadingContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                            binding.lottieView.visibility = View.VISIBLE
+                            binding.loadingText.visibility = View.VISIBLE
+                        } else {
+                            binding.loadingContainer.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                            binding.lottieView.visibility = View.GONE
+                            binding.loadingText.visibility = View.GONE
+                        }
+                        quranTextAdapter.setData(ayatFavList)
 
                     }
 

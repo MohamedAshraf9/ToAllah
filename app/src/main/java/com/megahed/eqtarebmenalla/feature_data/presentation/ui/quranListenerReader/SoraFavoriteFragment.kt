@@ -106,8 +106,19 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         binding.recyclerView.adapter = soraFavoriteAdapter
 
         lifecycleScope.launchWhenStarted {
-            quranListenerViewModel.getAllFavSorasOfReader().collect{
-               soraFavoriteAdapter.setData(it)
+            quranListenerViewModel.getAllFavSorasOfReader().collect{readerList->
+                if (readerList.isEmpty()) {
+                    binding.loadingContainer.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.GONE
+                    binding.lottieView.visibility = View.VISIBLE
+                    binding.loadingText.visibility = View.VISIBLE
+                } else {
+                    binding.loadingContainer.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
+                    binding.lottieView.visibility = View.GONE
+                    binding.loadingText.visibility = View.GONE
+                }
+                soraFavoriteAdapter.setData(readerList)
             }
         }
 

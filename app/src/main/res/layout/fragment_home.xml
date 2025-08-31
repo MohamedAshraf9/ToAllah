@@ -173,6 +173,16 @@
         app:layout_constraintStart_toStartOf="parent"
         />
 
+    <TextView
+        android:id="@+id/hijri_date"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginVertical="@dimen/_3sdp"
+        android:textSize="@dimen/_12ssp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/dayDetails"
+        app:layout_constraintTop_toBottomOf="@+id/dayDetails" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
