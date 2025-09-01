@@ -394,10 +394,6 @@ class HomeFragment : Fragment() {
 
         binding.prayerTime.text = formatSalahTimeForLocale(prayerTime.Fajr)
 
-        Log.d("HomeFragment", "Next Fajr millis: $nextDayFajrTimeMillis")
-        Log.d("HomeFragment", "Current millis: $currentTimeMillis")
-        Log.d("HomeFragment", "Time remaining: $timeRemaining")
-
         if (timeRemaining > 0) {
             countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
                 @SuppressLint("SetTextI18n")
@@ -427,31 +423,20 @@ class HomeFragment : Fragment() {
         try {
             val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
             val fajrDate = sdf.parse(fajrTime) ?: return 0L
-
-            // Get current date and time
             val currentCalendar = Calendar.getInstance()
-
-            // Create calendar for tomorrow's Fajr
             val nextDayCalendar = Calendar.getInstance()
-            nextDayCalendar.add(Calendar.DAY_OF_MONTH, 1) // Move to next day
+            nextDayCalendar.add(Calendar.DAY_OF_MONTH, 1)
 
-            // Extract hour and minute from Fajr time string
             val fajrCalendar = Calendar.getInstance()
             fajrCalendar.time = fajrDate
 
-            // Set tomorrow's date with Fajr time
             nextDayCalendar.set(Calendar.HOUR_OF_DAY, fajrCalendar.get(Calendar.HOUR_OF_DAY))
             nextDayCalendar.set(Calendar.MINUTE, fajrCalendar.get(Calendar.MINUTE))
             nextDayCalendar.set(Calendar.SECOND, 0)
             nextDayCalendar.set(Calendar.MILLISECOND, 0)
 
-            Log.d("HomeFragment", "Current time: ${currentCalendar.time}")
-            Log.d("HomeFragment", "Next Fajr time: ${nextDayCalendar.time}")
-            Log.d("HomeFragment", "Time difference in millis: ${nextDayCalendar.timeInMillis - currentCalendar.timeInMillis}")
-
             return nextDayCalendar.timeInMillis
         } catch (e: Exception) {
-            Log.e("HomeFragment", "Error calculating next day Fajr time: ${e.message}")
             return 0L
         }
     }
@@ -831,18 +816,18 @@ class HomeFragment : Fragment() {
 
     private fun showNoInternetWarning() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Location Updated")
-            .setMessage("Your location has been updated, but internet connection is required to fetch the latest prayer times. Please connect to the internet to get updated prayer times.")
-            .setPositiveButton("OK") { dialog, _ ->
+            .setTitle("تحديث الموقع")
+            .setMessage("تم تحديث موقعك، ولكن يلزم اتصال بالإنترنت لعرض أحدث مواقيت الصلاة. يُرجى الاتصال بالإنترنت للحصول على مواقيت الصلاة المُحدَّثة.")
+            .setPositiveButton("حسسناً") { dialog, _ ->
                 dialog.dismiss()
             }
-            .setNegativeButton("Retry") { dialog, _ ->
+            .setNegativeButton("حاول مجدداً") { dialog, _ ->
                 if (MethodHelper.isOnline(requireContext())) {
                     val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
                     val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
                     if (savedLatitude != 0.0 && savedLongitude != 0.0) {
                         mainViewModel.getAzanData(savedLatitude, savedLongitude)
-                        Toast.makeText(requireContext(), "Updating prayer times...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "جاري تحديث أوقات الصلاة ...", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     showNoInternetDialog()
