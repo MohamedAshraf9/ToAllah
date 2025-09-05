@@ -1,335 +1,546 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context=".feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment">
 
-
-  <include layout="@layout/custom_toolbar"
-      android:layout_height="wrap_content"
-      android:layout_width="match_parent"
-      android:id="@+id/toolbar"/>
-
-  <ScrollView
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-    android:fillViewport="true">
-
-    <LinearLayout
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/custom_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-      android:orientation="vertical">
+        android:layout_height="wrap_content" />
 
-      <TextView
-          android:id="@+id/chooseReader"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/_3sdp"
-          android:layout_marginTop="@dimen/_3sdp"
-          android:layout_marginEnd="@dimen/_3sdp"
-          android:layout_marginBottom="@dimen/_3sdp"
-          android:padding="@dimen/_3sdp"
-          android:text="@string/chooseReader"
-          android:textSize="@dimen/_14ssp"
-          android:textStyle="bold" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-      <com.google.android.material.textfield.TextInputLayout
-          android:id="@+id/readerSpinner"
-          style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-          android:layout_width="match_parent"
-          android:layout_margin="@dimen/_5sdp"
-          android:layout_gravity="center"
-          android:layout_height="wrap_content"
-          android:hint="@string/chooseReader">
-
-
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/list_of_rewat"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none"
-            />
-      </com.google.android.material.textfield.TextInputLayout>
+            android:orientation="vertical"
+            android:padding="@dimen/_8sdp">
 
-    <!--  <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:layout_margin="@dimen/_1sdp"
-          android:padding="@dimen/_1sdp">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/memorization_schedule_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                android:visibility="gone"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_4sdp"
+                app:cardUseCompatPadding="true">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
+                        <ImageView
+                            android:layout_width="@dimen/_24sdp"
+                            android:layout_height="@dimen/_24sdp"
+                            android:layout_marginEnd="@dimen/_8sdp"
+                            android:src="@drawable/ic_schedule"
+                            app:tint="@color/colorPrimary" />
 
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/active_memorization_schedule"
+                            android:textColor="@color/text_color"
+                            android:textSize="@dimen/_16ssp"
+                            android:textStyle="bold" />
 
+                    </LinearLayout>
 
-      </RelativeLayout>-->
+                    <TextView
+                        android:id="@+id/schedule_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_4sdp"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/_14ssp"
+                        tools:text="@string/example_schedule_title" />
 
-      <TextView
-          android:textAlignment="center"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:textSize="@dimen/_14ssp"
-          android:textStyle="bold"
-          android:padding="@dimen/_3sdp"
-          android:layout_margin="@dimen/_3sdp"
-          android:text="@string/soraStart"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:baselineAligned="false"
+                        android:gravity="center"
+                        android:orientation="horizontal">
 
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:orientation="horizontal"
-          android:weightSum="2"
-          android:layout_margin="@dimen/_1sdp"
-          android:padding="@dimen/_1sdp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
 
+                            <TextView
+                                android:id="@+id/today_progress"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="@dimen/_18ssp"
+                                android:textStyle="bold"
+                                tools:text="5/5" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/soraStartSpinner"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_margin="@dimen/_5sdp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:enabled="false"
-            android:layout_height="wrap_content"
-            android:hint="@string/sora">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/today_progress_label"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/_10ssp" />
 
+                        </LinearLayout>
 
-          <com.google.android.material.textfield.MaterialAutoCompleteTextView
-              android:id="@+id/list_soura_name"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:inputType="none"
-              />
-        </com.google.android.material.textfield.TextInputLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
 
+                            <TextView
+                                android:id="@+id/current_streak"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="7"
+                                android:textColor="@color/colorAccent"
+                                android:textSize="@dimen/_18ssp"
+                                android:textStyle="bold" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_5sdp"
-            android:hint="@string/ayaNum"
-            android:enabled="false"
-            android:id="@+id/soraStartEditText"
-            android:layout_gravity="center"
-            app:helperTextEnabled="true">
-          <com.google.android.material.textfield.MaterialAutoCompleteTextView
-              android:id="@+id/nb_aya"
-              android:layout_width="match_parent"
-              android:inputType="none"
-              android:layout_height="wrap_content"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/current_streak_label"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/_10ssp" />
 
+                        </LinearLayout>
 
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
 
-      </LinearLayout>
+                            <TextView
+                                android:id="@+id/total_progress"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="75%"
+                                android:textColor="#4CAF50"
+                                android:textSize="@dimen/_18ssp"
+                                android:textStyle="bold" />
 
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/total_progress_percentage_label"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/_10ssp" />
 
-      <TextView
-          android:textAlignment="center"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:textSize="@dimen/_14ssp"
-          android:textStyle="bold"
-          android:padding="@dimen/_3sdp"
-          android:layout_margin="@dimen/_3sdp"
-          android:text="@string/soraEnd"/>
+                        </LinearLayout>
 
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:orientation="horizontal"
-          android:weightSum="2"
-          android:layout_margin="@dimen/_1sdp"
-          android:padding="@dimen/_1sdp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
 
+                            <TextView
+                                android:id="@+id/total_progress_of_schedule"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:gravity="center"
+                                android:text="15/20"
+                                android:textColor="@color/colorAccent"
+                                android:textSize="@dimen/_18ssp" />
 
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/total_verses_count_label"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/_10ssp" />
 
+                        </LinearLayout>
 
+                    </LinearLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_5sdp"
-            android:hint="@string/ayaNum"
-            android:enabled="false"
-            android:id="@+id/soraStartEndText"
-            android:layout_gravity="center"
-            app:helperTextEnabled="true">
-          <com.google.android.material.textfield.MaterialAutoCompleteTextView
-              android:id="@+id/nb_eya_end"
-              android:layout_width="match_parent"
-              android:inputType="none"
-              android:layout_height="wrap_content"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
 
+            </com.google.android.material.card.MaterialCardView>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_12sdp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-      </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_create_schedule"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/_4sdp"
+                    android:layout_weight="1"
+                    android:text="@string/create_schedule_button"
+                    android:textSize="@dimen/_12ssp"
+                    app:icon="@drawable/ic_add"
+                    app:iconGravity="start" />
 
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_margin="@dimen/_1sdp"
-          android:padding="@dimen/_1sdp"
-          android:layout_gravity="center">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_memorization_tracker"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_4sdp"
+                    android:layout_weight="1"
+                    android:text="@string/track_memorization_button"
+                    android:textSize="@dimen/_12ssp"
+                    app:icon="@drawable/ic_track_changes"
+                    app:iconGravity="start" />
 
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/ayaRepeat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="@dimen/_3sdp"
-            android:layout_marginTop="@dimen/_3sdp"
-            android:layout_marginEnd="@dimen/_3sdp"
-            android:layout_marginBottom="@dimen/_3sdp"
-            android:padding="@dimen/_3sdp"
-            android:text="@string/ayaRepeat"
-            android:textSize="@dimen/_13ssp"
-            android:textStyle="bold" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:cardUseCompatPadding="true">
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_5sdp"
-            android:hint="@string/ayaRepeatNum"
-            android:id="@+id/ayaRepeatEndText"
-            android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@id/ayaRepeat"
-            android:layout_gravity="center"
-            app:helperTextEnabled="true">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp">
 
-          <com.google.android.material.textfield.TextInputEditText
-              android:id="@+id/nb_aya_repeat"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:text="1"
-              android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <TextView
+                        android:id="@+id/chooseReader"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:drawablePadding="@dimen/_8sdp"
+                        android:text="@string/chooseReader"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/_16ssp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_person"
+                        app:drawableTint="@color/colorPrimary" />
 
-      </RelativeLayout>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/readerSpinner"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/chooseReader"
+                        app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                        app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                        app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                        app:boxCornerRadiusTopStart="@dimen/_8sdp">
 
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_margin="@dimen/_1sdp"
-          android:padding="@dimen/_1sdp"
-          android:layout_gravity="center">
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/list_of_rewat"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
+                </LinearLayout>
 
-        <TextView
-            android:id="@+id/cycleRepeat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="@dimen/_3sdp"
-            android:layout_marginTop="@dimen/_3sdp"
-            android:layout_marginEnd="@dimen/_3sdp"
-            android:layout_marginBottom="@dimen/_3sdp"
-            android:padding="@dimen/_3sdp"
-            android:text="@string/cycleRepeat"
-            android:textSize="@dimen/_11ssp"
-            android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_5sdp"
-            android:hint="@string/ayaRepeatNum"
-            android:id="@+id/cycleRepeatEndText"
-            android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@id/cycleRepeat"
-            android:layout_gravity="center"
-            app:helperTextEnabled="true">
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:cardUseCompatPadding="true">
 
-          <com.google.android.material.textfield.TextInputEditText
-              android:layout_width="match_parent"
-              android:id="@+id/sura_repeat"
-              android:layout_height="wrap_content"
-              android:text="1"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp">
 
-              android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:drawablePadding="@dimen/_8sdp"
+                        android:text="@string/soraStart"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/_16ssp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_play"
+                        app:drawableTint="@color/colorPrimary" />
 
-      </RelativeLayout>
-      <androidx.constraintlayout.widget.ConstraintLayout
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
 
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/soraStartSpinner"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/_4sdp"
+                            android:layout_weight="1"
+                            android:enabled="false"
+                            android:hint="@string/sora"
+                            app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                            app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusTopStart="@dimen/_8sdp">
 
-        <!--<Button
-            android:id="@+id/start"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_35sdp"
-            android:layout_marginStart="@dimen/_20sdp"
-            android:layout_marginEnd="@dimen/_20sdp"
-            android:enabled="false"
-            android:layout_marginBottom="@dimen/_25sdp"
-            app:backgroundTint="@color/colorPrimary"
-            android:text="البدأ"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/_18sdp"
-            android:background="@drawable/shape_bkg"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />-->
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/list_soura_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/soraStartEditText"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/_4sdp"
+                            android:layout_weight="1"
+                            android:enabled="false"
+                            android:hint="@string/ayaNum"
+                            app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                            app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                            app:helperTextEnabled="true">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/_8sdp"
-            android:padding="@dimen/_3sdp"
-            android:background="@drawable/custom_button"
-            android:text="@string/start"
-            android:textAllCaps="false"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/_16ssp"
-            app:backgroundTint="@null"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/nb_aya"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/stop"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_35sdp"
-            android:layout_marginStart="@dimen/_20sdp"
-            android:layout_marginEnd="@dimen/_20sdp"
-            android:layout_marginBottom="@dimen/_25sdp"
-            app:backgroundTint="@color/colorPrimary"
-            android:text="انهاء"
-            android:visibility="gone"
-            android:textSize="@dimen/_18sdp"
-            android:background="@drawable/shape_bkg"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+                    </LinearLayout>
 
-      </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_12sdp"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:drawablePadding="@dimen/_8sdp"
+                        android:text="@string/soraEnd"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/_16ssp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_stop"
+                        app:drawableTint="@color/colorAccent" />
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/soraStartEndText"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:hint="@string/ayaNum"
+                        app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                        app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                        app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                        app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                        app:helperTextEnabled="true">
 
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/nb_eya_end"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-    </LinearLayout>
-  </ScrollView>
+                </LinearLayout>
 
+            </com.google.android.material.card.MaterialCardView>
 
+            <!-- Repeat Settings Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:drawablePadding="@dimen/_8sdp"
+                        android:text="@string/repeating_settings"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/_16ssp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_repeat"
+                        app:drawableTint="@color/colorPrimary" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/ayaRepeat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/ayaRepeat"
+                            android:textColor="@color/text_color"
+                            android:textSize="@dimen/_14ssp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/ayaRepeatEndText"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="@dimen/_100sdp"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/ayaRepeatNum"
+                            app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                            app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                            app:helperTextEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/nb_aya_repeat"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:inputType="number"
+                                android:text="1" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/cycleRepeat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/cycleRepeat"
+                            android:textColor="@color/text_color"
+                            android:textSize="@dimen/_14ssp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/cycleRepeatEndText"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="@dimen/_100sdp"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/ayaRepeatNum"
+                            app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                            app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                            app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                            app:helperTextEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/sura_repeat"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:inputType="number"
+                                android:text="1" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/start"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_48sdp"
+                    android:layout_marginEnd="@dimen/_4sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_button"
+                    android:text="@string/start"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color"
+                    android:textSize="@dimen/_16ssp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@null"
+                    app:icon="@drawable/ic_play"
+                    app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/stop"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_48sdp"
+                    android:layout_marginStart="@dimen/_4sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_button"
+                    android:text="@string/end"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color"
+                    android:textSize="@dimen/_16ssp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:backgroundTint="@null"
+                    app:icon="@drawable/ic_stop"
+                    app:iconGravity="textStart" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

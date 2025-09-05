@@ -16,6 +16,7 @@ import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +26,8 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaHefzPagerAdapter
@@ -32,17 +35,23 @@ import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.databinding.ActivityHefzRepeatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.db.model.SessionType
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyaViewModel
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Date
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private lateinit var binding: ActivityHefzRepeatBinding
+
+    private lateinit var memorizationViewModel: MemorizationViewModel
 
     private var link: String? = null
     private var soraId: String? = null
@@ -65,10 +74,17 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private var exoPlayer: SimpleExoPlayer? = null
     private lateinit var dataSourceFactory: DefaultDataSource.Factory
 
+    private var sessionId: Long? = null
+    private var sessionStartTime: Date? = null
+    private var versesCompleted = 0
+    private var isProgressTrackingEnabled = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHefzRepeatBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        memorizationViewModel = ViewModelProvider(this)[MemorizationViewModel::class.java]
 
         sharedPreferences = getSharedPreferences("playback_prefs", MODE_PRIVATE)
         extractIntentExtras()
@@ -84,6 +100,97 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
         setupClickListeners()
         updatePauseResumeButtonState()
+
+        setupProgressObservers()
+
+        checkProgressTrackingEligibility()
+    }
+
+    private fun setupProgressObservers() {
+        lifecycleScope.launch {
+            memorizationViewModel.uiState.collect { state ->
+                if (state.message != null) {
+                    Snackbar.make(binding.root, state.message, Snackbar.LENGTH_SHORT).show()
+                    memorizationViewModel.dismissMessage()
+                }
+
+                if (state.error != null) {
+                    Snackbar.make(binding.root, state.error, Snackbar.LENGTH_LONG).show()
+                    memorizationViewModel.dismissError()
+                }
+
+                if (state.showCelebration) {
+                    showCelebrationDialog()
+                    memorizationViewModel.dismissCelebration()
+                }
+            }
+        }
+    }
+
+    private fun checkProgressTrackingEligibility() {
+        lifecycleScope.launch {
+            memorizationViewModel.todayTarget.collect { todayTarget ->
+                todayTarget?.let { target ->
+                    val sessionSurahId = soraId?.toIntOrNull() ?: -1
+                    val sessionStartVerse = startAya?.toIntOrNull() ?: -1
+                    val sessionEndVerse = endAya?.toIntOrNull() ?: -1
+
+                    isProgressTrackingEnabled = (sessionSurahId == target.surahId &&
+                            sessionStartVerse == target.startVerse &&
+                            sessionEndVerse == target.endVerse &&
+                            !target.isCompleted)
+
+                    if (isProgressTrackingEnabled) {
+                        binding.toolbar.toolbar.subtitle = "تتبع التقدم نشط - ${target.surahName}"
+
+                        showProgressTrackingConfirmation(target.surahName, target.startVerse, target.endVerse)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showProgressTrackingConfirmation(surahName: String, startVerse: Int, endVerse: Int) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.progress_tracking_title))
+            .setMessage("تم اكتشاف أن هذه الجلسة تطابق هدف اليوم:\n$surahName - الآيات $startVerse-$endVerse\n\nهل تريد تتبع تقدمك وتسجيل هذه الجلسة؟")
+            .setPositiveButton(getString(R.string.yes)) { _, _ -> startProgressTracking() }
+            .setNegativeButton(getString(R.string.no)) { _, _ ->
+                isProgressTrackingEnabled = false
+                binding.toolbar.toolbar.subtitle = ""
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun startProgressTracking() {
+        lifecycleScope.launch {
+            try {
+                sessionStartTime = Date()
+                memorizationViewModel.startMemorizationSession(SessionType.LISTENING)
+
+                memorizationViewModel.uiState.collect { state ->
+                    if (state.isSessionActive && state.currentSessionId != null) {
+                        sessionId = state.currentSessionId
+                        return@collect
+                    }
+                    Snackbar.make(binding.root, getString(R.string.start_tracking_session), Snackbar.LENGTH_SHORT).show()
+
+                }
+
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "فشل في بدء تتبع التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
+                isProgressTrackingEnabled = false
+            }
+        }
+    }
+
+    private fun showCelebrationDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.congratulations_title))
+            .setMessage(getString(R.string.congratulations_message))
+            .setPositiveButton(getString(R.string.thanks)) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     private fun initializePlayer() {
@@ -93,11 +200,35 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     override fun onBackPressed() {
-        stopMemorization()
-        super.onBackPressed()
+        if (isProgressTrackingEnabled && sessionId != null) {
+            showExitConfirmationDialog()
+        } else {
+            stopMemorization()
+            super.onBackPressed()
+        }
+    }
+
+    private fun showExitConfirmationDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.end_session))
+            .setMessage(getString(R.string.exit_session_message))
+            .setPositiveButton(getString(R.string.save_and_exit)) { _, _ ->
+                completeProgressTracking(true)
+                stopMemorization()
+                finish()
+            }
+            .setNegativeButton(getString(R.string.exit_without_saving)) { _, _ ->
+                stopMemorization()
+                finish()
+            }
+            .setNeutralButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     override fun onDestroy() {
+        if (isProgressTrackingEnabled && sessionId != null) {
+            completeProgressTracking(false)
+        }
         stopMemorization()
         exoPlayer?.release()
         exoPlayer = null
@@ -134,18 +265,83 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 updatePositionIndicator(position)
+
+                if (isProgressTrackingEnabled) {
+                    versesCompleted = position + 1
+                    updateProgressDisplay()
+                }
             }
         })
     }
 
+    private fun updateProgressDisplay() {
+        if (isProgressTrackingEnabled) {
+            val totalVerses = ayaList.size
+            binding.toolbar.toolbar.subtitle = "تتبع التقدم: $versesCompleted/$totalVerses آية مكتملة"
+        }
+    }
+
     private fun setupClickListeners() {
         binding.cancel.setOnClickListener {
-            stopMemorization()
-            finish()
+            if (isProgressTrackingEnabled && sessionId != null) {
+                showExitConfirmationDialog()
+            } else {
+                stopMemorization()
+                finish()
+            }
         }
-        binding.stopMemorization.setOnClickListener { stopMemorization() }
+
+        binding.stopMemorization.setOnClickListener {
+            if (isProgressTrackingEnabled && sessionId != null) {
+                showCompletionConfirmationDialog()
+            } else {
+                stopMemorization()
+            }
+        }
+
         binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
         binding.skipForwardButton.setOnClickListener { skipToNextVerse() }
+    }
+
+    private fun showCompletionConfirmationDialog() {
+        val totalVerses = ayaList.size
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.complete_session))
+            .setMessage("هل أكملت حفظ جميع الآيات ($totalVerses آية)؟\n\nسيتم تسجيل هذا كإنجاز مكتمل في تقدمك اليومي.")
+            .setPositiveButton(getString(R.string.completed_yes)) { _, _ ->
+                completeProgressTracking(true)
+                stopMemorization()
+            }
+            .setNegativeButton(getString(R.string.completed_no)) { _, _ ->
+                completeProgressTracking(false)
+                stopMemorization()
+            }
+            .show()
+    }
+
+    private fun completeProgressTracking(markTargetCompleted: Boolean) {
+        lifecycleScope.launch {
+            try {
+                sessionId?.let { id ->
+                    val notes = if (markTargetCompleted) {
+                        "جلسة مكتملة - تم حفظ ${ayaList.size} آية"
+                    } else {
+                        "جلسة غير مكتملة - تم حفظ $versesCompleted من ${ayaList.size} آية"
+                    }
+
+                    memorizationViewModel.completeSession(versesCompleted, notes)
+
+                    if (markTargetCompleted) {
+                        memorizationViewModel.markTodayTargetCompleted()
+                    }
+                }
+
+                isProgressTrackingEnabled = false
+                sessionId = null
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "فشل في حفظ التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun observeConnection(ayaViewModel: AyaViewModel) {
@@ -180,6 +376,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     val aya = ayaList[i]
                     binding.viewPager.setCurrentItem(i, true)
                     delay(300)
+
+                    if (isProgressTrackingEnabled) {
+                        versesCompleted = i + 1
+                        updateProgressDisplay()
+                    }
+
                     for (j in 0 until ayaRepeat!!) {
                         if (isMemorizationStopped) break
                         currentRepeatIndex = j
@@ -203,9 +405,27 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             }
             if (!isMemorizationStopped) {
                 showMessage(this@HefzRepeatActivity, getString(R.string.memorization_completed))
+
+                if (isProgressTrackingEnabled && sessionId != null) {
+                    showAutoCompletionDialog()
+                }
+
                 updateUIForCompletion()
             }
         }
+    }
+
+    private fun showAutoCompletionDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("تم إكمال الحفظ!")
+            .setMessage("تهانينا! لقد أكملت جلسة الحفظ بنجاح.\n\nهل تريد تسجيل هذا كهدف مكتمل؟")
+            .setPositiveButton("نعم") { _, _ ->
+                completeProgressTracking(true)
+            }
+            .setNegativeButton("لا") { _, _ ->
+                completeProgressTracking(false)
+            }
+            .show()
     }
 
     private suspend fun awaitAyaCompletion() {
@@ -272,6 +492,10 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
         exoPlayer?.stop()
         binding.viewPager.setCurrentItem(0, true)
+
+        versesCompleted = 0
+        updateProgressDisplay()
+
         startMemorizationProcess()
     }
 
@@ -367,11 +591,16 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {}
+
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             android.R.id.home -> {
-                stopMemorization()
-                finish()
+                if (isProgressTrackingEnabled && sessionId != null) {
+                    showExitConfirmationDialog()
+                } else {
+                    stopMemorization()
+                    finish()
+                }
                 true
             }
             else -> false

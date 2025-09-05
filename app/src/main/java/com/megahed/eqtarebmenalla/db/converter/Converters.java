@@ -1,4 +1,4 @@
-package com.megahed.eqtarebmenalla.db;
+package com.megahed.eqtarebmenalla.db.converter;
 
 
 import androidx.room.TypeConverter;

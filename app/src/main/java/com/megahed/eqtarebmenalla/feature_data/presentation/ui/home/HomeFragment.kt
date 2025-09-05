@@ -50,7 +50,17 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.net.toUri
+import androidx.fragment.app.viewModels
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import com.megahed.eqtarebmenalla.db.model.DailyTarget
+import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
+import com.megahed.eqtarebmenalla.db.model.UserStreak
+import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
+import com.megahed.eqtarebmenalla.feature_data.states.MemorizationUiState
+import kotlinx.coroutines.flow.collectLatest
 import java.text.NumberFormat
+import androidx.core.view.isGone
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -69,6 +79,9 @@ class HomeFragment : Fragment() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var mLocationCallback: LocationCallback
     private val mainViewModel: IslamicViewModel by activityViewModels()
+
+    private val memorizationViewModel: MemorizationViewModel by viewModels()
+
     private lateinit var binding: FragmentHomeBinding
 
     private var countDownTimer: CountDownTimer? = null
@@ -79,6 +92,11 @@ class HomeFragment : Fragment() {
 
     private val handler = Handler(Looper.getMainLooper())
     private var elapsedTimeRunnable: Runnable? = null
+
+    override fun onStart() {
+        super.onStart()
+        memorizationViewModel.refreshAllData()
+    }
 
     @RequiresApi(Build.VERSION_CODES.S)
     @SuppressLint("MissingPermission")
@@ -111,11 +129,387 @@ class HomeFragment : Fragment() {
 
         setupViewModelObservers(prayerTimeViewModel)
 
+        setupMemorizationObservers()
+
         setupPrayerNotificationCheckboxes(editor)
 
         setupClickListeners(drawerLayout, navView)
 
+        setupMemorizationClickListeners()
+
         return root
+    }
+
+    private fun setupMemorizationObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            memorizationViewModel.currentSchedule.collectLatest { schedule ->
+                updateMemorizationScheduleUI(schedule)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            memorizationViewModel.todayTarget.collectLatest { target ->
+                updateTodayTargetUI(target)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            memorizationViewModel.userStreak.collectLatest { streak ->
+                updateStreakUI(streak)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            memorizationViewModel.uiState.collectLatest { state ->
+                handleMemorizationUIState(state)
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateScheduleInfo(schedule: MemorizationSchedule) {
+        binding.scheduleSubtitle.text = schedule.title
+
+        val daysRemaining = calculateDaysRemaining(schedule.endDate)
+        if (daysRemaining > 0) {
+            binding.scheduleSubtitle.text = "${schedule.title} - متبقي $daysRemaining يوم"
+        } else {
+            binding.scheduleSubtitle.text = "${schedule.title} - منتهي"
+        }
+    }
+
+    private fun showCelebrationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.congratulations_title))
+            .setMessage(getString(R.string.celebration_message))
+            .setPositiveButton(getString(R.string.alhamdulillah)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setIcon(R.drawable.ic_celebration)
+            .show()
+    }
+    private fun showScheduleDetails() {
+        val schedule = memorizationViewModel.currentSchedule.value
+        if (schedule != null) {
+            showScheduleDetailsDialog(schedule)
+        } else {
+            Snackbar.make(binding.root, getString(R.string.no_active_schedule), Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showQuickProgressDialog() {
+        val schedule = memorizationViewModel.currentSchedule.value
+        val progress = memorizationViewModel.uiState.value.scheduleProgress
+        val streak = memorizationViewModel.userStreak.value
+
+        if (schedule != null && progress != null) {
+            val message = """
+            📚 الجدول: ${schedule.title}
+            
+            📊 التقدم الإجمالي: ${progress.progressPercentage}%
+            ✅ الأهداف المكتملة: ${progress.completedTargets}/${progress.totalTargets}
+            📅 الأيام المتبقية: ${calculateDaysRemaining(schedule.endDate)} يوم
+            
+            🔥 السلسلة الحالية: ${streak?.currentStreak ?: 0} أيام
+            🏆 أفضل سلسلة: ${streak?.longestStreak ?: 0} أيام
+        """.trimIndent()
+
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.progress_summary))
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.ok)) { dialog, _ -> dialog.dismiss() }
+                .setNeutralButton(getString(R.string.view_details)) { _, _ ->
+                    showScheduleDetails()
+                }
+                .show()
+        } else {
+            Snackbar.make(binding.root, getString(R.string.no_progress_data), Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateMemorizationScheduleUI(schedule: MemorizationSchedule?) {
+        if (schedule != null) {
+            binding.memorizationWidget.visibility = View.VISIBLE
+            memorizationViewModel.loadScheduleProgress()
+
+            val daysRemaining = calculateDaysRemaining(schedule.endDate)
+            if (daysRemaining > 0) {
+                binding.scheduleSubtitle.text = "${schedule.title} - متبقي $daysRemaining يوم"
+            } else {
+                binding.scheduleSubtitle.text = "${schedule.title} - منتهي"
+            }
+        } else {
+            showMemorizationEmptyState()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateTodayTargetUI(target: DailyTarget?) {
+        if (target != null) {
+            binding.activeScheduleLayout.visibility = View.VISIBLE
+            binding.noScheduleLayout.visibility = View.GONE
+
+            val targetInfo = "${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}"
+            binding.activeScheduleTitle.text = targetInfo
+
+            binding.estimatedTime.text = "الوقت المقدر: ${target.estimatedDurationMinutes} دقيقة"
+
+            if (target.isCompleted) {
+                binding.todayCompletionIcon.visibility = View.VISIBLE
+                binding.activeScheduleLayout.setBackgroundResource(R.drawable.memorization_completed_background)
+            } else {
+                binding.todayCompletionIcon.visibility = View.GONE
+                binding.activeScheduleLayout.setBackgroundResource(R.drawable.today_target_background)
+            }
+        } else {
+            binding.activeScheduleLayout.visibility = View.GONE
+            binding.noScheduleLayout.visibility = View.VISIBLE
+        }
+        updateMemorizationButtons(target)
+    }
+
+    private fun updateMemorizationButtons(target: DailyTarget?) {
+        val primaryButton = binding.btnPrimaryAction
+        val secondaryButton = binding.btnSecondaryAction
+
+        if (target != null && !target.isCompleted) {
+            primaryButton.text = getString(R.string.start_memorization)
+            primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
+            primaryButton.isEnabled = true
+
+            secondaryButton.text = getString(R.string.view_schedule_details)
+            secondaryButton.visibility = View.VISIBLE
+        } else if (target?.isCompleted == true) {
+            primaryButton.text = getString(R.string.completed)
+            primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle)
+            primaryButton.isEnabled = false
+
+            secondaryButton.text = getString(R.string.review)
+            secondaryButton.visibility = View.VISIBLE
+        } else{
+            primaryButton.text = getString(R.string.create_schedule)
+            primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add_circle)
+            primaryButton.isEnabled = true
+
+            secondaryButton.visibility = View.GONE
+        }
+    }
+
+    private fun updateStreakUI(streak: UserStreak?) {
+        if (streak != null && streak.currentStreak > 0) {
+            binding.streakContainer.visibility = View.VISIBLE
+            binding.memorizationStreakBadge.text = "${streak.currentStreak} أيام"
+
+            when {
+                streak.currentStreak >= 50 -> {
+                    binding.streakContainer.setBackgroundResource(R.drawable.streak_gold_background)
+                }
+                streak.currentStreak >= 14 -> {
+                    binding.streakContainer.setBackgroundResource(R.drawable.streak_silver_background)
+                }
+                else -> {
+                    binding.streakContainer.setBackgroundResource(R.drawable.streak_container_background)
+                }
+            }
+        } else {
+            binding.streakContainer.visibility = View.GONE
+        }
+    }
+
+    private fun handleMemorizationUIState(state: MemorizationUiState) {
+        if (state.isLoading) {
+
+        }
+
+        state.message?.let { message ->
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+                .show()
+            memorizationViewModel.dismissMessage()
+        }
+
+        state.error?.let { error ->
+            Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(ContextCompat.getColor(requireContext(), R.color.error_red))
+                .show()
+            memorizationViewModel.dismissError()
+        }
+
+        if (state.showCelebration) {
+            showCelebrationDialog()
+            memorizationViewModel.dismissCelebration()
+        }
+
+        state.scheduleProgress?.let { progress ->
+            binding.totalProgressText.text = "${progress.progressPercentage}%"
+
+            val target = memorizationViewModel.todayTarget.value
+            if (target != null) {
+                val verseCount = target.endVerse - target.startVerse + 1
+                val completedVerses = if (target.isCompleted) verseCount else 0
+                binding.todayProgressText.text = "$completedVerses/$verseCount آيات"
+            }
+        }
+
+        val streak = memorizationViewModel.userStreak.value
+        binding.currentStreakText.text = "${streak?.currentStreak ?: 0} أيام"
+    }
+
+    private fun setupMemorizationClickListeners() {
+        binding.btnPrimaryAction.setOnClickListener {
+            when (binding.btnPrimaryAction.text.toString()) {
+                "بدء الحفظ" -> startMemorizationSession()
+                "إنشاء جدول", "إنشاء جدول حفظ" -> navigateToScheduleCreation()
+                "مراجعة" -> startReviewSession()
+            }
+        }
+
+        binding.btnSecondaryAction.setOnClickListener {
+            when (binding.btnSecondaryAction.text.toString()) {
+                "عرض التفاصيل" -> showScheduleDetails()
+                "مراجعة" -> startReviewSession()
+            }
+        }
+
+        binding.expandCollapseContainer.setOnClickListener {
+            toggleQuickStats()
+        }
+
+        binding.progressOverview.setOnClickListener {
+            showQuickProgressDialog()
+        }
+
+        binding.todayCompletionIcon.setOnClickListener {
+            val target = memorizationViewModel.todayTarget.value
+            if (target != null && !target.isCompleted) {
+                showMarkCompletedDialog(target)
+            }
+        }
+    }
+
+    private fun showMemorizationEmptyState() {
+        binding.memorizationWidget.visibility = View.VISIBLE
+        binding.activeScheduleLayout.visibility = View.GONE
+        binding.noScheduleLayout.visibility = View.VISIBLE
+        binding.streakContainer.visibility = View.GONE
+
+        binding.todayProgressText.text = "0/0 آيات"
+        binding.totalProgressText.text = "0%"
+        binding.currentStreakText.text = "0 أيام"
+    }
+
+    private fun loadQuickStats() {
+        lifecycleScope.launch {
+            val weeklyStats = memorizationViewModel.getWeeklyStats()
+            val streak = memorizationViewModel.userStreak.value
+
+            binding.thisWeekCount.text = weeklyStats.completedDays.toString()
+            binding.totalSessionsCount.text = weeklyStats.targetsCompleted.toString()
+            binding.bestStreakCount.text = (streak?.longestStreak ?: 0).toString()
+        }
+    }
+
+    private fun toggleQuickStats() {
+        val statsLayout = binding.quickStatsLayout
+        val expandIcon = binding.expandCollapseIcon
+        val expandText = binding.expandCollapseText
+
+        if (statsLayout.isGone) {
+            statsLayout.visibility = View.VISIBLE
+            expandIcon.animate()?.rotation(180f)?.setDuration(300)?.start()
+            expandText.text = getString(R.string.hide_stats)
+            loadQuickStats()
+        } else {
+            statsLayout.visibility = View.GONE
+            expandIcon.animate()?.rotation(0f)?.setDuration(300)?.start()
+            expandText.text = getString(R.string.show_stats)
+        }
+    }
+
+    private fun showScheduleDetailsDialog(schedule: MemorizationSchedule) {
+        val remainingDays = calculateDaysRemaining(schedule.endDate)
+        val progress = memorizationViewModel.uiState.value.scheduleProgress
+
+        val message = """
+            📅 تاريخ البدء: ${formatDate(schedule.startDate)}
+            📅 تاريخ الانتهاء: ${formatDate(schedule.endDate)}
+            ⏰ الأيام المتبقية: $remainingDays يوم
+            📊 التقدم: ${progress?.progressPercentage ?: 0}%
+            ✅ الأهداف المكتملة: ${progress?.completedTargets ?: 0}/${progress?.totalTargets ?: 0}
+        """.trimIndent()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(schedule.title)
+            .setMessage(message)
+            .setPositiveButton(getString(R.string.ok)) { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(getString(R.string.edit_schedule)) { _, _ ->
+                findNavController().navigate(R.id.action_navigation_home_to_scheduleCreationFragment)
+            }
+            .show()
+    }
+
+    private fun showMarkCompletedDialog(target: DailyTarget) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.confirm_completion))
+            .setMessage("هل أكملت حفظ ${target.surahName} - الآيات ${target.startVerse}-${target.endVerse} فعلاً؟")
+            .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                memorizationViewModel.markTodayTargetCompleted()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun calculateDaysRemaining(endDate: Date): Int {
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time
+
+        val diffInMillis = endDate.time - today.time
+        return (diffInMillis / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+    }
+
+    private fun formatDate(date: Date): String {
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return formatter.format(date)
+    }
+
+
+    private fun startMemorizationSession() {
+        val target = memorizationViewModel.todayTarget.value
+        if (target != null) {
+            val bundle = Bundle().apply {
+                putInt("surahId", target.surahId)
+                putString("surahName", target.surahName)
+                putInt("startVerse", target.startVerse)
+                putInt("endVerse", target.endVerse)
+                putBoolean("isMemorizationMode", true)
+                putBoolean("autoFill", true)
+            }
+            findNavController().navigate(R.id.action_navigation_home_to_listenerHelperFragment2, bundle)
+        }else{
+            findNavController().navigate(R.id.action_navigation_home_to_scheduleCreationFragment)
+        }
+    }
+
+    private fun navigateToScheduleCreation() {
+        findNavController().navigate(R.id.action_navigation_home_to_scheduleCreationFragment)
+    }
+    private fun startReviewSession() {
+        val target = memorizationViewModel.todayTarget.value
+        if (target != null) {
+            val bundle = Bundle().apply {
+                putInt("surahId", target.surahId)
+                putString("surahName", target.surahName)
+                putInt("startVerse", target.startVerse)
+                putInt("endVerse", target.endVerse)
+                putBoolean("isReviewMode", true)
+            }
+            findNavController().navigate(R.id.action_navigation_home_to_listenerHelperFragment2, bundle)
+        }
     }
 
     private fun setupLocationRequest() {

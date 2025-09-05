@@ -9,6 +9,26 @@
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#737373</color>
     <color name="transparent">#00000000</color>
+    <color name="colorAccent">#FF5722</color>
+    <color name="grey_light">#E0E0E0</color>
+    <color name="green">#4CAF50</color>
+    <color name="memorization_primary">#4CAF50</color>
+    <color name="memorization_primary_dark">#2E7D32</color>
+    <color name="memorization_light">#C8E6C9</color>
+    <color name="memorization_border_color">#E0E0E0</color>
+
+    <color name="streak_color">#FF9800</color>
+    <color name="streak_text">#FFFFFF</color>
+    <color name="streak_background">#FFF3C4</color>
+
+    <color name="success_green">#4CAF50</color>
+    <color name="error_red">#F44336</color>
+    <color name="warning_orange">#FF9800</color>
+    <color name="info_blue">#2196F3</color>
+
+    <color name="divider_color">#E0E0E0</color>
+    <color name="text_secondary">#757575</color>
+    <color name="background_light">#FAFAFA</color>
 
     <color name="colorPrimary">#0061A6</color>
     <color name="colorPrimaryDark">#0760FF</color>

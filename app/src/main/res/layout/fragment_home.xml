@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
@@ -8,404 +7,900 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:openDrawer="start">
-<androidx.constraintlayout.motion.widget.MotionLayout
 
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".feature_data.presentation.ui.home.HomeFragment"
-    app:layoutDescription="@xml/fragment_home_scene">
-
-
-    <ImageView
-        android:id="@+id/iv_prayer_widget"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rootContainer"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_180sdp"
-        android:background="@color/grey"
-        android:backgroundTint="@color/grey"
-        android:contentDescription="@string/islamicAzan"
-        android:scaleType="centerCrop"
-        android:src="@drawable/img_asr"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/qibla"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#00FFFFFF"
-        android:paddingTop="@dimen/_5sdp"
-        android:paddingBottom="@dimen/_15sdp"
-        android:src="@drawable/ic_qibla"
-        app:tint="@color/white"
-        tools:layout_editor_absoluteX="346dp" />
-
-
-
-
-    <TextView
-        android:id="@+id/currentLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginStart="@dimen/_16sdp"
-        android:text="@string/loading"
-        android:textColor="@color/white"
-        android:textSize="@dimen/_12ssp"
-        app:layout_constraintStart_toEndOf="@+id/openDrawable"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <ImageView
-        android:id="@+id/openDrawable"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_3sdp"
-        android:src="@drawable/baseline_menu_24"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <TextView
-        android:id="@+id/salahName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/loading"
-        android:textColor="@color/white"
-        android:textSize="@dimen/_32ssp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/iv_prayer_widget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/currentLocation" />
-
-    <TextView
-        android:id="@+id/prayer_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="@dimen/_5sdp"
-        android:text="@string/loading"
-        android:textColor="@color/white"
-        android:textSize="@dimen/_32ssp"
-        app:layout_constraintEnd_toEndOf="@+id/salahName"
-        app:layout_constraintStart_toStartOf="@+id/salahName"
-        app:layout_constraintTop_toBottomOf="@+id/salahName" />
-
-    <TextView
-        android:id="@+id/prayer_countdown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="@dimen/_5sdp"
-        android:text="@string/loading"
-        android:textColor="@color/white"
-        android:textSize="@dimen/_24ssp"
-        android:layout_marginEnd="@dimen/_8sdp"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_prayer_widget"
-        app:layout_constraintEnd_toEndOf="@+id/prayer_time"
-        app:layout_constraintStart_toStartOf="@+id/prayer_time"
-        app:layout_constraintTop_toBottomOf="@+id/prayer_time" />
-
-
-    <LinearLayout
-        android:id="@+id/ll_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_prayer_widget">
-
+        android:layout_height="match_parent">
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/mainScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:windowSoftInputMode="adjustResize"
-            tools:ignore="ScrollViewCount">
-
-
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_2sdp"
                 android:orientation="vertical">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/thumbnail_container"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_180sdp">
+
+                    <ImageView
+                        android:id="@+id/iv_prayer_widget"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/grey"
+                        android:backgroundTint="@color/grey"
+                        android:contentDescription="@string/islamicAzan"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/img_asr"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/qibla"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_5sdp"
+                        android:layout_marginEnd="@dimen/_16sdp"
+                        android:background="#00FFFFFF"
+                        android:paddingTop="@dimen/_5sdp"
+                        android:paddingBottom="@dimen/_15sdp"
+                        android:src="@drawable/ic_qibla"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/white" />
+
+                    <ImageView
+                        android:id="@+id/openDrawable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/_3sdp"
+                        android:src="@drawable/baseline_menu_24"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/currentLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_16sdp"
+                        android:layout_marginTop="@dimen/_3sdp"
+                        android:text="@string/loading"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_12ssp"
+                        app:layout_constraintStart_toEndOf="@+id/openDrawable"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/salahName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:text="@string/loading"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_32ssp"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/currentLocation" />
+
+                    <TextView
+                        android:id="@+id/prayer_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/_5sdp"
+                        android:text="@string/loading"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_32ssp"
+                        app:layout_constraintEnd_toEndOf="@+id/salahName"
+                        app:layout_constraintStart_toStartOf="@+id/salahName"
+                        app:layout_constraintTop_toBottomOf="@+id/salahName" />
+
+                    <TextView
+                        android:id="@+id/prayer_countdown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/_5sdp"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:text="@string/loading"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_24ssp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="@+id/prayer_time"
+                        app:layout_constraintStart_toStartOf="@+id/prayer_time"
+                        app:layout_constraintTop_toBottomOf="@+id/prayer_time" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:layout_marginTop="@dimen/_2sdp"
-                    android:layout_marginBottom="@dimen/_2sdp"
-                    app:cardCornerRadius="@dimen/_8sdp"
-                    app:cardElevation="@dimen/_2sdp"
-                    app:cardUseCompatPadding="true">
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/_16sdp">
 
-                    <LinearLayout
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/thumbnail_container"
                         android:layout_width="match_parent"
-                        android:padding="@dimen/_5sdp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:layout_marginTop="@dimen/_2sdp"
+                        android:layout_marginBottom="@dimen/_2sdp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        app:cardCornerRadius="@dimen/_8sdp"
+                        app:cardElevation="@dimen/_2sdp"
+                        app:cardUseCompatPadding="true">
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <TextView
-    android:id="@+id/update"
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:layout_marginLeft="10dp"
-    android:text="تحديث"
-    android:textColor="@color/text_color"
-    android:background="@drawable/type_soura_background"
-    android:textSize="@dimen/_12ssp"
-        app:layout_constraintEnd_toEndOf="parent"
-    />
-    <TextView
-        android:id="@+id/dayDetails"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_margin="@dimen/_3sdp"
-        android:text="@string/loading"
-        android:textSize="@dimen/_12ssp"
-        app:layout_constraintStart_toStartOf="parent"
-        />
-
-    <TextView
-        android:id="@+id/hijri_date"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginVertical="@dimen/_3sdp"
-        android:textSize="@dimen/_12ssp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/dayDetails"
-        app:layout_constraintTop_toBottomOf="@+id/dayDetails" />
-
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
-                        <TableLayout
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/_3sdp"
-                            android:padding="@dimen/_3sdp"
-                            android:stretchColumns="1">
+                            android:orientation="vertical"
+                            android:padding="@dimen/_5sdp">
 
-                            <TableRow
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/update"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="center"
+                                    android:layout_marginLeft="10dp"
+                                    android:background="@drawable/type_soura_background"
+                                    android:text="@string/update"
+                                    android:textColor="@color/text_color"
+                                    android:textSize="@dimen/_12ssp"
+                                    app:layout_constraintEnd_toEndOf="parent" />
+
+                                <TextView
+                                    android:id="@+id/dayDetails"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="center"
+                                    android:layout_margin="@dimen/_3sdp"
+                                    android:text="@string/loading"
+                                    android:textSize="@dimen/_12ssp"
+                                    app:layout_constraintStart_toStartOf="parent" />
+
+                                <TextView
+                                    android:id="@+id/hijri_date"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginVertical="@dimen/_3sdp"
+                                    android:textSize="@dimen/_12ssp"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="@+id/dayDetails"
+                                    app:layout_constraintTop_toBottomOf="@+id/dayDetails" />
+
+
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                            <TableLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:padding="@dimen/_3sdp">
+                                android:layout_margin="@dimen/_3sdp"
+                                android:padding="@dimen/_3sdp"
+                                android:stretchColumns="1">
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:padding="@dimen/_3sdp">
+
+                                    <ImageView
+                                        android:layout_width="@dimen/_25sdp"
+                                        android:layout_height="@dimen/_25sdp"
+                                        android:layout_gravity="start"
+                                        android:layout_marginStart="@dimen/_3sdp"
+                                        android:src="@drawable/ic_notifications_active_24"
+                                        app:tint="#E7B10A" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:layout_marginStart="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/prayer_name"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_marginEnd="@dimen/_10sdp"
+                                        android:gravity="center"
+                                        android:text="@string/time"
+                                        android:textStyle="bold" />
+
+                                </TableRow>
+
+                                <TableRow>
+
+                                    <CheckBox
+                                        android:id="@+id/cb_fajr"
+                                        android:layout_width="wrap_content"
+
+                                        android:layout_height="wrap_content" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_marginStart="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/fajr"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/fajr_time"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/loading"
+                                        android:textStyle="bold" />
+
+                                </TableRow>
+
+                                <TableRow>
+
+                                    <CheckBox
+                                        android:id="@+id/sunrise"
+                                        android:layout_width="wrap_content"
+
+                                        android:layout_height="wrap_content" />
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/sunrise"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/sunriseTime"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/loading"
+                                        android:textStyle="bold" />
+
+                                </TableRow>
+
+                                <TableRow>
+
+                                    <CheckBox
+
+                                        android:id="@+id/cb_dhuhr"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/duhr"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/dhuhr_time"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/loading"
+                                        android:textStyle="bold" />
+
+                                </TableRow>
+
+                                <TableRow>
+
+                                    <CheckBox
+
+                                        android:id="@+id/cb_asr"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/asr"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/asr_time"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/loading"
+                                        android:textStyle="bold" />
+                                </TableRow>
+
+                                <TableRow>
+
+                                    <CheckBox android:id="@+id/cb_maghrib" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/maghreb"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/maghrib_time"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/loading"
+                                        android:textStyle="bold" />
+                                </TableRow>
+
+                                <TableRow>
+
+                                    <CheckBox android:id="@+id/cb_isha" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/isha"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/isha_time"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_margin="@dimen/_1sdp"
+                                        android:gravity="center"
+                                        android:text="@string/loading"
+                                        android:textStyle="bold" />
+                                </TableRow>
+                            </TableLayout>
+
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/memorization_widget"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_2sdp"
+                        android:layout_marginBottom="@dimen/_2sdp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        app:cardCornerRadius="@dimen/_16sdp"
+                        app:cardElevation="@dimen/_4sdp"
+                        app:cardUseCompatPadding="true"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/memorization_border_color">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:background="@drawable/memorization_card_gradient"
+                            android:padding="@dimen/_16sdp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/_12sdp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
 
                                 <ImageView
-                                    android:layout_width="@dimen/_25sdp"
-                                    android:layout_height="@dimen/_25sdp"
-                                    android:layout_gravity="start"
-                                    android:layout_marginStart="@dimen/_3sdp"
-                                    app:tint="#E7B10A"
-                                    android:src="@drawable/ic_notifications_active_24" />
+                                    android:layout_width="@dimen/_32sdp"
+                                    android:layout_height="@dimen/_32sdp"
+                                    android:layout_marginEnd="@dimen/_12sdp"
+                                    android:src="@drawable/quran_icon"
+                                    app:tint="@color/memorization_primary" />
 
-                                <TextView
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/memorization_title"
+                                        android:textColor="@color/text_color"
+                                        android:textSize="@dimen/_18ssp"
+                                        android:textStyle="bold"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                    <TextView
+                                        android:id="@+id/schedule_subtitle"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/memorization_subtitle"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="@dimen/_12ssp"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/streak_container"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="@drawable/streak_container_background"
+                                    android:gravity="center"
+                                    android:orientation="horizontal"
+                                    android:padding="@dimen/_8sdp"
+                                    android:visibility="gone">
+
+                                    <ImageView
+                                        android:layout_width="@dimen/_16sdp"
+                                        android:layout_height="@dimen/_16sdp"
+                                        android:layout_marginEnd="@dimen/_4sdp"
+                                        android:src="@drawable/ic_fire"
+                                        app:tint="@color/streak_color" />
+
+                                    <TextView
+                                        android:id="@+id/memorization_streak_badge"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/memorization_streak"
+                                        android:textColor="@color/streak_text"
+                                        android:textSize="@dimen/_12ssp"
+                                        android:textStyle="bold"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/progress_overview"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/_12sdp"
+                                android:background="@drawable/progress_overview_background"
+                                android:orientation="horizontal"
+                                android:padding="@dimen/_12sdp"
+                                android:gravity="center_vertical">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/today_goal_label"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="@dimen/_10ssp"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                    <TextView
+                                        android:id="@+id/today_progress_text"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0/10 آيات"
+                                        android:textColor="@color/memorization_primary"
+                                        android:textSize="@dimen/_14ssp"
+                                        android:textStyle="bold"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="@dimen/_30sdp"
+                                    android:layout_marginHorizontal="@dimen/_8sdp"
+                                    android:background="@color/divider_color" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/total_progress_label"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="@dimen/_10ssp"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                    <TextView
+                                        android:id="@+id/total_progress_text"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0%"
+                                        android:textColor="@color/memorization_primary"
+                                        android:textSize="@dimen/_14ssp"
+                                        android:textStyle="bold"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="@dimen/_30sdp"
+                                    android:layout_marginHorizontal="@dimen/_8sdp"
+                                    android:background="@color/divider_color" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/current_streak_label"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="@dimen/_10ssp"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                    <TextView
+                                        android:id="@+id/current_streak_text"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0 أيام"
+                                        android:textColor="@color/streak_color"
+                                        android:textSize="@dimen/_14ssp"
+                                        android:textStyle="bold"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/active_schedule_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/_12sdp"
+                                android:background="@drawable/today_target_background"
+                                android:orientation="vertical"
+                                android:padding="@dimen/_12sdp"
+                                android:visibility="gone">
+
+                                <LinearLayout
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_marginStart="@dimen/_1sdp"
-                                    android:text="@string/prayer_name"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:textStyle="bold" />
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:layout_marginBottom="@dimen/_8sdp">
+
+                                    <ImageView
+                                        android:layout_width="@dimen/_20sdp"
+                                        android:layout_height="@dimen/_20sdp"
+                                        android:layout_marginEnd="@dimen/_8sdp"
+                                        android:src="@drawable/ic_target"
+                                        app:tint="@color/memorization_primary" />
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="@string/active_schedule_goal"
+                                        android:textColor="@color/text_color"
+                                        android:textSize="@dimen/_14ssp"
+                                        android:textStyle="bold"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                    <ImageView
+                                        android:id="@+id/today_completion_icon"
+                                        android:layout_width="@dimen/_24sdp"
+                                        android:layout_height="@dimen/_24sdp"
+                                        android:src="@drawable/ic_check_circle"
+                                        android:visibility="gone"
+                                        app:tint="@color/success_green" />
+
+                                </LinearLayout>
 
                                 <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_marginEnd="@dimen/_10sdp"
-                                    android:gravity="center"
-                                    android:text="@string/time"
-                                    android:textStyle="bold" />
-
-                            </TableRow>
-
-                            <!--Fajr-->
-                            <TableRow>
-
-                                <CheckBox android:id="@+id/cb_fajr"
-                                    android:layout_width="wrap_content"
-
-                                    android:layout_height="wrap_content"/>
-                                <TextView
+                                    android:id="@+id/active_schedule_title"
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_marginStart="@dimen/_1sdp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="@dimen/_6sdp"
+                                    android:text="سورة البقرة - الآيات 1-10"
+                                    android:textColor="@color/text_color"
+                                    android:textSize="@dimen/_16ssp"
+                                    android:textStyle="bold"
                                     android:gravity="center"
-                                    android:text="@string/fajr"
-                                    android:textStyle="bold" />
+                                    android:fontFamily="@font/arabic_font" />
 
-                                <TextView
-                                    android:id="@+id/fajr_time"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/loading"
-                                    android:textStyle="bold" />
-
-                            </TableRow>
-
-                            <!--Sunrise-->
-                            <TableRow>
-
-                                <CheckBox android:id="@+id/sunrise"
-                                    android:layout_width="wrap_content"
-
-                                    android:layout_height="wrap_content"/>
-                                <TextView
+                                <LinearLayout
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
+                                    android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="@string/sunrise"
-                                    android:textStyle="bold" />
+                                    android:orientation="horizontal">
+
+                                    <ImageView
+                                        android:layout_width="@dimen/_16sdp"
+                                        android:layout_height="@dimen/_16sdp"
+                                        android:layout_marginEnd="@dimen/_4sdp"
+                                        android:src="@drawable/ic_timer"
+                                        app:tint="@color/text_secondary" />
+
+                                    <TextView
+                                        android:id="@+id/estimated_time"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/estimated_time"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="@dimen/_12ssp"
+                                        android:fontFamily="@font/arabic_font" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/no_schedule_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="@dimen/_20sdp">
+
+                                <ImageView
+                                    android:layout_width="@dimen/_60sdp"
+                                    android:layout_height="@dimen/_60sdp"
+                                    android:layout_marginBottom="@dimen/_12sdp"
+                                    android:src="@drawable/ic_book_open"
+                                    app:tint="@color/memorization_light" />
 
                                 <TextView
-                                    android:id="@+id/sunriseTime"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="@dimen/_6sdp"
+                                    android:text="@string/no_schedule_title"
+                                    android:textColor="@color/text_color"
+                                    android:textSize="@dimen/_16ssp"
+                                    android:textStyle="bold"
                                     android:gravity="center"
-                                    android:text="@string/loading"
-                                    android:textStyle="bold" />
-
-                            </TableRow>
-
-                            <!--Dhuhur-->
-                            <TableRow>
-
-                                <CheckBox
-
-                                    android:id="@+id/cb_dhuhr"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
+                                    android:fontFamily="@font/arabic_font" />
 
                                 <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/no_schedule_subtitle"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="@dimen/_12ssp"
+                                    android:fontFamily="@font/arabic_font" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/action_buttons_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/_8sdp"
+                                android:orientation="horizontal"
+                                android:gravity="center"
+                                android:layoutDirection="rtl">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_primary_action"
+                                    style="@style/Widget.Material3.Button"
+                                    android:layout_width="0dp"
+                                    android:layout_height="@dimen/_48sdp"
+                                    android:layout_weight="1"
+                                    android:layout_marginEnd="@dimen/_6sdp"
+                                    android:text="@string/btn_start_memorization"
+                                    android:textAllCaps="false"
+                                    android:textSize="@dimen/_14ssp"
+                                    android:textStyle="bold"
+                                    android:backgroundTint="@color/memorization_primary"
+                                    android:textColor="@android:color/white"
+                                    app:cornerRadius="@dimen/_12sdp"
+                                    app:icon="@drawable/ic_play_circle"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="@dimen/_6sdp"
+                                    app:iconSize="@dimen/_20sdp"
+                                    android:fontFamily="@font/arabic_font" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_secondary_action"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="@dimen/_48sdp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="@dimen/_6sdp"
+                                    android:text="@string/btn_view_details"
+                                    android:textAllCaps="false"
+                                    android:textSize="@dimen/_14ssp"
+                                    android:textColor="@color/memorization_primary"
+                                    app:cornerRadius="@dimen/_12sdp"
+                                    app:strokeColor="@color/memorization_primary"
+                                    app:strokeWidth="1dp"
+                                    app:icon="@drawable/ic_visibility"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="@dimen/_6sdp"
+                                    app:iconSize="@dimen/_20sdp"
+                                    android:fontFamily="@font/arabic_font" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/quick_stats_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/_12sdp"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <View
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/duhr"
-                                    android:textStyle="bold" />
+                                    android:layout_height="1dp"
+                                    android:layout_marginVertical="@dimen/_8sdp"
+                                    android:background="@color/divider_color" />
 
-                                <TextView
-                                    android:id="@+id/dhuhr_time"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/loading"
-                                    android:textStyle="bold" />
-
-                            </TableRow>
-
-                            <!--Asr-->
-                            <TableRow>
-
-                                <CheckBox
-
-                                    android:id="@+id/cb_asr"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
-
-                                <TextView
+                                <LinearLayout
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/asr"
-                                    android:textStyle="bold" />
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:weightSum="3">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="@dimen/_8sdp">
+
+                                        <TextView
+                                            android:id="@+id/this_week_count"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="5"
+                                            android:textColor="@color/memorization_primary"
+                                            android:textSize="@dimen/_18ssp"
+                                            android:textStyle="bold"
+                                            android:fontFamily="@font/arabic_font" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/this_week_label"
+                                            android:textSize="@dimen/_10ssp"
+                                            android:fontFamily="@font/arabic_font" />
+
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="@dimen/_8sdp">
+
+                                        <TextView
+                                            android:id="@+id/total_sessions_count"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="23"
+                                            android:textColor="@color/memorization_primary"
+                                            android:textSize="@dimen/_18ssp"
+                                            android:textStyle="bold"
+                                            android:fontFamily="@font/arabic_font" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/total_sessions_label"
+                                            android:textSize="@dimen/_10ssp"
+                                            android:fontFamily="@font/arabic_font" />
+
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="@dimen/_8sdp">
+
+                                        <TextView
+                                            android:id="@+id/best_streak_count"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="12"
+                                            android:textColor="@color/streak_color"
+                                            android:textSize="@dimen/_18ssp"
+                                            android:textStyle="bold"
+                                            android:fontFamily="@font/arabic_font" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/best_streak_label"
+                                            android:textSize="@dimen/_10ssp"
+                                            android:fontFamily="@font/arabic_font" />
+
+                                    </LinearLayout>
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/expand_collapse_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/_8sdp"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:background="?attr/selectableItemBackground"
+                                android:padding="@dimen/_8sdp"
+                                android:clickable="true"
+                                android:focusable="true">
 
                                 <TextView
-                                    android:id="@+id/asr_time"
+                                    android:id="@+id/expand_collapse_text"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/loading"
-                                    android:textStyle="bold" />
-                            </TableRow>
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/expand_stats"
+                                    android:textColor="@color/memorization_primary"
+                                    android:textSize="@dimen/_12ssp"
+                                    android:textStyle="bold"
+                                    android:layout_marginEnd="@dimen/_4sdp"
+                                    android:fontFamily="@font/arabic_font" />
 
-                            <!--Maghrib-->
-                            <TableRow>
+                                <ImageView
+                                    android:id="@+id/expand_collapse_icon"
+                                    android:layout_width="@dimen/_16sdp"
+                                    android:layout_height="@dimen/_16sdp"
+                                    android:src="@drawable/ic_expand_more"
+                                    app:tint="@color/memorization_primary" />
 
-                                <CheckBox android:id="@+id/cb_maghrib"
-                                    />
+                            </LinearLayout>
 
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/maghreb"
-                                    android:textStyle="bold" />
+                        </LinearLayout>
 
-                                <TextView
-                                    android:id="@+id/maghrib_time"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/loading"
-                                    android:textStyle="bold" />
-                            </TableRow>
-
-                            <!--Isha-->
-                            <TableRow>
-
-                                <CheckBox android:id="@+id/cb_isha"
-                                    />
-
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/isha"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/isha_time"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="@dimen/_1sdp"
-                                    android:gravity="center"
-                                    android:text="@string/loading"
-                                    android:textStyle="bold" />
-                            </TableRow>
-                        </TableLayout>
-
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
             </LinearLayout>
-
         </androidx.core.widget.NestedScrollView>
-
-    </LinearLayout>
-
-
-</androidx.constraintlayout.motion.widget.MotionLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:visibility="visible"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:visibility="visible"
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/activity_main_drawer" />
 </androidx.drawerlayout.widget.DrawerLayout>

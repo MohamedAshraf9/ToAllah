@@ -4,7 +4,7 @@
     <color name="background_color">#2E2D2D</color>
     <color name="primary_color">#C5A43C</color>
     <color name="colorPrimary">#C5A43C</color>
-    <color name="gradientStart">#C5A43C</color>
+    <color name="gradientStart">#957B28</color>
     <color name="gradientCenter">#7A6A2A</color>
     <color name="gradientEnd">#5A4C20</color>
     <color name="text_primary_light">#121212</color>

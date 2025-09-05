@@ -13,6 +13,15 @@
         <action
             android:id="@+id/action_navigation_home_to_qiblaFragment2"
             app:destination="@id/qiblaFragment2" />
+        <action
+            android:id="@+id/action_navigation_home_to_scheduleCreationFragment"
+            app:destination="@id/scheduleCreationFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_hefzRepeatActivity"
+            app:destination="@id/hefzRepeatActivity" />
+        <action
+            android:id="@+id/action_navigation_home_to_listenerHelperFragment2"
+            app:destination="@id/listenerHelperFragment" />
     </fragment>
 
 
@@ -201,6 +210,9 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_listenerHelperFragment_to_scheduleCreationFragment"
+            app:destination="@id/scheduleCreationFragment" />
     </fragment>
     <fragment
         android:id="@+id/songFragment"
@@ -275,6 +287,11 @@
             android:name="readerName"
             app:argType="string" />
     </activity>
+    <fragment
+        android:id="@+id/scheduleCreationFragment"
+        android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.schedule.ScheduleCreationFragment"
+        android:label="fragment_schedule_creation"
+        tools:layout="@layout/fragment_schedule_creation" />
 
 
 </navigation>

@@ -14,8 +14,14 @@ import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
+import com.megahed.eqtarebmenalla.db.MIGRATION_3_4
 import com.megahed.eqtarebmenalla.db.MyDatabase
 import com.megahed.eqtarebmenalla.db.MyDatabase.Companion.MIGRATION_1_3
+import com.megahed.eqtarebmenalla.db.dao.AchievementDao
+import com.megahed.eqtarebmenalla.db.dao.DailyTargetDao
+import com.megahed.eqtarebmenalla.db.dao.MemorizationScheduleDao
+import com.megahed.eqtarebmenalla.db.dao.MemorizationSessionDao
+import com.megahed.eqtarebmenalla.db.dao.UserStreakDao
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.repository.*
@@ -29,6 +35,7 @@ import com.megahed.eqtarebmenalla.feature_data.data.local.dto.azkar.toElZekr
 import com.megahed.eqtarebmenalla.feature_data.data.remote.prayerTime.IslamicApi
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.QuranListenApi
 import com.megahed.eqtarebmenalla.feature_data.data.repository.IslamicRepositoryImp
+import com.megahed.eqtarebmenalla.feature_data.data.repository.MemorizationRepository
 import com.megahed.eqtarebmenalla.feature_data.data.repository.QuranListenerRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.QuranListenerRepository
@@ -89,7 +96,7 @@ object AppModule {
             app,
             MyDatabase::class.java,
             MyDatabase.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_3)
+            .addMigrations(MIGRATION_3_4)
             .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
@@ -107,12 +114,7 @@ object AppModule {
                            data.surahs[i].toSora(data.surahs[i].ayahs.size)
                         )
 
-                        //Log.d("MyTagData ", "loop = $i")
-
-                        //Log.d("MyTagData ", data.surahs[i].name)
-                        //Log.d("MyTagData ", "=============================================")
                         for (j in 0 until data.surahs[i].ayahs.size){
-                           // Log.d("MyTagData ", data.surahs[i].ayahs[j].text)
                             trainDBLazy.get().ayaDao.insertAya(
                                 data.surahs[i].ayahs[j].toAya(i+1)
                             )
@@ -133,8 +135,6 @@ object AppModule {
                         if (d>0&&d.toInt()!=id){
                             id=d.toInt()
                         }
-                        Log.d("MyTagData ", "d = $d")
-                        Log.d("MyTagData ", "id = $id")
                         trainDBLazy.get().elZekrDao.insertElZekr(
                             data[i].toElZekr(id)
                         )
@@ -233,5 +233,41 @@ object AppModule {
         )
     }
 
+    @Provides
+    fun provideMemorizationScheduleDao(database: MyDatabase): MemorizationScheduleDao =
+        database.memorizationScheduleDao()
 
+    @Provides
+    fun provideDailyTargetDao(database: MyDatabase): DailyTargetDao =
+        database.dailyTargetDao()
+
+    @Provides
+    fun provideMemorizationSessionDao(database: MyDatabase): MemorizationSessionDao =
+        database.memorizationSessionDao()
+
+    @Provides
+    fun provideUserStreakDao(database: MyDatabase): UserStreakDao =
+        database.userStreakDao()
+
+    @Provides
+    fun provideAchievementDao(database: MyDatabase): AchievementDao =
+        database.achievementDao()
+
+    @Provides
+    @Singleton
+    fun provideMemorizationRepository(
+        scheduleDao: MemorizationScheduleDao,
+        dailyTargetDao: DailyTargetDao,
+        sessionDao: MemorizationSessionDao,
+        streakDao: UserStreakDao,
+        achievementDao: AchievementDao
+    ): MemorizationRepository {
+        return MemorizationRepository(
+            scheduleDao = scheduleDao,
+            dailyTargetDao = dailyTargetDao,
+            sessionDao = sessionDao,
+            streakDao = streakDao,
+            achievementDao = achievementDao
+        )
+    }
 }

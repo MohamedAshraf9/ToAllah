@@ -160,6 +160,103 @@
     <string name="resume">استكمال</string>
     <string name="stopped">تم الإيقاف</string>
     <string name="position_format">%1$d / %2$d</string>
+    <string name="create_new_schedule">إنشاء جدول حفظ جديد</string>
+    <string name="schedule_data">معلومات الجدول</string>
+    <string name="schedule_name">اسم الجدول</string>
+    <string name="schedule_description">وصف الجدول (اختياري)</string>
+    <!-- ... other existing strings ... -->
 
+    <string name="schedule_creation_title">إنشاء جدول حفظ جديد</string>
 
+    <string name="select_memorization_range">اختيار نطاق الحفظ</string>
+    <string name="select_surah">اختر السورة</string>
+    <string name="first_verse">الآية الأولى</string>
+    <string name="last_verse">الآية الأخيرة</string>
+    <string name="total_verses_undefined">إجمالي الآيات: غير محدد</string>
+    <string name="schedule_settings_title">إعدادات الجدول</string>
+
+    <string name="total_verses_count">إجمالي الآيات: %1$d</string>
+
+    <string name="daily_verses_hint">آيات يومية</string>
+    <string name="start_date_hint">تاريخ البدء</string>
+    <string name="estimated_completion_undefined">التاريخ المتوقع للإنهاء: غير محدد</string>
+    <string name="preview_schedule_title">معاينة الجدول</string>
+
+    <string name="estimated_completion_date">التاريخ المتوقع للإنهاء: %1$s</string>
+
+    <string name="preview_content_placeholder">سيتم عرض معاينة الجدول هنا...</string>
+    <string name="cancel_button_text">إلغاء</string>
+    <string name="create_schedule_button_text">إنشاء الجدول</string>
+
+    <string name="active_memorization_schedule">جدول الحفظ النشط</string>
+    <string name="example_schedule_title">سورة البقرة - الآيات 1-20</string>
+    <string name="today_progress_label">آيات اليوم</string>
+    <string name="current_streak_label">أيام متتالية</string>
+    <string name="total_progress_percentage_label">نسبة الحفظ</string>
+    <string name="total_verses_count_label">عدد الآيات</string>
+    <string name="create_schedule_button">إنشاء جدول حفظ</string>
+    <string name="track_memorization_button">متابعة الحفظ</string>
+    <string name="repeating_settings">إعدادات التكرار</string>
+    <string name="end">انهاء</string>
+    <string name="memorization_title">رحلة حفظ القرآن</string>
+    <string name="memorization_subtitle">ابدأ رحلتك المباركة</string>
+    <string name="memorization_streak">7 أيام</string>
+    <string name="today_goal_label">هدف اليوم</string>
+    <string name="today_progress_value">0/10 آيات</string>
+    <string name="total_progress_label">إجمالي التقدم</string>
+    <string name="total_progress_value">0%</string>
+    <string name="current_streak_value">0 أيام</string>
+    <string name="active_schedule_goal">هدف اليوم</string>
+    <string name="active_schedule_title">سورة البقرة - الآيات 1-10</string>
+    <string name="estimated_time">الوقت المقدر: 30 دقيقة</string>
+    <string name="no_schedule_title">ابدأ رحلة حفظ القرآن</string>
+    <string name="no_schedule_subtitle">قم بإنشاء جدول حفظ مخصص لك\nوتابع تقدمك يومياً</string>
+    <string name="btn_start_memorization">بدء الحفظ</string>
+    <string name="btn_view_details">عرض التفاصيل</string>
+    <string name="this_week_label">هذا الأسبوع</string>
+    <string name="total_sessions_label">إجمالي الجلسات</string>
+    <string name="best_streak_label">أفضل سلسلة</string>
+    <string name="expand_stats">عرض الإحصائيات</string>
+    <string name="progress_tracking_title">تتبع تقدم الحفظ</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    <string name="start_tracking_session">بدء تتبع جلسة الحفظ</string>
+    <string name="congratulations_title">🎉 تهانينا!</string>
+    <string name="congratulations_message">لقد أكملت هدفك اليومي بنجاح!\nاستمر في العمل الرائع!</string>
+    <string name="thanks">شكراً</string>
+    <string name="end_session">إنهاء الجلسة</string>
+    <string name="exit_session_message">لديك جلسة تتبع نشطة. هل تريد:\n- حفظ التقدم والخروج\n- الخروج بدون حفظ</string>
+    <string name="save_and_exit">حفظ والخروج</string>
+    <string name="exit_without_saving">خروج بدون حفظ</string>
+    <string name="complete_session">إتمام الجلسة</string>
+    <string name="completed_yes">نعم، أكملت الحفظ</string>
+    <string name="completed_no">لا، لم أكمل بعد</string>
+    <string name="auto_completion_title">تم إكمال الحفظ!</string>
+    <string name="auto_completion_message">تهانينا! لقد أكملت جلسة الحفظ بنجاح.\n\nهل تريد تسجيل هذا كهدف مكتمل؟</string>
+    <string name="celebration_message">لقد أكملت هدفك اليومي في حفظ القرآن!\nبارك الله فيك واستمر في هذا الطريق المبارك.</string>
+    <string name="alhamdulillah">الحمد لله</string>
+    <string name="no_active_schedule">لا يوجد جدول نشط حالياً</string>
+    <string name="progress_summary">ملخص التقدم</string>
+    <string name="view_details">عرض التفاصيل</string>
+    <string name="no_progress_data">لا توجد بيانات تقدم متاحة</string>
+    <string name="start_memorization">بدء الحفظ</string>
+    <string name="view_schedule_details">عرض التفاصيل</string>
+    <string name="completed">مكتمل</string>
+    <string name="review">مراجعة</string>
+    <string name="create_schedule">إنشاء جدول</string>
+    <string name="hide_stats">إخفاء الإحصائيات</string>
+    <string name="show_stats">عرض الإحصائيات</string>
+    <string name="edit_schedule">تعديل الجدول</string>
+    <string name="confirm_completion">تأكيد إكمال الهدف</string>
+    <string name="select_reader_first_tracker">يجب اختيار قارئ أولاً قبل استخدام متابعة الحفظ</string>
+    <string name="filled_with_today_target">تم تعبئة النموذج بإعدادات الحفظ اليومي</string>
+    <string name="no_today_target">لا يوجد هدف حفظ لليوم. يرجى التحقق من إعدادات الجدول.</string>
+    <string name="select_reader_first">يجب اختيار قارئ أولاً</string>
+    <string name="create_memorization_schedule">إنشاء جدول حفظ</string>
+    <string name="total_verses">إجمالي الآيات: %1$d</string>
+    <string name="schedule_preview">اسم الجدول: %1$s\nالسورة: %2$s\nمن الآية: %3$d إلى الآية: %4$d\nآيات يومية: %5$d\nالمدة المتوقعة: %6$d يوم</string>
+    <string name="error_schedule_title_required">يجب إدخال اسم الجدول</string>
+    <string name="error_select_surah">يجب اختيار سورة</string>
+    <string name="error_invalid_verse_range">نطاق الآيات غير صحيح</string>
+    <string name="error_start_date_required">يجب اختيار تاريخ البدء</string>
 </resources>
