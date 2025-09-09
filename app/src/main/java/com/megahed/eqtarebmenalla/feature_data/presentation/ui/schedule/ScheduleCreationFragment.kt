@@ -375,13 +375,16 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     }
 
     private fun setupDatePicker() {
+        binding.etStartDate.isFocusable = false
+        binding.etStartDate.isClickable = true
+        binding.etStartDate.keyListener = null
+
         binding.etStartDate.setOnClickListener {
             val datePicker = DatePickerDialog(
                 requireContext(),
                 { _, year, month, day ->
                     calendar.set(year, month, day)
                     binding.etStartDate.setText(dateFormat.format(calendar.time))
-                    // FIXED: Clear error when date is selected
                     binding.tilStartDate.error = null
                     calculateEstimatedCompletion()
                 },
@@ -510,6 +513,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
         binding.tilScheduleTitle.error = null
         binding.tilStartDate.error = null
+        binding.tilDailyVerses.error = null
 
         if (binding.etScheduleTitle.text.isNullOrEmpty()) {
             binding.tilScheduleTitle.error = getString(R.string.error_schedule_title_required)
@@ -523,9 +527,15 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
         val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 0
         val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 0
+        val dailyVerses = binding.etDailyVerses.text.toString().toIntOrNull() ?: 0
 
         if (startVerse < 1 || endVerse < 1 || endVerse < startVerse || endVerse > selectedSurahVerseCount) {
             Snackbar.make(binding.root, getString(R.string.error_invalid_verse_range), Snackbar.LENGTH_SHORT).show()
+            isValid = false
+        }
+        val maxAllowed = if (endVerse >= startVerse) endVerse - startVerse + 1 else 0
+        if (dailyVerses > maxAllowed) {
+            binding.tilDailyVerses.error = "أقصى عدد الآيات اليومية $maxAllowed"
             isValid = false
         }
 
@@ -541,6 +551,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
         return isValid
     }
+
 
     private fun createSchedule() {
         try {

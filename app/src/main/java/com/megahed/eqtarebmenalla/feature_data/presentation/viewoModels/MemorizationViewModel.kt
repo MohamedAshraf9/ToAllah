@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.db.model.DailyTarget
 import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
-import com.megahed.eqtarebmenalla.db.model.MemorizationSession
 import com.megahed.eqtarebmenalla.db.model.SessionType
 import com.megahed.eqtarebmenalla.db.model.UserStreak
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
