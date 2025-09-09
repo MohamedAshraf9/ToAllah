@@ -27,6 +27,8 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerReaderAdapter
@@ -46,6 +48,8 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.Qur
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MainSongsViewModel
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
+import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
+import com.megahed.eqtarebmenalla.offline.OfflineUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,21 +57,23 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Collections
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class QuranListenerReaderFragment : Fragment() , MenuProvider {
+class QuranListenerReaderFragment : Fragment(), MenuProvider {
 
     private lateinit var binding: FragmentQuranListenerReaderBinding
-    //private lateinit var viewModel: QuranListenerReaderViewModel
-    private lateinit var quranListenerReaderAdapter :QuranListenerReaderAdapter
+    private lateinit var quranListenerReaderAdapter: QuranListenerReaderAdapter
     private lateinit var mainViewModel: MainSongsViewModel
+    private lateinit var quranListenerReaderViewModel: QuranListenerReaderViewModel
 
+    private var readerId: String? = null
+    private var readerName: String? = null
+    private var quranListenerReader: QuranListenerReader? = null
 
-    private var readerId:String?=null
-    private var readerName:String?=null
-    private var quranListenerReader: QuranListenerReader?=null
-
-    private val quranReaderSoras: ArrayList<SoraSong> = arrayListOf()
+    private val quranReaderSoras: MutableList<SoraSong> = Collections.synchronizedList(mutableListOf<SoraSong>())
+    private lateinit var offlineAudioManager: OfflineAudioManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,318 +81,397 @@ class QuranListenerReaderFragment : Fragment() , MenuProvider {
         readerId = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).id }
         readerName = arguments?.let { QuranListenerReaderFragmentArgs.fromBundle(it).readerName }
 
-        //viewModel = ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
         mainViewModel = ViewModelProvider(this).get(MainSongsViewModel::class.java)
     }
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentQuranListenerReaderBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val quranListenerReaderViewModel =
-            ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
+        quranListenerReaderViewModel = ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
+        offlineAudioManager = quranListenerReaderViewModel.getOfflineAudioManager()
 
         val toolbar: Toolbar = binding.toolbar
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
         (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
         (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        lifecycleScope.launchWhenStarted {
-            readerId?.let {
-                quranListenerReaderViewModel.getQuranListenerReaderById(it)?.let {
-                    binding.readerName.text=it.name
-                    binding.rewaya.text=it.rewaya
-                    binding.soraNumbers.text=it.count
-                    binding.readerChar.text=it.letter
-                    isFav(it.isVaForte)
-                    quranListenerReader=it
-
-                }
-            }
-        }
-
-
-        var isShow = true
-        var scrollRange = -1
-        binding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { barLayout, verticalOffset ->
-            if (scrollRange == -1){
-                scrollRange = barLayout?.totalScrollRange!!
-            }
-            if (scrollRange + verticalOffset == 0){
-                binding.toolbarLayout.title =readerName
-                binding.toolbar.title = readerName
-                isShow = true
-            } else if (isShow){
-                binding.toolbarLayout.title = " " //careful there should a space between double quote otherwise it wont work
-                binding.toolbar.title = " " //careful there should a space between double quote otherwise it wont work
-                isShow = false
-            }
-        })
-
-
-        val verticalLayoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        binding.recyclerView.layoutManager = verticalLayoutManager
-        binding.recyclerView.setHasFixedSize(true)
-
-        quranListenerReaderAdapter= QuranListenerReaderAdapter(requireContext(), object :
-            OnItemWithFavClickListener<SoraSong> {
-
-            override fun onItemClick(itemObject: SoraSong, view: View?,position: Int) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    launchNotificationPermission()
-                }
-                mainViewModel.playOrToggleSong(itemObject.toSong(readerName),true)
-                val action: NavDirections = QuranListenerReaderFragmentDirections.
-                actionQuranListenerReaderFragmentToSongFragment()
-                Navigation.findNavController(requireView()).navigate(action)
-            }
-
-            override fun onItemFavClick(itemObject: SoraSong, view: View?) {
-                itemObject.isVaForte=!itemObject.isVaForte
-                quranListenerReaderViewModel.updateSoraSong(itemObject)
-            }
-
-            override fun onItemLongClick(itemObject: SoraSong, view: View?,position: Int) {
-                downloadTask(itemObject)
-            }
-        })
-        binding.recyclerView.adapter = quranListenerReaderAdapter
-
-
-
-        lifecycleScope.launchWhenStarted {
-            readerId?.let {
-                quranListenerReaderViewModel.getSongsOfSora(it).collect{
-                    FirebaseMusicSource._audiosLiveData.value=it.map { it.toSong(readerName) }
-                    quranListenerReaderAdapter.setData(it)
-                    quranReaderSoras.clear()
-                    quranReaderSoras.addAll(it)
-                }
-            }
-        }
-
-        binding.favorite.setOnClickListener {
-            quranListenerReader?.let {
-                it.isVaForte=!it.isVaForte
-                quranListenerReaderViewModel.updateQuranListenerReader(it)
-                isFav(it.isVaForte)
-            }
-
-
-        }
-
-        binding.download.setOnClickListener {
-            downloadAllSoraSongs(quranReaderSoras, readerName.toString())
-        }
+        setupUI()
+        setupRecyclerView()
+        setupObservers()
+        setupClickListeners()
 
         val menuHost: MenuHost = requireActivity()
-
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-
-
 
         return root
     }
 
-
-    private fun isFav(isVaForte:Boolean){
-        if (isVaForte){
-            binding.favorite.setImageResource(R.drawable.ic_favorite_red_24)
+    private fun setupUI() {
+        lifecycleScope.launchWhenStarted {
+            readerId?.let {
+                quranListenerReaderViewModel.getQuranListenerReaderById(it)?.let {
+                    binding.readerName.text = it.name
+                    binding.rewaya.text = it.rewaya
+                    binding.soraNumbers.text = it.count
+                    binding.readerChar.text = it.letter
+                    isFav(it.isVaForte)
+                    quranListenerReader = it
+                }
+            }
         }
-        else{
+
+        var isShow = true
+        var scrollRange = -1
+        binding.appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { barLayout, verticalOffset ->
+            if (scrollRange == -1) {
+                scrollRange = barLayout?.totalScrollRange!!
+            }
+            if (scrollRange + verticalOffset == 0) {
+                binding.toolbarLayout.title = readerName
+                binding.toolbar.title = readerName
+                isShow = true
+            } else if (isShow) {
+                binding.toolbarLayout.title = " "
+                binding.toolbar.title = " "
+                isShow = false
+            }
+        })
+    }
+
+    private fun setupRecyclerView() {
+        val verticalLayoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.layoutManager = verticalLayoutManager
+        binding.recyclerView.setHasFixedSize(true)
+
+        quranListenerReaderAdapter = QuranListenerReaderAdapter(
+            requireContext(),
+            object : OnItemWithFavClickListener<SoraSong> {
+
+                override fun onItemClick(itemObject: SoraSong, view: View?, position: Int) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        launchNotificationPermission()
+                    }
+
+                    val song = itemObject.toSong(readerName)
+                    mainViewModel.playOrToggleSong(song, true)
+
+                    val action: NavDirections =
+                        QuranListenerReaderFragmentDirections.actionQuranListenerReaderFragmentToSongFragment()
+                    Navigation.findNavController(requireView()).navigate(action)
+                }
+
+                override fun onItemFavClick(itemObject: SoraSong, view: View?) {
+                    itemObject.isVaForte = !itemObject.isVaForte
+                    quranListenerReaderViewModel.updateSoraSong(itemObject)
+                }
+
+                override fun onItemLongClick(itemObject: SoraSong, view: View?, position: Int) {
+                    showDownloadDialog(itemObject)
+                }
+            },
+            offlineAudioManager,
+            readerId ?: "",
+            lifecycleScope
+        )
+        binding.recyclerView.adapter = quranListenerReaderAdapter
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launchWhenStarted {
+            readerId?.let {
+                quranListenerReaderViewModel.getSongsOfSora(it).collect { soraSongs ->
+                    FirebaseMusicSource._audiosLiveData.value = soraSongs.map { it.toSong(readerName) }
+                    quranListenerReaderAdapter.setData(soraSongs)
+                    quranReaderSoras.clear()
+                    quranReaderSoras.addAll(soraSongs)
+
+                    updateAdapterWithDownloadStatus()
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            quranListenerReaderViewModel.downloadProgress.collect { progressMap ->
+                quranListenerReaderAdapter.updateDownloadProgress(progressMap)
+            }
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.favorite.setOnClickListener {
+            quranListenerReader?.let {
+                it.isVaForte = !it.isVaForte
+                quranListenerReaderViewModel.updateQuranListenerReader(it)
+                isFav(it.isVaForte)
+            }
+        }
+
+        binding.download.setOnClickListener {
+            showBulkDownloadDialog()
+        }
+    }
+    private suspend fun updateAdapterWithDownloadStatus() {
+        readerId?.let { readerIdValue ->
+            withContext(Dispatchers.IO) {
+                try {
+                    val downloadStatusMap = mutableMapOf<Int, Boolean>()
+                    val sorasCopy = quranReaderSoras.toList()
+
+                    sorasCopy.forEach { soraSong ->
+                        val isDownloaded = quranListenerReaderViewModel.isAudioDownloaded(readerIdValue, soraSong.SoraId)
+                        downloadStatusMap[soraSong.SoraId] = isDownloaded
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        quranListenerReaderAdapter.updateDownloadStatus(downloadStatusMap)
+                    }
+                } catch (e: Exception) {
+                }
+            }
+        }
+    }
+
+    private fun showBulkDownloadDialog() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val downloadedCount = readerId?.let { readerIdValue ->
+                    val sorasCopy = synchronized(quranReaderSoras) {
+                        quranReaderSoras.toList()
+                    }
+
+                    sorasCopy.count { soraSong ->
+                        quranListenerReaderViewModel.isAudioDownloaded(readerIdValue, soraSong.SoraId)
+                    }
+                } ?: 0
+
+                val totalCount = synchronized(quranReaderSoras) {
+                    quranReaderSoras.size
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (downloadedCount == totalCount) {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("حذف جميع الملفات")
+                            .setMessage("هل تريد حذف جميع السور المحملة لهذا القارئ؟")
+                            .setPositiveButton("حذف الكل") { _, _ ->
+                                lifecycleScope.launch {
+                                    readerId?.let {
+                                        quranListenerReaderViewModel.deleteAllDownloadedAudio(it)
+
+                                        quranListenerReaderAdapter.refreshAllDownloadStatuses()
+
+                                        Snackbar.make(binding.root, "تم حذف جميع الملفات", Snackbar.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            .setNegativeButton("إلغاء", null)
+                            .show()
+                    } else {
+                        val pendingCount = totalCount - downloadedCount
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("تحميل السور")
+                            .setMessage("يمكن تحميل $pendingCount سورة متبقية من أصل $totalCount")
+                            .setPositiveButton("تحميل الكل") { _, _ ->
+                                downloadAllSoras()
+                            }
+                            .setNegativeButton("إلغاء", null)
+                            .show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.root, "حدث خطأ في تحديد حالة التحميل", Snackbar.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    private fun downloadSingleSura(soraSong: SoraSong) {
+        lifecycleScope.launch {
+            try {
+                val success = readerId?.let { readerIdValue ->
+                    quranListenerReaderViewModel.downloadAudio(
+                        readerId = readerIdValue,
+                        surahId = soraSong.SoraId,
+                        surahName = SORA_OF_QURAN[soraSong.SoraId] ?: "سورة ${soraSong.SoraId}",
+                        readerName = readerName ?: "قارئ",
+                        audioUrl = soraSong.url
+                    )
+                } ?: false
+
+                if (success) {
+                    Snackbar.make(binding.root, "بدأ التحميل...", Snackbar.LENGTH_SHORT).show()
+
+                    monitorDownloadCompletion(soraSong.SoraId)
+                } else {
+                    Snackbar.make(binding.root, "فشل في بدء التحميل", Snackbar.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "حدث خطأ في التحميل", Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun downloadAllSoras() {
+        lifecycleScope.launch {
+            try {
+                readerId?.let { readerIdValue ->
+                    val success = quranListenerReaderViewModel.downloadAllSoraSongs(
+                        readerId = readerIdValue,
+                        readerName = readerName ?: "قارئ"
+                    ) { current, total ->
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            quranListenerReaderAdapter.refreshAllDownloadStatuses()
+                        }
+                    }
+
+                    if (success) {
+                        Snackbar.make(binding.root, "بدأ تحميل جميع السور...", Snackbar.LENGTH_LONG).show()
+                        monitorBulkDownloadCompletion()
+                    } else {
+                        Snackbar.make(binding.root, "فشل في بدء التحميل", Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "حدث خطأ في التحميل", Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun monitorDownloadCompletion(surahId: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                repeat(30) {
+                    delay(1000)
+
+                    val isDownloaded = readerId?.let {
+                        quranListenerReaderViewModel.isAudioDownloaded(it, surahId)
+                    } ?: false
+
+                    if (isDownloaded) {
+                        withContext(Dispatchers.Main) {
+                            quranListenerReaderAdapter.refreshDownloadStatus(surahId)
+                            Snackbar.make(binding.root, "تم تحميل السورة بنجاح", Snackbar.LENGTH_SHORT).show()
+                        }
+                        return@launch
+                    }
+                }
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun monitorBulkDownloadCompletion() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                repeat(60) {
+                    delay(2000)
+
+                    withContext(Dispatchers.Main) {
+                        quranListenerReaderAdapter.refreshAllDownloadStatuses()
+                    }
+                }
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun showDeleteDialog(soraSong: SoraSong) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("حذف الملف المحمل")
+            .setMessage("هل تريد حذف ${SORA_OF_QURAN[soraSong.SoraId]} المحملة؟")
+            .setPositiveButton("حذف") { _, _ ->
+                lifecycleScope.launch {
+                    readerId?.let {
+                        quranListenerReaderViewModel.deleteDownloadedAudio(it, soraSong.SoraId)
+
+                        quranListenerReaderAdapter.refreshDownloadStatus(soraSong.SoraId)
+
+                        Snackbar.make(binding.root, "تم حذف الملف", Snackbar.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("إلغاء", null)
+            .show()
+    }
+
+
+    private fun showDownloadDialog(soraSong: SoraSong) {
+        lifecycleScope.launch {
+            val isDownloaded = readerId?.let {
+                quranListenerReaderViewModel.isAudioDownloaded(it, soraSong.SoraId)
+            } ?: false
+
+            if (isDownloaded) {
+                showDeleteDialog(soraSong)
+            } else {
+                downloadSingleSura(soraSong)
+            }
+        }
+    }
+
+
+    private fun isFav(isVaForte: Boolean) {
+        if (isVaForte) {
+            binding.favorite.setImageResource(R.drawable.ic_favorite_red_24)
+        } else {
             binding.favorite.setImageResource(R.drawable.ic_baseline_favorite_border_24)
         }
     }
 
-    private fun getData(suras:String,server:String){
-        val arr= suras.split(",")
-        val ints= arr.map { it.toInt() }
-        ints.let {
-            it.forEach {
-                songs.add(Song(
-                    it.toString(),
-                    SORA_OF_QURAN[it],
-                    readerName?:"",
-                    getSoraLink(server,it)
-
-                ))
-            }
-        }
-
-    }
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun launchNotificationPermission(){
+    fun launchNotificationPermission() {
         val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             arrayOf(
-                Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
             )
         } else {
-            arrayOf(
-                Manifest.permission.POST_NOTIFICATIONS
-            )
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
         }
-        if (!MethodHelper.hasPermissions(requireActivity(), perms)){
+        if (!MethodHelper.hasPermissions(requireActivity(), perms)) {
             requestPermissionLauncher.launch(perms)
         }
-
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-        // }
     }
-
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val granted = permissions.entries.all {
-            it.value
-        }
+        val granted = permissions.entries.all { it.value }
         if (!granted) {
-            // PERMISSION GRANTED
-            showMessage(requireActivity(),getString(R.string.need_permissions))
+            showMessage(requireActivity(), getString(R.string.need_permissions))
         }
     }
-
-    @Throws(Exception::class)
-    private fun downloadTask(soraSong: SoraSong): Boolean {
-        if (!soraSong.url.startsWith("http")) {
-            MethodHelper.toastMessage(getString(R.string.error))
-            return false
-        }
-        try {
-
-            val file= File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS + File.separator + readerName)
-            if (!file.exists()) {
-                file.mkdirs()
-            }
-            val result = File(file.absolutePath + File.separator.toString() + SORA_OF_QURAN[soraSong.SoraId]+"_"+(readerName?:"")+"."+soraSong.url.substringAfterLast('.', ""))
-            val downloadManager = requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val request = DownloadManager.Request(Uri.parse(soraSong.url))
-            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
-            request.setDestinationUri(Uri.fromFile(result))
-           // request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS + File.separator + readerName, result.name)
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            downloadManager.enqueue(request)
-            MethodHelper.toastMessage(getString(R.string.downloading))
-            MediaScannerConnection.scanFile(
-                context, arrayOf(result.toString()), null
-            ) { path, uri ->
-                MethodHelper.toastMessage(path)
-            }
-
-
-            //Log.d("jhdfgdjf", "yyyyyyyyyyyyyy")
-        } catch (e: Exception) {
-            MethodHelper.toastMessage(getString(R.string.error))
-            //e.message?.let { Log.d("jhdfgdjf", it) }
-            return false
-        }
-        return true
-    }
-
-    @Throws(Exception::class)
-    private fun downloadAllSoraSongs(soraSongs: List<SoraSong>, folderName: String): Boolean {
-        try {
-            // Create a folder in the Downloads directory with the specific folder name
-            val directory = File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS + File.separator + folderName)
-            if (!directory.exists()) {
-                directory.mkdirs()  // Create the folder if it doesn't exist
-            }
-
-            val downloadManager = requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-            // Use a coroutine scope to throttle the download requests
-            CoroutineScope(Dispatchers.IO).launch {
-                // Loop through all SoraSongs and download them
-                for (soraSong in soraSongs) {
-                    if (!soraSong.url.startsWith("http")) {
-                        withContext(Dispatchers.Main) {
-                            MethodHelper.toastMessage(getString(R.string.error))
-                        }
-                        // Skip to the next file if the URL is invalid
-                        continue
-                    }
-
-                    // Create the file path for each download
-                    val result = File(
-                        directory.absolutePath + File.separator + SORA_OF_QURAN[soraSong.SoraId] + "_" + (readerName
-                            ?: "") + "." + soraSong.url.substringAfterLast('.', "")
-                    )
-
-                    val request = DownloadManager.Request(Uri.parse(soraSong.url))
-                    request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
-                    request.setDestinationUri(Uri.fromFile(result))
-                    //request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS + File.separator + folderName, result.name)
-                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-
-                    // Enqueue each download request
-                    downloadManager.enqueue(request)
-
-                    // Introduce a delay between downloads (e.g., 500 milliseconds)
-                    delay(500)
-                }
-
-                withContext(Dispatchers.Main) {
-                    MethodHelper.toastMessage(getString(R.string.downloading_all_files))
-                }
-            }
-            return true
-
-        } catch (e: Exception) {
-            MethodHelper.toastMessage(getString(R.string.error))
-            Log.d("k", "downloadAllSoraSongs: ${e.message}")
-            return false
-        }
-    }
-
-
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-
-        menuInflater.inflate(R.menu.search_with_menu_items,menu)
-
-
+        menuInflater.inflate(R.menu.search_with_menu_items, menu)
         menu.getItem(1).isVisible = false
 
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
-
         searchView.imeOptions = EditorInfo.IME_ACTION_DONE
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                return false
-            }
+            override fun onQueryTextSubmit(query: String): Boolean = false
 
             override fun onQueryTextChange(newText: String): Boolean {
-
-                quranListenerReaderAdapter.filter.filter(newText);
+                quranListenerReaderAdapter.filter.filter(newText)
                 return false
             }
         })
-
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-
-        return  when (menuItem.itemId) {
+        return when (menuItem.itemId) {
             android.R.id.home -> {
                 Navigation.findNavController(requireView()).popBackStack()
             }
             else -> false
         }
     }
-
-
-
-
 }

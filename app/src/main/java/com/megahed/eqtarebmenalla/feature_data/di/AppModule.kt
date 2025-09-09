@@ -2,7 +2,6 @@ package com.megahed.eqtarebmenalla.feature_data.di
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -15,12 +14,17 @@ import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.db.MIGRATION_3_4
+import com.megahed.eqtarebmenalla.db.MIGRATION_4_5
+import com.megahed.eqtarebmenalla.db.MIGRATION_5_6
+import com.megahed.eqtarebmenalla.db.MIGRATION_6_7
 import com.megahed.eqtarebmenalla.db.MyDatabase
-import com.megahed.eqtarebmenalla.db.MyDatabase.Companion.MIGRATION_1_3
 import com.megahed.eqtarebmenalla.db.dao.AchievementDao
+import com.megahed.eqtarebmenalla.db.dao.CachedRecitersDao
 import com.megahed.eqtarebmenalla.db.dao.DailyTargetDao
+import com.megahed.eqtarebmenalla.db.dao.DownloadedAudioDao
 import com.megahed.eqtarebmenalla.db.dao.MemorizationScheduleDao
 import com.megahed.eqtarebmenalla.db.dao.MemorizationSessionDao
+import com.megahed.eqtarebmenalla.db.dao.OfflineSettingsDao
 import com.megahed.eqtarebmenalla.db.dao.UserStreakDao
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
@@ -39,6 +43,8 @@ import com.megahed.eqtarebmenalla.feature_data.data.repository.MemorizationRepos
 import com.megahed.eqtarebmenalla.feature_data.data.repository.QuranListenerRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.QuranListenerRepository
+import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
+import com.megahed.eqtarebmenalla.offline.OfflineUtils.isNetworkAvailable
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,6 +53,8 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Provider
@@ -58,9 +66,33 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideIslamicApi(): IslamicApi {
+    fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+        val cacheSize = 10L * 1024 * 1024
+        val cache = Cache(context.cacheDir, cacheSize)
+
+        return OkHttpClient.Builder()
+            .cache(cache)
+            .addInterceptor { chain ->
+                var request = chain.request()
+                request = if (isNetworkAvailable(context)) {
+                    request.newBuilder()
+                        .header("Cache-Control", "public, max-age=" + 300)
+                        .build()
+                } else {
+                    request.newBuilder()
+                        .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7)
+                        .build()
+                }
+                chain.proceed(request)
+            }
+            .build()
+    }
+    @Provides
+    @Singleton
+    fun provideIslamicApi(okHttpClient: OkHttpClient): IslamicApi {
         return Retrofit.Builder()
             .baseUrl(Constants.PRAYER_TIME_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(IslamicApi::class.java)
@@ -96,7 +128,7 @@ object AppModule {
             app,
             MyDatabase::class.java,
             MyDatabase.DATABASE_NAME)
-            .addMigrations(MIGRATION_3_4)
+            .addMigrations( MIGRATION_3_4, MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7)
             .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
@@ -212,7 +244,6 @@ object AppModule {
     }
 
 
-    //for music
     @Singleton
     @Provides
     fun provideMusicServiceConnection(
@@ -269,5 +300,31 @@ object AppModule {
             streakDao = streakDao,
             achievementDao = achievementDao
         )
+    }
+    @Provides
+    @Singleton
+    fun provideOfflineAudioManager(
+        @ApplicationContext context: Context,
+        downloadedAudioDao: DownloadedAudioDao,
+        offlineSettingsDao: OfflineSettingsDao,
+        quranListenerReaderRepository: QuranListenerReaderRepository
+    ): OfflineAudioManager {
+        return OfflineAudioManager(context, downloadedAudioDao, offlineSettingsDao, quranListenerReaderRepository)
+    }
+
+
+
+    @Provides
+    fun provideDownloadedAudioDao(database: MyDatabase): DownloadedAudioDao {
+        return database.downloadedAudioDao()
+    }
+
+    @Provides
+    fun provideOfflineSettingsDao(database: MyDatabase): OfflineSettingsDao {
+        return database.offlineSettingsDao()
+    }
+    @Provides
+    fun provideCachedRecitersDao(database: MyDatabase): CachedRecitersDao {
+        return database.cachedRecitersDao()
     }
 }

@@ -26,20 +26,22 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.megahed.eqtarebmenalla.MethodHelper
+import com.google.android.material.snackbar.Snackbar
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.QuranListenerAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentQuranListenerBinding
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.myListener.OnItemWithFavClickListener
+import com.megahed.eqtarebmenalla.offline.NetworkStateObserver
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class QuranListenerFragment : Fragment() , MenuProvider {
+class QuranListenerFragment : Fragment(), MenuProvider {
 
     private lateinit var binding: FragmentQuranListenerBinding
-    private lateinit var quranListenerAdapter : QuranListenerAdapter
-    private var fromFavorite:Boolean=false
+    private lateinit var quranListenerAdapter: QuranListenerAdapter
+    private var fromFavorite: Boolean = false
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -47,16 +49,16 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         super.onCreate(savedInstanceState)
         fromFavorite = arguments?.let { QuranListenerFragmentArgs.fromBundle(it).fromFavorite }!!
 
-        sharedPreferences = requireActivity().getSharedPreferences("playback_prefs", Context.MODE_PRIVATE)
+        sharedPreferences =
+            requireActivity().getSharedPreferences("playback_prefs", Context.MODE_PRIVATE)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
-        val quranListenerViewModel =
-            ViewModelProvider(this).get(QuranListenerViewModel::class.java)
+        val quranListenerViewModel = ViewModelProvider(this).get(QuranListenerViewModel::class.java)
 
         binding = FragmentQuranListenerBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -65,35 +67,45 @@ class QuranListenerFragment : Fragment() , MenuProvider {
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
 
-
         val verticalLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = verticalLayoutManager
         binding.recyclerView.setHasFixedSize(true)
 
-        quranListenerAdapter= QuranListenerAdapter(requireContext(), object : OnItemWithFavClickListener<QuranListenerReader> {
+        quranListenerAdapter = QuranListenerAdapter(
+            requireContext(), object : OnItemWithFavClickListener<QuranListenerReader> {
 
-            override fun onItemClick(itemObject: QuranListenerReader, view: View?,position: Int) {
-                Log.d("QuranListenerFragment", "onItemClick: reader & id: ${itemObject.name} - ${itemObject.id}")
-                val editor = sharedPreferences.edit()
-                editor.putBoolean("isPlayingSora", true)
-                editor.apply()
-                val action: NavDirections = QuranListenerFragmentDirections.
-                actionNavigationListenerToQuranListenerReaderFragment(
-                  id = itemObject.id,
-                  readerName = itemObject.name
-                )
-                Navigation.findNavController(requireView()).navigate(action)
-            }
+                override fun onItemClick(
+                    itemObject: QuranListenerReader,
+                    view: View?,
+                    position: Int,
+                ) {
+                    Log.d(
+                        "QuranListenerFragment",
+                        "onItemClick: reader & id: ${itemObject.name} - ${itemObject.id}"
+                    )
+                    val editor = sharedPreferences.edit()
+                    editor.putBoolean("isPlayingSora", true)
+                    editor.apply()
+                    val action: NavDirections =
+                        QuranListenerFragmentDirections.actionNavigationListenerToQuranListenerReaderFragment(
+                            id = itemObject.id, readerName = itemObject.name
+                        )
+                    Navigation.findNavController(requireView()).navigate(action)
+                }
 
-            override fun onItemFavClick(itemObject: QuranListenerReader, view: View?) {
-                itemObject.isVaForte=!itemObject.isVaForte
-                quranListenerViewModel.updateQuranListenerReader(itemObject)
-            }
+                override fun onItemFavClick(itemObject: QuranListenerReader, view: View?) {
+                    itemObject.isVaForte = !itemObject.isVaForte
+                    quranListenerViewModel.updateQuranListenerReader(itemObject)
+                }
 
-            override fun onItemLongClick(itemObject: QuranListenerReader, view: View?,position: Int) {
-            }
-        })
+                override fun onItemLongClick(
+                    itemObject: QuranListenerReader,
+                    view: View?,
+                    position: Int,
+                ) {
+                }
+            })
         binding.recyclerView.adapter = quranListenerAdapter
         val menuHost: MenuHost = requireActivity()
 
@@ -123,25 +135,13 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
             }
 
-          /*  lifecycleScope.launchWhenStarted {
-                quranListenerViewModel.getAllFavSorasOfReader().collect{
-                    it.map {
-                        it.soraSongData.map {
-                            it.isVaForte
-                        }
-                    }
-                    it.forEach {
-                        Log.d("jkhdssjkdhsjhd",it.quranListenerReader.name)
-                        Log.d("jkhdssjkdhsjhd","${it.soraSongData.size}")
-
-                    }
-                }
-            }*/
-
-        }
-        else{
-            (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(true)
-            (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        } else {
+            (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowHomeEnabled(
+                true
+            )
+            (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(
+                true
+            )
             toolbar.title = getString(R.string.readerFav)
 
             lifecycleScope.launchWhenStarted {
@@ -167,21 +167,36 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
         }
 
-
-
-
-
-
         return root
+    }
+
+    fun QuranListenerFragment.setupOfflineHandling() {
+        lifecycleScope.launch {
+            // Observe network state
+            val networkObserver = NetworkStateObserver(requireContext())
+            networkObserver.observe(viewLifecycleOwner) { isConnected ->
+                if (!isConnected) {
+                    showOfflineSnackbar(
+                        "أنت في وضع عدم الاتصال. سيتم عرض المحتوى المحمل فقط.", binding.recyclerView
+                    )
+                }
+            }
+        }
+    }
+
+    fun showOfflineSnackbar(message: String, view: View) {
+        val snackbar = Snackbar.make(
+            view, message, Snackbar.LENGTH_LONG
+        )
+        snackbar.show()
     }
 
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
-        menuInflater.inflate(R.menu.search_with_menu_items,menu)
+        menuInflater.inflate(R.menu.search_with_menu_items, menu)
 
-        if (fromFavorite)
-            menu.getItem(1).isVisible = false
+        if (fromFavorite) menu.getItem(1).isVisible = false
 
         val searchItem = menu.findItem(R.id.menu_search)
         val searchView = searchItem.actionView as SearchView
@@ -204,21 +219,23 @@ class QuranListenerFragment : Fragment() , MenuProvider {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
 
-        return  when (menuItem.itemId) {
-            R.id.moreOptions ->{
-              showBottomSheet()
+        return when (menuItem.itemId) {
+            R.id.moreOptions -> {
+                showBottomSheet()
                 false
             }
+
             android.R.id.home -> {
                 Navigation.findNavController(requireView()).popBackStack()
             }
+
             else -> false
         }
 
     }
 
 
-    private fun showBottomSheet(){
+    private fun showBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val bottomSheetView: View = LayoutInflater.from(
             requireActivity()
@@ -227,43 +244,38 @@ class QuranListenerFragment : Fragment() , MenuProvider {
             requireView().findViewById<ConstraintLayout>(R.id.container2)
         )
 
-        val readerFav= bottomSheetView.findViewById<ImageView>(R.id.readerFav)
-        val soraFav= bottomSheetView.findViewById<ImageView>(R.id.soraFav)
-        val listeningToSave= bottomSheetView.findViewById<ImageView>(R.id.listeningToSave)
+        val readerFav = bottomSheetView.findViewById<ImageView>(R.id.readerFav)
+        val soraFav = bottomSheetView.findViewById<ImageView>(R.id.soraFav)
+        val listeningToSave = bottomSheetView.findViewById<ImageView>(R.id.listeningToSave)
 
         readerFav.setOnClickListener {
 
             bottomSheetDialog.dismiss()
-            val action: NavDirections = QuranListenerFragmentDirections.
-            actionNavigationListenerSelf(true)
+            val action: NavDirections =
+                QuranListenerFragmentDirections.actionNavigationListenerSelf(true)
             Navigation.findNavController(requireView()).navigate(action)
 
         }
 
         soraFav.setOnClickListener {
             bottomSheetDialog.dismiss()
-            val action: NavDirections = QuranListenerFragmentDirections.
-            actionNavigationListenerToSoraFavoriteFragment()
+            val action: NavDirections =
+                QuranListenerFragmentDirections.actionNavigationListenerToSoraFavoriteFragment()
             Navigation.findNavController(requireView()).navigate(action)
 
 
         }
         listeningToSave.setOnClickListener {
-            if (MethodHelper.isOnline(requireContext())) {
-                bottomSheetDialog.dismiss()
-                val action: NavDirections =
-                    QuranListenerFragmentDirections.actionNavigationListenerToListenerHelperFragment()
-                Navigation.findNavController(requireView()).navigate(action)
-            }
-            else MethodHelper.toastMessage(getString(R.string.checkConnection))
+            bottomSheetDialog.dismiss()
+            val action: NavDirections =
+                QuranListenerFragmentDirections.actionNavigationListenerToListenerHelperFragment()
+            Navigation.findNavController(requireView()).navigate(action)
         }
 
 
-        //code
         bottomSheetDialog.setContentView(bottomSheetView)
         bottomSheetDialog.dismissWithAnimation = true
-        bottomSheetDialog.window?.attributes?.windowAnimations =
-            R.style.DialogAnimation
+        bottomSheetDialog.window?.attributes?.windowAnimations = R.style.DialogAnimation
 
         bottomSheetDialog.show()
     }

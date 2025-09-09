@@ -1,7 +1,5 @@
 package com.megahed.eqtarebmenalla.db.repository
 
-import androidx.room.*
-import com.megahed.eqtarebmenalla.db.customModel.SorasFavOfReader
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
 import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import kotlinx.coroutines.flow.Flow

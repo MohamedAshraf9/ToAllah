@@ -248,7 +248,6 @@
     <string name="show_stats">عرض الإحصائيات</string>
     <string name="edit_schedule">تعديل الجدول</string>
     <string name="confirm_completion">تأكيد إكمال الهدف</string>
-    <string name="select_reader_first_tracker">يجب اختيار قارئ أولاً قبل استخدام متابعة الحفظ</string>
     <string name="filled_with_today_target">تم تعبئة النموذج بإعدادات الحفظ اليومي</string>
     <string name="no_today_target">لا يوجد هدف حفظ لليوم. يرجى التحقق من إعدادات الجدول.</string>
     <string name="select_reader_first">يجب اختيار قارئ أولاً</string>
@@ -259,4 +258,86 @@
     <string name="error_select_surah">يجب اختيار سورة</string>
     <string name="error_invalid_verse_range">نطاق الآيات غير صحيح</string>
     <string name="error_start_date_required">يجب اختيار تاريخ البدء</string>
+    <string name="stop">إيقاف نهائي</string>
+    <string name="next_verse">الآية التالية</string>
+    <string name="offline_memorization_title">الحفظ بدون إنترنت</string>
+    <string name="offline_memorization_description">قم بتحميل محتوى جدول الحفظ لتتمكن من مواصلة رحلتك في حفظ القرآن الكريم دون الحاجة إلى إنترنت</string>
+    <string name="select_offline_reciter">أختر قارئك المفضل للحفظ بدون إنترنت</string>
+    <string name="select_reciter_to_see_download_info">أختر قارئاً لتتمكن من رؤية معلومات التحميل</string>
+    <string name="offline_mode">وضع أوفلاين</string>
+    <string name="error_select_offline_reciter">يرجى اختيار القارئ للوضع الأوفلاين</string>
+
+    <string name="download_content">تحميل المحتوى</string>
+    <string name="download_complete">تم التحميل</string>
+    <string name="download_started">بدأ التحميل</string>
+    <string name="download_failed">فشل التحميل: %s</string>
+    <string name="content_already_downloaded">تم تحميل المحتوى مسبقاً</string>
+    <string name="content_needs_download">يجب تحميل محتوى %s</string>
+    <string name="need_internet_for_download">يجب الاتصال بالإنترنت للتحميل</string>
+
+    <string name="offline_content_available">المحتوى متاح أوفلاين</string>
+    <string name="offline_content_missing_range">المحتوى غير متاح للنطاق المحدد</string>
+    <string name="offline_content_missing_aya">الآية %d غير متاحة أوفلاين</string>
+    <string name="reciter_not_available_offline">القارئ غير متاح أوفلاين</string>
+    <string name="surah_not_downloaded_offline">السورة غير محملة أوفلاين</string>
+    <string name="playing_offline_content">تشغيل المحتوى الأوفلاين</string>
+
+    <string name="offline_mode_available_message">يتوفر لديك %d قارئ للاستماع أوفلاين</string>
+    <string name="use_offline">استخدم أوفلاين</string>
+    <string name="connect_internet_continue">يرجى الاتصال بالإنترنت للمتابعة</string>
+
+    <string name="no_offline_content_title">لا يوجد محتوى أوفلاين</string>
+    <string name="no_offline_content_message">لا يوجد لديك أي محتوى محمل للاستماع أوفلاين. يرجى تحميل المحتوى أولاً أو الاتصال بالإنترنت.</string>
+
+    <string name="incomplete_offline_content_title">المحتوى غير مكتمل</string>
+    <string name="incomplete_offline_content_message">المحتوى الأوفلاين للآيات %d-%d غير مكتمل</string>
+    <string name="select_different_range">اختر نطاق مختلف</string>
+
+    <string name="network_required_title">يحتاج اتصال إنترنت</string>
+    <string name="network_required_message">الآية %d غير متاحة أوفلاين وتحتاج اتصال إنترنت</string>
+    <string name="skip_aya">تخطي الآية</string>
+    <string name="pause_session">إيقاف الجلسة</string>
+
+    <string name="offline_mode_tracking_note">سيتم تسجيل التقدم في الوضع الأوفلاين</string>
+    <string name="offline_completion_note">تم إكمال الجلسة في الوضع الأوفلاين</string>
+    <string name="offline_completion_success">تمت الجلسة بنجاح في الوضع الأوفلاين</string>
+    <string name="offline_mode_info">أنت تستخدم الوضع الأوفلاين. المحتوى محمل مسبقاً.</string>
+    >
+    <string name="surah_not_available_title">السورة غير متوفرة</string>
+    <string name="surah_not_available_message">السورة %1$s غير متوفرة حالياً. هل ترغب بتحميلها الآن؟</string>
+    <string name="download_now">تحميل الآن</string>
+    <string name="select_different">اختيار سورة أخرى</string>
+
+     <string name="no_internet_connection">لا يوجد اتصال بالإنترنت</string>
+    <string name="download_started_try_again">تم بدء التحميل، يرجى المحاولة مرة أخرى لاحقاً</string>
+    <string name="offline_unavailable_title">المحتوى غير متوفر بدون إنترنت</string>
+    <string name="offline_unavailable_message">هذه السورة غير محملة للاستماع بدون إنترنت. هل ترغب في
+        تحميلها الآن أم الاتصال بالإنترنت للمتابعة؟
+    </string>
+    <string name="offline_mode_title">وضع عدم الاتصال</string>
+    <string name="offline_mode_message">أنت في وضع عدم الاتصال. يمكنك الاستماع فقط للمحتوى المحمل مسبقاً أو الانتقال للوضع المتصل.</string>
+    <string name="offline_mode_active">وضع عدم الاتصال نشط</string>
+    <string name="online_mode_active">الوضع المتصل نشط</string>
+    <string name="go_online">الانتقال للوضع المتصل</string>
+    <string name="setup_offline">إعداد الوضع غير المتصل</string>
+
+    <string name="select_offline_reader">اختر القارئ للوضع غير المتصل</string>
+    <string name="select_reader_first_tracker">يرجى اختيار القارئ أولاً لتتبع التقدم</string>
+    <string name="select_offline_reader_first">يرجى اختيار قارئ للوضع غير المتصل أولاً</string>
+    <string name="error_select_offline_reader">يرجى اختيار قارئ للوضع غير المتصل</string>
+
+    <string name="download_for_offline">تحميل للوضع غير المتصل</string>
+    <string name="downloading_progress">جاري التحميل: %1$d/%2$d</string>
+    <string name="preparing_download">جاري تحضير التحميل...</string>
+    <string name="download_completed">اكتمل التحميل</string>
+    <string name="download_error">خطأ في التحميل</string>
+    <string name="download_missing">تحميل المحتوى المفقود</string>
+
+    <string name="missing_verses_title">آيات مفقودة</string>
+    <string name="missing_verses_message">بعض الآيات المطلوبة غير متوفرة للوضع غير المتصل. هل تريد تحميلها أو الانتقال للوضع المتصل؟</string>
+
+    <string name="please_connect_internet">يرجى الاتصال بالإنترنت</string>
+    <string name="complete_schedule_info_first">من فضلك قم بملئ معلومات جدول الحفظ أولاً</string>
+
+
 </resources>

@@ -1,10 +1,12 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -16,7 +18,6 @@ import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -33,16 +34,21 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaHefzPagerAdapter
 import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
+import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.ActivityHefzRepeatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.db.model.SessionType
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyaViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
+import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
+import com.megahed.eqtarebmenalla.offline.SmartAudioUrlHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Date
 import javax.inject.Inject
 
@@ -50,10 +56,13 @@ import javax.inject.Inject
 class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private lateinit var binding: ActivityHefzRepeatBinding
-
     private lateinit var memorizationViewModel: MemorizationViewModel
+    @Inject
+    lateinit var offlineAudioManager: OfflineAudioManager
 
     private var link: String? = null
+    private var readerId: String? = null
+    private var baseUrl: String? = null
     private var soraId: String? = null
     private var startAya: String? = null
     private var endAya: String? = null
@@ -74,6 +83,9 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private var exoPlayer: SimpleExoPlayer? = null
     private lateinit var dataSourceFactory: DefaultDataSource.Factory
 
+    private var isOfflineMode = false
+    private var offlineAudioPaths = mutableMapOf<Int, String>()
+
     private var sessionId: Long? = null
     private var sessionStartTime: Date? = null
     private var versesCompleted = 0
@@ -88,6 +100,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
         sharedPreferences = getSharedPreferences("playback_prefs", MODE_PRIVATE)
         extractIntentExtras()
+        checkOfflineMode()
         setupToolbar()
         setupViewPager()
         initializePlayer()
@@ -102,8 +115,271 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         updatePauseResumeButtonState()
 
         setupProgressObservers()
-
         checkProgressTrackingEligibility()
+    }
+    private fun extractIntentExtras() {
+        intent.extras?.let {
+            val args = HefzRepeatActivityArgs.fromBundle(it)
+            baseUrl = args.link // This is now the base URL
+            soraId = args.soraId
+            startAya = args.startAya
+            endAya = args.endAya
+            ayaRepeat = args.ayaRepeat
+            allRepeat = args.allRepeat
+            readerName = args.readerName
+            readerId = args.readerId
+        }
+    }
+
+    private fun observeConnection(ayaViewModel: AyaViewModel) {
+        soraId?.let { id ->
+            lifecycleScope.launchWhenStarted {
+                ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
+                    ayaList.clear()
+
+                    for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
+                        val aya = ayaResult[i]
+                        val verseNumber = i + 1
+
+                        lifecycleScope.launch {
+                            aya.url = SmartAudioUrlHelper.getAudioUrl(
+                                offlineAudioManager = offlineAudioManager,
+                                readerId = readerId ?: "",
+                                surahId = id.toInt(),
+                                verseId = verseNumber,
+                                onlineBaseUrl = baseUrl ?: ""
+                            )
+
+                        }
+
+                        ayaList.add(aya)
+                    }
+
+                    ayaHefzPagerAdapter.setData(ayaList)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        launchNotificationPermission()
+                    }
+                    startMemorizationProcess()
+                }
+            }
+        }
+    }
+
+    private fun playAya(aya: Aya) {
+        exoPlayer?.let { player ->
+            player.stop()
+            player.clearMediaItems()
+
+            if (aya.url?.isEmpty() == true) {
+                return
+            }
+
+            val mediaItem = if (aya.url?.startsWith("http") == true) {
+                MediaItem.fromUri(Uri.parse(aya.url))
+            } else {
+                MediaItem.fromUri(Uri.fromFile(File(aya.url)))
+            }
+
+            val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(mediaItem)
+
+            player.setMediaSource(mediaSource)
+            player.prepare()
+
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(100)
+                player.playWhenReady = true
+            }
+        }
+    }
+    private fun checkOfflineMode() {
+        isOfflineMode = sharedPreferences.getBoolean("is_offline_mode", false)
+
+        if (isOfflineMode) {
+            setupOfflineAudio()
+        }
+    }
+
+    private fun setupOfflineAudio() {
+        lifecycleScope.launch {
+            try {
+                val readerId = extractReaderIdFromIntent() // Get from intent extras
+                if (readerId != null && soraId != null) {
+                    val surahId = soraId!!.toInt()
+                    val startVerse = startAya!!.toInt()
+                    val endVerse = endAya!!.toInt()
+
+                    val allDownloaded = offlineAudioManager.areVersesDownloaded(readerId, surahId, startVerse, endVerse)
+
+                    if (allDownloaded) {
+                        binding.toolbar.toolbar.subtitle = "وضع عدم الاتصال نشط"
+                    } else {
+                        if (offlineAudioManager.isNetworkAvailable()) {
+                            showOfflineUnavailableDialog(readerId, surahId, startVerse, endVerse)
+                        } else {
+                            showNoNetworkDialog()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                showOfflineUnavailableDialog("", 0, 0, 0)
+            }
+        }
+    }
+
+    private fun showOfflineUnavailableDialog(readerId: String, surahId: Int, startVerse: Int, endVerse: Int) {
+        lifecycleScope.launch {
+            val missingVerses = offlineAudioManager.getMissingVerses(readerId, surahId, startVerse, endVerse)
+            val totalVerses = endVerse - startVerse + 1
+            val availableVerses = totalVerses - missingVerses.size
+
+            MaterialAlertDialogBuilder(this@HefzRepeatActivity)
+                .setTitle("المحتوى غير متوفر بالكامل")
+                .setMessage("متوفر $availableVerses من $totalVerses آية للوضع غير المتصل.\nالآيات المفقودة: ${missingVerses.joinToString(", ")}\n\nهل تريد تحميل الآيات المفقودة أم التبديل للوضع المتصل؟")
+                .setPositiveButton("تحميل المفقود") { _, _ ->
+                    downloadMissingVerses(readerId, surahId, missingVerses)
+                }
+                .setNegativeButton("الوضع المتصل") { _, _ ->
+                    switchToOnlineMode()
+                }
+                .setNeutralButton("إلغاء") { _, _ ->
+                    finish()
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
+
+    private fun showNoNetworkDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("لا يوجد اتصال بالإنترنت")
+            .setMessage("المحتوى غير متوفر للوضع غير المتصل ولا يوجد اتصال بالإنترنت لتحميله.")
+            .setPositiveButton("إعادة المحاولة") { _, _ ->
+                setupOfflineAudio()
+            }
+            .setNegativeButton("إغلاق") { _, _ ->
+                finish()
+            }
+            .show()
+    }
+
+    private fun downloadMissingVerses(readerId: String, surahId: Int, missingVerses: List<Int>) {
+        if (!offlineAudioManager.isNetworkAvailable()) {
+            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                var downloadedCount = 0
+                val totalMissing = missingVerses.size
+
+                binding.toolbar.toolbar.subtitle = "جاري تحميل الآيات المفقودة..."
+
+                for (verseId in missingVerses) {
+                    val baseUrl = "getReaderBaseUrl(readerId)"
+                    val surahFormatted = String.format("%03d", surahId)
+                    val verseFormatted = String.format("%03d", verseId)
+                    val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
+                    val verseName = "${getSurahName(surahId)}_آية_${verseId}"
+
+                    val success = offlineAudioManager.downloadVerseAudio(
+                        readerId = readerId,
+                        surahId = surahId,
+                        verseId = verseId,
+                        verseName = verseName,
+                        readerName = readerName ?: "Unknown",
+                        audioUrl = verseUrl
+                    )
+
+                    if (success) {
+                        downloadedCount++
+                        binding.toolbar.toolbar.subtitle = "تحميل: $downloadedCount/$totalMissing"
+                    }
+                }
+
+                if (downloadedCount == totalMissing) {
+                    binding.toolbar.toolbar.subtitle = "تم التحميل - وضع عدم الاتصال نشط"
+                    Snackbar.make(binding.root, "تم تحميل جميع الآيات المفقودة", Snackbar.LENGTH_SHORT).show()
+                } else {
+                    binding.toolbar.toolbar.subtitle = "تحميل جزئي - $downloadedCount/$totalMissing"
+                    Snackbar.make(binding.root, "تم تحميل $downloadedCount من $totalMissing آية", Snackbar.LENGTH_LONG).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("HefzRepeat", "Error downloading missing verses", e)
+                Snackbar.make(binding.root, "فشل في تحميل الآيات المفقودة", Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun extractReaderIdFromIntent(): String? {
+        return intent.getStringExtra("readerId") ?: run {
+            readerName?.let { name ->
+                null
+            }
+        }
+    }
+
+
+    private fun extractReaderIdFromLink(): String? {
+        return try {
+            link?.let { url ->
+                val segments = url.split("/")
+
+                segments.find { segment ->
+                    segment.matches("""\d+""".toRegex()) || segment.length > 10
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getOriginalAudioUrl(): String {
+        return link ?: ""
+    }
+
+    private fun getSurahName(surahId: Int): String {
+        // Get surah name from constants
+        return Constants.SORA_OF_QURAN.getOrElse(surahId) { "Surah $surahId" }
+    }
+
+    private fun switchToOnlineMode() {
+        if (!offlineAudioManager.isNetworkAvailable()) {
+            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        isOfflineMode = false
+        sharedPreferences.edit().putBoolean("is_offline_mode", false).apply()
+        binding.toolbar.toolbar.subtitle = "الوضع المتصل نشط"
+
+        lifecycleScope.launch {
+            try {
+                val readerId = extractReaderIdFromIntent()
+                val baseUrl = getOnlineBaseUrl(readerId)
+
+                ayaList.forEachIndexed { index, aya ->
+                    val verseNumber = startAya!!.toInt() + index
+                    val surahFormatted = String.format("%03d", soraId!!.toInt())
+                    val verseFormatted = String.format("%03d", verseNumber)
+                    aya.url = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
+                }
+
+                ayaHefzPagerAdapter.notifyDataSetChanged()
+
+                Snackbar.make(binding.root, "تم التبديل للوضع المتصل", Snackbar.LENGTH_SHORT).show()
+
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "فشل في التبديل للوضع المتصل", Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+
+    private fun getOnlineBaseUrl(readerId: String?): String {
+        return "https://verse.mp3quran.net/arabic/reader_$readerId/128"
     }
 
     private fun setupProgressObservers() {
@@ -141,9 +417,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                             !target.isCompleted)
 
                     if (isProgressTrackingEnabled) {
-                        binding.toolbar.toolbar.subtitle = "تتبع التقدم نشط - ${target.surahName}"
+                        val modeText = if (isOfflineMode) " (وضع عدم الاتصال)" else ""
+                        binding.toolbar.toolbar.subtitle = "تتبع التقدم نشط - ${target.surahName}$modeText"
 
                         showProgressTrackingConfirmation(target.surahName, target.startVerse, target.endVerse)
+                    } else if (isOfflineMode) {
+                        binding.toolbar.toolbar.subtitle = getString(R.string.offline_mode_active)
                     }
                 }
             }
@@ -151,17 +430,20 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     private fun showProgressTrackingConfirmation(surahName: String, startVerse: Int, endVerse: Int) {
+        val modeText = if (isOfflineMode) "\n\n(سيتم الحفظ في وضع عدم الاتصال)" else ""
+
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.progress_tracking_title))
-            .setMessage("تم اكتشاف أن هذه الجلسة تطابق هدف اليوم:\n$surahName - الآيات $startVerse-$endVerse\n\nهل تريد تتبع تقدمك وتسجيل هذه الجلسة؟")
+            .setMessage("تم اكتشاف أن هذه الجلسة تطابق هدف اليوم:\n$surahName - الآيات $startVerse-$endVerse\n\nهل تريد تتبع تقدمك وتسجيل هذه الجلسة?$modeText")
             .setPositiveButton(getString(R.string.yes)) { _, _ -> startProgressTracking() }
             .setNegativeButton(getString(R.string.no)) { _, _ ->
                 isProgressTrackingEnabled = false
-                binding.toolbar.toolbar.subtitle = ""
+                binding.toolbar.toolbar.subtitle = if (isOfflineMode) getString(R.string.offline_mode_active) else ""
             }
             .setCancelable(false)
             .show()
     }
+
 
     private fun startProgressTracking() {
         lifecycleScope.launch {
@@ -199,14 +481,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         exoPlayer?.addListener(this)
     }
 
-    override fun onBackPressed() {
-        if (isProgressTrackingEnabled && sessionId != null) {
-            showExitConfirmationDialog()
-        } else {
-            stopMemorization()
-            super.onBackPressed()
-        }
-    }
 
     private fun showExitConfirmationDialog() {
         MaterialAlertDialogBuilder(this)
@@ -225,6 +499,15 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .show()
     }
 
+    override fun onBackPressed() {
+        if (isProgressTrackingEnabled && sessionId != null) {
+            showExitConfirmationDialog()
+        } else {
+            stopMemorization()
+            super.onBackPressed()
+        }
+    }
+
     override fun onDestroy() {
         if (isProgressTrackingEnabled && sessionId != null) {
             completeProgressTracking(false)
@@ -233,19 +516,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         exoPlayer?.release()
         exoPlayer = null
         super.onDestroy()
-    }
-
-    private fun extractIntentExtras() {
-        intent.extras?.let {
-            val args = HefzRepeatActivityArgs.fromBundle(it)
-            link = args.link
-            soraId = args.soraId
-            startAya = args.startAya
-            endAya = args.endAya
-            ayaRepeat = args.ayaRepeat
-            allRepeat = args.allRepeat
-            readerName = args.readerName
-        }
     }
 
     private fun setupToolbar() {
@@ -273,6 +543,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             }
         })
     }
+
 
     private fun updateProgressDisplay() {
         if (isProgressTrackingEnabled) {
@@ -340,27 +611,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 sessionId = null
             } catch (e: Exception) {
                 Snackbar.make(binding.root, "فشل في حفظ التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    private fun observeConnection(ayaViewModel: AyaViewModel) {
-        soraId?.let { id ->
-            lifecycleScope.launchWhenStarted {
-                ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
-                    ayaList.clear()
-                    for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
-                        ayaResult[i].url = link!! + CommonUtils.convertSora(
-                            soraId!!, (i + 1).toString()
-                        ) + ".mp3"
-                        ayaList.add(ayaResult[i])
-                    }
-                    ayaHefzPagerAdapter.setData(ayaList)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        launchNotificationPermission()
-                    }
-                    startMemorizationProcess()
-                }
             }
         }
     }
@@ -499,21 +749,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         startMemorizationProcess()
     }
 
-    private fun playAya(aya: Aya) {
-        exoPlayer?.let { player ->
-            player.stop()
-            player.clearMediaItems()
-            val mediaItem = MediaItem.fromUri(Uri.parse(aya.url))
-            val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(mediaItem)
-            player.setMediaSource(mediaSource)
-            player.prepare()
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(100)
-                player.playWhenReady = true
-            }
-        }
-    }
 
     private fun togglePauseResume() {
         if (isMemorizationPaused) {

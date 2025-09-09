@@ -16,7 +16,7 @@
     <color name="memorization_primary_dark">#2E7D32</color>
     <color name="memorization_light">#C8E6C9</color>
     <color name="memorization_border_color">#E0E0E0</color>
-
+    <color name="offline_card_background">#FFF3E0</color>
     <color name="streak_color">#FF9800</color>
     <color name="streak_text">#FFFFFF</color>
     <color name="streak_background">#FFF3C4</color>

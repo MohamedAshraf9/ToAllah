@@ -286,6 +286,9 @@
         <argument
             android:name="readerName"
             app:argType="string" />
+        <argument
+            android:name="readerId"
+            app:argType="string" />
     </activity>
     <fragment
         android:id="@+id/scheduleCreationFragment"

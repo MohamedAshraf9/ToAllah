@@ -18,7 +18,6 @@ class MemorizationRepository @Inject constructor(
     private val streakDao: UserStreakDao,
     private val achievementDao: AchievementDao,
 ) {
-
     fun getActiveSchedules(): Flow<List<MemorizationSchedule>> = scheduleDao.getActiveSchedules()
 
     fun getCurrentActiveSchedule(): Flow<MemorizationSchedule?> =
@@ -78,7 +77,6 @@ class MemorizationRepository @Inject constructor(
         }.time
     }
 
-
     suspend fun getTodayTarget(): DailyTarget? {
         val currentSchedule = scheduleDao.getCurrentActiveSchedule()
         return currentSchedule?.let { schedule ->
@@ -129,7 +127,7 @@ class MemorizationRepository @Inject constructor(
         session?.let {
             val endTime = Date()
             val duration =
-                ((endTime.time - it.startTime.time) / 60000).toInt() // Convert to minutes
+                ((endTime.time - it.startTime.time) / 60000).toInt()
 
             sessionDao.updateSession(
                 it.copy(
@@ -210,22 +208,22 @@ class MemorizationRepository @Inject constructor(
         when (streak.currentStreak) {
             1 -> unlockAchievement(
                 AchievementType.FIRST_DAY,
-                "First Day!",
-                "You completed your first day of memorization",
+                "اليوم الأول!",
+                "لقد أكملت يومك الأول في حقظ القرآن الكريم بنجاح",
                 streak.currentStreak
             )
 
             7 -> unlockAchievement(
                 AchievementType.WEEK_STREAK,
-                "Week Warrior!",
-                "7 days of consistent memorization",
+                "محارب الأسبوع",
+                "لقد أكملت 7 أيام في حفظ القرآن الكريم. تهانينا",
                 streak.currentStreak
             )
 
             30 -> unlockAchievement(
                 AchievementType.MONTH_STREAK,
-                "Monthly Master!",
-                "30 days of dedication to the Quran",
+                "مبدع هذا الشهر!",
+                "ثلاثين يوماً من التفاني في حفظ القرآن الكريم",
                 streak.currentStreak
             )
         }
@@ -236,8 +234,8 @@ class MemorizationRepository @Inject constructor(
             if (existingAchievements.isEmpty()) {
                 unlockAchievement(
                     AchievementType.HUNDRED_VERSES,
-                    "Century Scholar!",
-                    "Memorized 100 verses",
+                    "مستكشف القرن!",
+                    "لقد أكملت حفظ مائة آية. تهانينا",
                     streak.totalVersesMemorized
                 )
             }
@@ -293,6 +291,54 @@ class MemorizationRepository @Inject constructor(
     }
 
     suspend fun getAchievementCount(): Int = achievementDao.getAchievementCount()
+
+
+    suspend fun insertSchedule(schedule: MemorizationSchedule): Long {
+        return scheduleDao.insertSchedule(schedule)
+    }
+
+    suspend fun insertDailyTargets(targets: List<DailyTarget>) {
+        dailyTargetDao.insertTargets(targets)
+    }
+
+    suspend fun getDailyTargetsByScheduleId(scheduleId: Long): List<DailyTarget> {
+        return dailyTargetDao.getTargetsForScheduleSync(scheduleId)
+    }
+
+    suspend fun getScheduleById(scheduleId: Long): MemorizationSchedule? {
+        return scheduleDao.getScheduleById(scheduleId)
+    }
+
+    suspend fun insertSession(session: MemorizationSession): Long {
+        return sessionDao.insertSession(session)
+    }
+
+    suspend fun getSessionById(sessionId: Long): MemorizationSession? {
+        return sessionDao.getSessionById(sessionId)
+    }
+
+    suspend fun updateSession(session: MemorizationSession) {
+        sessionDao.updateSession(session)
+    }
+
+    suspend fun getDailyTargetByDate(date: Date): DailyTarget? {
+        val currentSchedule = scheduleDao.getCurrentActiveSchedule()
+        return currentSchedule?.let { schedule ->
+            dailyTargetDao.getTargetForDate(date, schedule.id)
+        }
+    }
+
+    suspend fun updateDailyTarget(target: DailyTarget) {
+        dailyTargetDao.updateTarget(target)
+    }
+
+    suspend fun insertOrUpdateUserStreak(streak: UserStreak) {
+        streakDao.insertOrUpdateStreak(streak)
+    }
+
+    suspend fun getCurrentActiveScheduleSync(): MemorizationSchedule? {
+        return scheduleDao.getCurrentActiveSchedule()
+    }
 }
 
 

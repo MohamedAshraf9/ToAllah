@@ -13,5 +13,7 @@
     <color name="text_primary_dark">#D4B445</color>
     <color name="text_disabled_dark">#666666</color>
     <color name="text_pressed_dark">#B9972C</color>
+    <color name="offline_card_background">#9A887648</color>
+
 
 </resources>

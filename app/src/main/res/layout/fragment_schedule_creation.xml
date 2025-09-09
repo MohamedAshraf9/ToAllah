@@ -258,6 +258,118 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Offline Memorization Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/offline_memorization_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_12sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_3sdp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="@dimen/_12sdp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/offline_memorization_title"
+                            android:textSize="@dimen/_16ssp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_color"
+                            android:drawablePadding="@dimen/_8sdp"
+                            app:drawableStartCompat="@drawable/ic_offline"
+                            app:drawableTint="@color/colorPrimary" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_offline_memorization"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/offline_memorization_description"
+                        android:textSize="@dimen/_12ssp"
+                        android:textColor="@color/grey"
+                        android:layout_marginBottom="@dimen/_12sdp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_offline_reader"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:hint="@string/select_offline_reciter"
+                        android:visibility="gone"
+                        app:startIconDrawable="@drawable/ic_person"
+                        app:startIconTint="@color/colorPrimary"
+                        app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                        app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                        app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                        app:boxCornerRadiusBottomEnd="@dimen/_8sdp">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/spinner_offline_reader"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:id="@+id/download_progress_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tv_download_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/preparing_download"
+                            android:textSize="@dimen/_12ssp"
+                            android:textColor="@color/colorPrimary"
+                            android:layout_marginBottom="@dimen/_8sdp" />
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progress_download"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:trackThickness="@dimen/_4sdp" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_download_schedule"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/_40sdp"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:text="@string/download_for_offline"
+                        android:textSize="@dimen/_12ssp"
+                        android:textAllCaps="false"
+                        android:visibility="gone"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        app:icon="@drawable/ic_baseline_arrow_circle_down_24"
+                        app:iconGravity="start" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -419,7 +531,6 @@
             android:textSize="@dimen/_14ssp"
             android:textAllCaps="false"
             style="@style/Widget.Material3.Button.OutlinedButton" />
-
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_create_schedule"

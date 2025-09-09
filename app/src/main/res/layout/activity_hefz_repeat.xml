@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true" />
 
-    <!-- Position indicator -->
     <TextView
         android:id="@+id/position_indicator"
         android:layout_width="wrap_content"
@@ -27,7 +26,6 @@
         android:textColor="@color/text_color"
         android:textSize="@dimen/_14ssp" />
 
-    <!-- ViewPager2 for single verse display with swiping -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
@@ -35,7 +33,6 @@
         android:layout_below="@+id/position_indicator"
         android:layout_above="@+id/control_buttons_layout" />
 
-    <!-- Control buttons layout -->
     <LinearLayout
         android:id="@+id/control_buttons_layout"
         android:layout_width="match_parent"
@@ -53,7 +50,7 @@
             android:layout_marginEnd="@dimen/_2sdp"
             android:background="@drawable/custom_button"
             android:padding="@dimen/_5sdp"
-            android:text="إيقاف نهائي"
+            android:text="@string/stop"
             android:textAllCaps="false"
             android:textColor="@color/text_color"
             android:textSize="@dimen/_12ssp"
@@ -71,7 +68,7 @@
             android:layout_marginEnd="@dimen/_1sdp"
             android:background="@drawable/custom_button"
             android:padding="@dimen/_5sdp"
-            android:text="إيقاف مؤقت"
+            android:text="@string/pause"
             android:textAllCaps="false"
             android:textColor="@color/text_color"
             android:textSize="@dimen/_12ssp"
@@ -88,7 +85,7 @@
             android:layout_marginStart="@dimen/_2sdp"
             android:background="@drawable/custom_button"
             android:padding="@dimen/_5sdp"
-            android:text="الآية التالية"
+            android:text="@string/next_verse"
             android:textAllCaps="false"
             android:textColor="@color/text_color"
             android:textSize="@dimen/_12ssp"

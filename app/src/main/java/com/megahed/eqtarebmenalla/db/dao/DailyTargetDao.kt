@@ -75,4 +75,7 @@ interface DailyTargetDao {
     WHERE scheduleId = :scheduleId AND isCompleted = 1
 """)
     suspend fun getCompletedVersesForSchedule(scheduleId: Long): Int
+    
+    @Query("SELECT * FROM daily_targets WHERE scheduleId = :scheduleId")
+    suspend fun getTargetsForScheduleSync(scheduleId: Long): List<DailyTarget>
 }
