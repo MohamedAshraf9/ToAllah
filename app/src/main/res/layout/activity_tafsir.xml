@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".feature_data.presentation.ui.tafsir.TafsirActivity">
+    tools:context=".feature_data.presentation.ui.tafsir.TafsirActivity"
+    android:contentDescription="@string/tafsir_screen_scroll">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
 
         <TextView
             android:id="@+id/aya"
@@ -22,10 +22,10 @@
             android:fontFamily="@font/amiri_bold"
             android:textColor="@color/text_color"
             android:textSize="22sp"
+            android:contentDescription="@string/quran_verse_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
 
         <TextView
             android:id="@+id/tafsir"
@@ -37,10 +37,10 @@
             android:background="@drawable/type_soura_background"
             android:fontFamily="@font/amiri_regular"
             android:textSize="17sp"
+            android:contentDescription="@string/tafsir_explanation_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/aya" />
-
 
         <TextView
             android:layout_width="wrap_content"
@@ -49,11 +49,13 @@
             android:layout_marginEnd="@dimen/_12sdp"
             android:layout_marginBottom="@dimen/_12sdp"
             android:fontFamily="@font/amiri_regular"
-            android:text="التفسير الميسر"
+            android:text="@string/tafsir_muyassar_label"
             android:textColor="@color/black"
             android:textSize="13sp"
+            android:contentDescription="@string/tafsir_source_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tafsir" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

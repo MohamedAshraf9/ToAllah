@@ -14,21 +14,24 @@
         android:orientation="vertical">
 
         <TextView
-            android:layout_width="match_parent"
             android:id="@+id/zakarCatName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:textSize="@dimen/_16ssp"
             android:textStyle="bold"
             android:text="@string/more"
             android:layout_margin="@dimen/_3sdp"
             android:padding="@dimen/_3sdp"
             android:textAlignment="center"
-            android:layout_height="wrap_content"/>
+            android:contentDescription="@string/zakar_category_name_description" />
+
         <ImageView
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:src="@drawable/prayer_icon"
             android:layout_margin="@dimen/_3sdp"
             android:padding="@dimen/_3sdp"
-            android:layout_height="wrap_content"/>
+            android:contentDescription="@string/zakar_category_icon_description" />
 
     </LinearLayout>
 

@@ -32,7 +32,8 @@
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/_16ssp"
                 android:id="@+id/readerName"
-                android:text="@string/readerFav"/>
+                android:text="@string/readerFav"
+                android:contentDescription="@string/desc_reader_fav"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"

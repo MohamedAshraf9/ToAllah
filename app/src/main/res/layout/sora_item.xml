@@ -8,7 +8,8 @@
     app:cardElevation="@dimen/_3sdp"
     android:padding="@dimen/_2sdp"
     app:cardCornerRadius="8dp"
-    android:layout_width="match_parent">
+    android:layout_width="match_parent"
+    android:contentDescription="@string/surah_item_card_ar">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -26,6 +27,7 @@
             android:textColor="@color/text_color"
             android:textStyle="bold"
             android:textAlignment="center"
+            android:contentDescription="@string/surah_number_ar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -36,6 +38,7 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:gravity="start"
             android:orientation="vertical"
+            android:contentDescription="@string/surah_name_container_ar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/relative"
             app:layout_constraintStart_toEndOf="@+id/soraNumber"
@@ -49,17 +52,17 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_color"
                 android:fontFamily="@font/amiri_regular"
-                android:text="Al-Fatihah" />
-
+                android:text="Al-Fatihah"
+                android:contentDescription="@string/surah_name_ar" />
 
         </LinearLayout>
-
 
         <LinearLayout
             android:id="@+id/relative"
             android:layout_width="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
+            android:contentDescription="@string/surah_actions_container_ar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -78,6 +81,7 @@
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/_12ssp"
                 android:layout_marginEnd="8dp"
+                android:contentDescription="@string/surah_type_ar"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/fav"
                 app:layout_constraintTop_toTopOf="parent"
@@ -88,14 +92,16 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/_3sdp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:contentDescription="@string/read_button_container_ar">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/proper_read_icon"
                     app:tint="@color/primary_color"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/read_icon_background_ar" />
 
                 <ImageView
                     android:id="@+id/read"
@@ -105,29 +111,13 @@
                     android:gravity="center"
                     android:padding="@dimen/_2sdp"
                     android:src="@drawable/baseline_menu_book_24"
-                    app:tint="@color/white" />
+                    app:tint="@color/white"
+                    android:contentDescription="@string/read_button_ar" />
 
             </FrameLayout>
 
-
-            <!-- <ImageView
-                 android:id="@+id/addPlayList"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:layout_gravity="center"
-                 android:gravity="center"
-                 android:layout_margin="@dimen/_5sdp"
-                 android:padding="@dimen/_2sdp"
-                 android:src="@drawable/ic_baseline_playlist_add_24" />-->
-
-
-
         </LinearLayout>
 
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
 
 </androidx.cardview.widget.CardView>

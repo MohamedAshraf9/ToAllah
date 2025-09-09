@@ -27,6 +27,7 @@
                 android:layout_margin="@dimen/_5sdp"
                 android:layout_gravity="center"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/desc_tasbeh_selector"
                 android:hint="@string/chooseTasbeh">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -57,6 +58,7 @@
                         android:layout_gravity="center"
                         android:gravity="center"
                         app:fabSize="normal"
+                        android:contentDescription="@string/desc_add_tasbeh"
                         android:src="@drawable/ic_baseline_add_24"
                         android:transitionName="fab" />
 
@@ -88,6 +90,7 @@
                         android:layout_gravity="center"
                         android:gravity="center"
                         android:src="@drawable/analysis"
+                        android:contentDescription="@string/desc_analyze_tasbeh"
                         android:transitionName="fab" />
 
                     <TextView
@@ -117,6 +120,7 @@
                         android:elevation="@dimen/_5sdp"
                         android:layout_gravity="center"
                         android:gravity="center"
+                        android:contentDescription="@string/desc_edit_tasbeh"
                         android:src="@drawable/ic_baseline_edit_24"
                         android:transitionName="fab" />
 

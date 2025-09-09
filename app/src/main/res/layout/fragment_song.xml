@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/backplayer"
     android:fitsSystemWindows="true"
-
     tools:context=".feature_data.presentation.ui.SongFragment">
 
     <include layout="@layout/custom_toolbar"
@@ -30,13 +29,12 @@
         android:gravity="center"
         android:text="Sora NAME"
         android:textColor="@color/blue_200"
+        android:contentDescription="@string/song_name_ar"
         android:textSize="@dimen/_16ssp"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
-
-
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCurTime"
@@ -47,6 +45,7 @@
         android:text="00:00"
         android:layout_marginStart="@dimen/_14sdp"
         android:textSize="@dimen/_12ssp"
+        android:contentDescription="@string/current_time_ar"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/seekBar" />
@@ -57,6 +56,7 @@
         android:layout_height="@dimen/_16sdp"
         android:progressTint="@color/white"
         android:thumbTint="@color/white"
+        android:contentDescription="@string/playback_progress_ar"
         app:layout_constraintEnd_toStartOf="@+id/tvSongDuration"
         app:layout_constraintStart_toEndOf="@+id/tvCurTime"
         app:layout_constraintTop_toTopOf="@+id/guideline3" />
@@ -70,6 +70,7 @@
         android:text="00:00"
         android:layout_marginEnd="@dimen/_14sdp"
         android:textSize="@dimen/_12ssp"
+        android:contentDescription="@string/song_duration_ar"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/seekBar" />
@@ -80,6 +81,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/player_background"
+        android:contentDescription="@string/player_controls_ar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -89,11 +91,11 @@
             android:id="@+id/ivPlayPauseDetail"
             android:layout_width="@dimen/_50sdp"
             android:layout_height="@dimen/_50sdp"
-
             android:background="@drawable/circle_button_player"
             android:src="@drawable/ic_play"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
+            android:contentDescription="@string/play_pause_button_ar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -106,7 +108,7 @@
             android:layout_height="@dimen/_40sdp"
             android:layout_marginEnd="@dimen/_14sdp"
             android:src="@drawable/ic_baseline_skip_next_24"
-
+            android:contentDescription="@string/previous_track_ar"
             app:layout_constraintBottom_toBottomOf="@+id/ivPlayPauseDetail"
             app:layout_constraintEnd_toStartOf="@+id/ivPlayPauseDetail"
             app:layout_constraintTop_toTopOf="@+id/ivPlayPauseDetail" />
@@ -117,14 +119,12 @@
             android:layout_height="@dimen/_40sdp"
             android:layout_marginStart="@dimen/_14sdp"
             android:src="@drawable/ic_baseline_skip_previous_24"
+            android:contentDescription="@string/next_track_ar"
             app:layout_constraintBottom_toBottomOf="@+id/ivPlayPauseDetail"
             app:layout_constraintStart_toEndOf="@+id/ivPlayPauseDetail"
             app:layout_constraintTop_toTopOf="@+id/ivPlayPauseDetail" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"

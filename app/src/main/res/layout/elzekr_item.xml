@@ -4,80 +4,73 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
+    android:layout_width="match_parent"
     android:layout_margin="@dimen/_5sdp"
     app:cardElevation="@dimen/_3sdp"
     android:padding="@dimen/_2sdp"
-    app:cardCornerRadius="@dimen/_12sdp"
-    android:layout_width="match_parent">
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="@dimen/_2sdp"
-    android:layout_margin="@dimen/_1sdp">
+    app:cardCornerRadius="@dimen/_12sdp">
 
-    <TextView
-        android:id="@+id/zekr"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_5sdp"
-        android:fontFamily="@font/kemenag"
-        android:textSize="@dimen/_16sdp"
         android:padding="@dimen/_2sdp"
-        android:textStyle="bold"
-        android:layout_marginEnd="@dimen/_2sdp"
-        android:layout_marginStart="@dimen/_2sdp"
-        android:layout_marginBottom="@dimen/_2sdp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا" />
+        android:layout_margin="@dimen/_1sdp">
 
+        <TextView
+            android:id="@+id/zekr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:fontFamily="@font/kemenag"
+            android:textSize="@dimen/_16sdp"
+            android:padding="@dimen/_2sdp"
+            android:textStyle="bold"
+            android:layout_marginEnd="@dimen/_2sdp"
+            android:layout_marginStart="@dimen/_2sdp"
+            android:layout_marginBottom="@dimen/_2sdp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا" />
 
-    <TextView
-        android:id="@+id/description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_5sdp"
-        android:padding="@dimen/_2sdp"
-        android:textSize="@dimen/_11ssp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/zekr"
-        tools:text="Al - Faatiha | Ayah 1" />
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_5sdp"
+            android:padding="@dimen/_2sdp"
+            android:textSize="@dimen/_11ssp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/zekr"
+            tools:text="الفاتحة | آية ١" />
 
+        <ImageView
+            android:id="@+id/fav"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
+            android:layout_margin="@dimen/_5sdp"
+            android:padding="@dimen/_2sdp"
+            android:src="@drawable/ic_baseline_favorite_border_24"
+            android:contentDescription="@string/favorite_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/description" />
 
-    <ImageView
-        android:id="@+id/fav"
-        android:layout_width="@dimen/_25sdp"
-        android:layout_height="@dimen/_25sdp"
-        android:layout_margin="@dimen/_5sdp"
-        android:padding="@dimen/_2sdp"
-        android:src="@drawable/ic_baseline_favorite_border_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/description" />
+        <TextView
+            android:id="@+id/referenceAndCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_5sdp"
+            android:padding="@dimen/_2sdp"
+            android:textSize="@dimen/_11ssp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/description"
+            tools:text="الفاتحة | ٣ مرات" />
 
-    <TextView
-        android:id="@+id/referenceAndCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_5sdp"
-        android:padding="@dimen/_2sdp"
-        android:textSize="@dimen/_11ssp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/description"
-        tools:text="Al - Faatiha | Ayah 1" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

@@ -39,7 +39,7 @@
                         android:layout_height="match_parent"
                         android:background="@color/grey"
                         android:backgroundTint="@color/grey"
-                        android:contentDescription="@string/islamicAzan"
+                        android:contentDescription="@string/desc_prayer_widget_bg"
                         android:scaleType="centerCrop"
                         android:src="@drawable/img_asr"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -54,6 +54,7 @@
                         android:layout_marginTop="@dimen/_5sdp"
                         android:layout_marginEnd="@dimen/_16sdp"
                         android:background="#00FFFFFF"
+                        android:contentDescription="@string/desc_qibla_icon"
                         android:paddingTop="@dimen/_5sdp"
                         android:paddingBottom="@dimen/_15sdp"
                         android:src="@drawable/ic_qibla"
@@ -66,6 +67,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/_3sdp"
+                        android:contentDescription="@string/desc_menu_icon"
                         android:src="@drawable/baseline_menu_24"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -76,6 +78,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_16sdp"
                         android:layout_marginTop="@dimen/_3sdp"
+                        android:contentDescription="@string/desc_current_location"
                         android:text="@string/loading"
                         android:textColor="@color/white"
                         android:textSize="@dimen/_12ssp"
@@ -87,6 +90,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/_20sdp"
+                        android:contentDescription="@string/desc_salah_name"
                         android:text="@string/loading"
                         android:textColor="@color/white"
                         android:textSize="@dimen/_32ssp"
@@ -100,6 +104,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginVertical="@dimen/_5sdp"
+                        android:contentDescription="@string/desc_prayer_time"
                         android:text="@string/loading"
                         android:textColor="@color/white"
                         android:textSize="@dimen/_32ssp"
@@ -113,6 +118,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginVertical="@dimen/_5sdp"
                         android:layout_marginEnd="@dimen/_8sdp"
+                        android:contentDescription="@string/desc_prayer_countdown"
                         android:text="@string/loading"
                         android:textColor="@color/white"
                         android:textSize="@dimen/_24ssp"
@@ -158,6 +164,7 @@
                                     android:layout_gravity="center"
                                     android:layout_marginLeft="10dp"
                                     android:background="@drawable/type_soura_background"
+                                    android:contentDescription="@string/desc_update_text"
                                     android:text="@string/update"
                                     android:textColor="@color/text_color"
                                     android:textSize="@dimen/_12ssp"
@@ -169,6 +176,7 @@
                                     android:layout_height="match_parent"
                                     android:layout_gravity="center"
                                     android:layout_margin="@dimen/_3sdp"
+                                    android:contentDescription="@string/desc_day_details"
                                     android:text="@string/loading"
                                     android:textSize="@dimen/_12ssp"
                                     app:layout_constraintStart_toStartOf="parent" />
@@ -178,6 +186,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginVertical="@dimen/_3sdp"
+                                    android:contentDescription="@string/desc_hijri_date"
                                     android:textSize="@dimen/_12ssp"
                                     app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toStartOf="@+id/dayDetails"
@@ -204,6 +213,7 @@
                                         android:layout_height="@dimen/_25sdp"
                                         android:layout_gravity="start"
                                         android:layout_marginStart="@dimen/_3sdp"
+                                        android:contentDescription="@string/desc_prayer_notification_icon"
                                         android:src="@drawable/ic_notifications_active_24"
                                         app:tint="#E7B10A" />
 
@@ -231,8 +241,8 @@
                                     <CheckBox
                                         android:id="@+id/cb_fajr"
                                         android:layout_width="wrap_content"
-
-                                        android:layout_height="wrap_content" />
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/desc_cb_fajr" />
 
                                     <TextView
                                         android:layout_width="match_parent"
@@ -247,6 +257,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
+                                        android:contentDescription="@string/desc_fajr_time"
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
@@ -258,8 +269,9 @@
                                     <CheckBox
                                         android:id="@+id/sunrise"
                                         android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/desc_cb_sunrise" />
 
-                                        android:layout_height="wrap_content" />
                                     <TextView
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
@@ -273,6 +285,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
+                                        android:contentDescription="@string/desc_sunrise_time"
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
@@ -282,10 +295,10 @@
                                 <TableRow>
 
                                     <CheckBox
-
                                         android:id="@+id/cb_dhuhr"
                                         android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content" />
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/desc_cb_dhuhr" />
 
                                     <TextView
                                         android:layout_width="match_parent"
@@ -300,6 +313,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
+                                        android:contentDescription="@string/desc_dhuhr_time"
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
@@ -309,10 +323,10 @@
                                 <TableRow>
 
                                     <CheckBox
-
                                         android:id="@+id/cb_asr"
                                         android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content" />
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/desc_cb_asr" />
 
                                     <TextView
                                         android:layout_width="match_parent"
@@ -327,6 +341,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
+                                        android:contentDescription="@string/desc_asr_time"
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
@@ -334,7 +349,11 @@
 
                                 <TableRow>
 
-                                    <CheckBox android:id="@+id/cb_maghrib" />
+                                    <CheckBox
+                                        android:id="@+id/cb_maghrib"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/desc_cb_maghrib" />
 
                                     <TextView
                                         android:layout_width="match_parent"
@@ -349,6 +368,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
+                                        android:contentDescription="@string/desc_maghrib_time"
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
@@ -356,7 +376,11 @@
 
                                 <TableRow>
 
-                                    <CheckBox android:id="@+id/cb_isha" />
+                                    <CheckBox
+                                        android:id="@+id/cb_isha"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/desc_cb_isha" />
 
                                     <TextView
                                         android:layout_width="match_parent"
@@ -371,15 +395,13 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
+                                        android:contentDescription="@string/desc_isha_time"
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
                                 </TableRow>
                             </TableLayout>
-
-
                         </LinearLayout>
-
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.card.MaterialCardView
@@ -393,14 +415,14 @@
                         app:cardCornerRadius="@dimen/_16sdp"
                         app:cardElevation="@dimen/_4sdp"
                         app:cardUseCompatPadding="true"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/memorization_border_color">
+                        app:strokeColor="@color/memorization_border_color"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:background="@drawable/memorization_card_gradient"
+                            android:orientation="vertical"
                             android:padding="@dimen/_16sdp">
 
                             <LinearLayout
@@ -414,6 +436,7 @@
                                     android:layout_width="@dimen/_32sdp"
                                     android:layout_height="@dimen/_32sdp"
                                     android:layout_marginEnd="@dimen/_12sdp"
+                                    android:contentDescription="@string/desc_quran_icon"
                                     android:src="@drawable/quran_icon"
                                     app:tint="@color/memorization_primary" />
 
@@ -426,20 +449,20 @@
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/memorization_title"
                                         android:textColor="@color/text_color"
                                         android:textSize="@dimen/_18ssp"
-                                        android:textStyle="bold"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textStyle="bold" />
 
                                     <TextView
                                         android:id="@+id/schedule_subtitle"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/memorization_subtitle"
                                         android:textColor="@color/text_secondary"
-                                        android:textSize="@dimen/_12ssp"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textSize="@dimen/_12ssp" />
 
                                 </LinearLayout>
 
@@ -457,6 +480,7 @@
                                         android:layout_width="@dimen/_16sdp"
                                         android:layout_height="@dimen/_16sdp"
                                         android:layout_marginEnd="@dimen/_4sdp"
+                                        android:contentDescription="@string/desc_fire_icon"
                                         android:src="@drawable/ic_fire"
                                         app:tint="@color/streak_color" />
 
@@ -464,11 +488,11 @@
                                         android:id="@+id/memorization_streak_badge"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/memorization_streak"
                                         android:textColor="@color/streak_text"
                                         android:textSize="@dimen/_12ssp"
-                                        android:textStyle="bold"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textStyle="bold" />
 
                                 </LinearLayout>
 
@@ -480,9 +504,9 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginBottom="@dimen/_12sdp"
                                 android:background="@drawable/progress_overview_background"
+                                android:gravity="center_vertical"
                                 android:orientation="horizontal"
-                                android:padding="@dimen/_12sdp"
-                                android:gravity="center_vertical">
+                                android:padding="@dimen/_12sdp">
 
                                 <LinearLayout
                                     android:layout_width="0dp"
@@ -494,20 +518,20 @@
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/today_goal_label"
                                         android:textColor="@color/text_secondary"
-                                        android:textSize="@dimen/_10ssp"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textSize="@dimen/_10ssp" />
 
                                     <TextView
                                         android:id="@+id/today_progress_text"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="0/10 آيات"
+                                        android:fontFamily="@font/arabic_font"
+                                        android:text="@string/today_progress_default"
                                         android:textColor="@color/memorization_primary"
                                         android:textSize="@dimen/_14ssp"
-                                        android:textStyle="bold"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textStyle="bold" />
 
                                 </LinearLayout>
 
@@ -527,20 +551,20 @@
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/total_progress_label"
                                         android:textColor="@color/text_secondary"
-                                        android:textSize="@dimen/_10ssp"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textSize="@dimen/_10ssp" />
 
                                     <TextView
                                         android:id="@+id/total_progress_text"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="0%"
+                                        android:fontFamily="@font/arabic_font"
+                                        android:text="@string/total_progress_default"
                                         android:textColor="@color/memorization_primary"
                                         android:textSize="@dimen/_14ssp"
-                                        android:textStyle="bold"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textStyle="bold" />
 
                                 </LinearLayout>
 
@@ -560,20 +584,20 @@
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/current_streak_label"
                                         android:textColor="@color/text_secondary"
-                                        android:textSize="@dimen/_10ssp"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textSize="@dimen/_10ssp" />
 
                                     <TextView
                                         android:id="@+id/current_streak_text"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="0 أيام"
+                                        android:fontFamily="@font/arabic_font"
+                                        android:text="@string/current_streak_default"
                                         android:textColor="@color/streak_color"
                                         android:textSize="@dimen/_14ssp"
-                                        android:textStyle="bold"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textStyle="bold" />
 
                                 </LinearLayout>
 
@@ -589,12 +613,13 @@
                                 android:padding="@dimen/_12sdp"
                                 android:visibility="gone">
 
+                                <!-- Header with goal text and completion icon -->
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginBottom="@dimen/_8sdp"
                                     android:gravity="center_vertical"
-                                    android:orientation="horizontal"
-                                    android:layout_marginBottom="@dimen/_8sdp">
+                                    android:orientation="horizontal">
 
                                     <ImageView
                                         android:layout_width="@dimen/_20sdp"
@@ -607,11 +632,11 @@
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/active_schedule_goal"
                                         android:textColor="@color/text_color"
                                         android:textSize="@dimen/_14ssp"
-                                        android:textStyle="bold"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textStyle="bold" />
 
                                     <ImageView
                                         android:id="@+id/today_completion_icon"
@@ -623,18 +648,20 @@
 
                                 </LinearLayout>
 
+                                <!-- Active schedule title (Surah and Ayahs) -->
                                 <TextView
                                     android:id="@+id/active_schedule_title"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginBottom="@dimen/_6sdp"
-                                    android:text="سورة البقرة - الآيات 1-10"
+                                    android:fontFamily="@font/arabic_font"
+                                    android:gravity="center"
+                                    android:text="@string/active_schedule_title_default"
                                     android:textColor="@color/text_color"
                                     android:textSize="@dimen/_16ssp"
-                                    android:textStyle="bold"
-                                    android:gravity="center"
-                                    android:fontFamily="@font/arabic_font" />
+                                    android:textStyle="bold" />
 
+                                <!-- Estimated time section -->
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -652,10 +679,10 @@
                                         android:id="@+id/estimated_time"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
+                                        android:fontFamily="@font/arabic_font"
                                         android:text="@string/estimated_time"
                                         android:textColor="@color/text_secondary"
-                                        android:textSize="@dimen/_12ssp"
-                                        android:fontFamily="@font/arabic_font" />
+                                        android:textSize="@dimen/_12ssp" />
 
                                 </LinearLayout>
 
@@ -674,27 +701,28 @@
                                     android:layout_height="@dimen/_60sdp"
                                     android:layout_marginBottom="@dimen/_12sdp"
                                     android:src="@drawable/ic_book_open"
+                                    android:contentDescription="@string/desc_no_schedule_icon"
                                     app:tint="@color/memorization_light" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginBottom="@dimen/_6sdp"
+                                    android:fontFamily="@font/arabic_font"
+                                    android:gravity="center"
                                     android:text="@string/no_schedule_title"
                                     android:textColor="@color/text_color"
                                     android:textSize="@dimen/_16ssp"
-                                    android:textStyle="bold"
-                                    android:gravity="center"
-                                    android:fontFamily="@font/arabic_font" />
+                                    android:textStyle="bold" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:fontFamily="@font/arabic_font"
                                     android:gravity="center"
                                     android:text="@string/no_schedule_subtitle"
                                     android:textColor="@color/text_secondary"
-                                    android:textSize="@dimen/_12ssp"
-                                    android:fontFamily="@font/arabic_font" />
+                                    android:textSize="@dimen/_12ssp" />
 
                             </LinearLayout>
 
@@ -703,49 +731,51 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/_8sdp"
-                                android:orientation="horizontal"
                                 android:gravity="center"
-                                android:layoutDirection="rtl">
+                                android:layoutDirection="rtl"
+                                android:orientation="horizontal">
 
                                 <com.google.android.material.button.MaterialButton
                                     android:id="@+id/btn_primary_action"
                                     style="@style/Widget.Material3.Button"
                                     android:layout_width="0dp"
                                     android:layout_height="@dimen/_48sdp"
-                                    android:layout_weight="1"
                                     android:layout_marginEnd="@dimen/_6sdp"
+                                    android:layout_weight="1"
+                                    android:backgroundTint="@color/memorization_primary"
+                                    android:fontFamily="@font/arabic_font"
                                     android:text="@string/btn_start_memorization"
                                     android:textAllCaps="false"
+                                    android:textColor="@android:color/white"
                                     android:textSize="@dimen/_14ssp"
                                     android:textStyle="bold"
-                                    android:backgroundTint="@color/memorization_primary"
-                                    android:textColor="@android:color/white"
                                     app:cornerRadius="@dimen/_12sdp"
                                     app:icon="@drawable/ic_play_circle"
                                     app:iconGravity="textStart"
+                                    android:contentDescription="@string/desc_btn_start_memorization"
                                     app:iconPadding="@dimen/_6sdp"
-                                    app:iconSize="@dimen/_20sdp"
-                                    android:fontFamily="@font/arabic_font" />
+                                    app:iconSize="@dimen/_20sdp" />
 
                                 <com.google.android.material.button.MaterialButton
                                     android:id="@+id/btn_secondary_action"
                                     style="@style/Widget.Material3.Button.OutlinedButton"
                                     android:layout_width="0dp"
                                     android:layout_height="@dimen/_48sdp"
-                                    android:layout_weight="1"
                                     android:layout_marginStart="@dimen/_6sdp"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/arabic_font"
                                     android:text="@string/btn_view_details"
                                     android:textAllCaps="false"
-                                    android:textSize="@dimen/_14ssp"
                                     android:textColor="@color/memorization_primary"
+                                    android:textSize="@dimen/_14ssp"
                                     app:cornerRadius="@dimen/_12sdp"
-                                    app:strokeColor="@color/memorization_primary"
-                                    app:strokeWidth="1dp"
                                     app:icon="@drawable/ic_visibility"
                                     app:iconGravity="textStart"
                                     app:iconPadding="@dimen/_6sdp"
                                     app:iconSize="@dimen/_20sdp"
-                                    android:fontFamily="@font/arabic_font" />
+                                    android:contentDescription="@string/desc_btn_view_details"
+                                    app:strokeColor="@color/memorization_primary"
+                                    app:strokeWidth="1dp" />
 
                             </LinearLayout>
 
@@ -781,18 +811,18 @@
                                             android:id="@+id/this_week_count"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:fontFamily="@font/arabic_font"
                                             android:text="5"
                                             android:textColor="@color/memorization_primary"
                                             android:textSize="@dimen/_18ssp"
-                                            android:textStyle="bold"
-                                            android:fontFamily="@font/arabic_font" />
+                                            android:textStyle="bold" />
 
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:fontFamily="@font/arabic_font"
                                             android:text="@string/this_week_label"
-                                            android:textSize="@dimen/_10ssp"
-                                            android:fontFamily="@font/arabic_font" />
+                                            android:textSize="@dimen/_10ssp" />
 
                                     </LinearLayout>
 
@@ -808,18 +838,18 @@
                                             android:id="@+id/total_sessions_count"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:fontFamily="@font/arabic_font"
                                             android:text="23"
                                             android:textColor="@color/memorization_primary"
                                             android:textSize="@dimen/_18ssp"
-                                            android:textStyle="bold"
-                                            android:fontFamily="@font/arabic_font" />
+                                            android:textStyle="bold" />
 
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:fontFamily="@font/arabic_font"
                                             android:text="@string/total_sessions_label"
-                                            android:textSize="@dimen/_10ssp"
-                                            android:fontFamily="@font/arabic_font" />
+                                            android:textSize="@dimen/_10ssp" />
 
                                     </LinearLayout>
 
@@ -835,18 +865,18 @@
                                             android:id="@+id/best_streak_count"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:fontFamily="@font/arabic_font"
                                             android:text="12"
                                             android:textColor="@color/streak_color"
                                             android:textSize="@dimen/_18ssp"
-                                            android:textStyle="bold"
-                                            android:fontFamily="@font/arabic_font" />
+                                            android:textStyle="bold" />
 
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:fontFamily="@font/arabic_font"
                                             android:text="@string/best_streak_label"
-                                            android:textSize="@dimen/_10ssp"
-                                            android:fontFamily="@font/arabic_font" />
+                                            android:textSize="@dimen/_10ssp" />
 
                                     </LinearLayout>
 
@@ -859,23 +889,24 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/_8sdp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
                                 android:gravity="center"
                                 android:orientation="horizontal"
-                                android:background="?attr/selectableItemBackground"
-                                android:padding="@dimen/_8sdp"
-                                android:clickable="true"
-                                android:focusable="true">
+                                android:contentDescription="@string/desc_expand_collapse_icon"
+                                android:padding="@dimen/_8sdp">
 
                                 <TextView
                                     android:id="@+id/expand_collapse_text"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginEnd="@dimen/_4sdp"
+                                    android:fontFamily="@font/arabic_font"
                                     android:text="@string/expand_stats"
                                     android:textColor="@color/memorization_primary"
                                     android:textSize="@dimen/_12ssp"
-                                    android:textStyle="bold"
-                                    android:layout_marginEnd="@dimen/_4sdp"
-                                    android:fontFamily="@font/arabic_font" />
+                                    android:textStyle="bold" />
 
                                 <ImageView
                                     android:id="@+id/expand_collapse_icon"

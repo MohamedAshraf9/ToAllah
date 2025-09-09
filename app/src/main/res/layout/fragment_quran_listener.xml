@@ -1,64 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:orientation="vertical"
-android:layout_height="match_parent"
-tools:context=".feature_data.presentation.ui.quranListener.QuranListenerFragment">
-
-<include layout="@layout/custom_toolbar"
-    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:id="@+id/toolbar"/>
-
-<RelativeLayout
-    android:id="@+id/loading_container"
-    android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent"
-    android:visibility="gone"
-    android:gravity="center">
+    tools:context=".feature_data.presentation.ui.quranListener.QuranListenerFragment">
 
-    <ProgressBar
-        android:layout_width="wrap_content"
+    <include
+        layout="@layout/custom_toolbar"
         android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:indeterminateTint="@color/primary_color"
-        android:visibility="gone" />
+        android:layout_width="match_parent"
+        android:id="@+id/toolbar"
+        android:contentDescription="@string/desc_toolbar" />
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/lottie_view"
-        android:layout_width="345dp"
-        android:layout_height="423dp"
-        android:layout_centerInParent="true"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/reciter"
-        app:lottie_speed="1.5" />
+    <RelativeLayout
+        android:id="@+id/loading_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:gravity="center">
 
-    <TextView
-        android:id="@+id/loading_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/lottie_view"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="@string/no_fav_reciter"
-        android:textSize="24sp"
-        android:fontFamily="sans-serif-medium" />
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:indeterminateTint="@color/primary_color"
+            android:visibility="gone"
+            android:contentDescription="@string/desc_progress_bar" />
 
-</RelativeLayout>
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_view"
+            android:layout_width="345dp"
+            android:layout_height="423dp"
+            android:layout_centerInParent="true"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/reciter"
+            app:lottie_speed="1.5"
+            android:contentDescription="@string/desc_reciter_animation" />
 
-<androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/recyclerView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:visibility="gone"
-    app:fastScrollEnabled="true"
-    app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
-    app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
-    app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
-    app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable" />
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/lottie_view"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:text="@string/no_fav_reciter"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif-medium" />
+
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:fastScrollEnabled="true"
+        app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
+        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
+        app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
+        app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
+        android:contentDescription="@string/desc_reciters_list" />
 
 </LinearLayout>

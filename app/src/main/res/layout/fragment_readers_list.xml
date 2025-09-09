@@ -13,20 +13,22 @@
         android:id="@+id/toolbar"/>
 
     <ProgressBar
+        android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:id="@+id/progressBar"
         android:indeterminateTint="@color/primary_color"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:contentDescription="@string/desc_loading_readers" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        app:fastScrollEnabled="true"
+        android:layout_height="match_parent"
         android:visibility="gone"
+        app:fastScrollEnabled="true"
         app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
         app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
         app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
         app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
-        android:layout_height="match_parent" />
+        android:contentDescription="@string/desc_readers_list" />
 </LinearLayout>

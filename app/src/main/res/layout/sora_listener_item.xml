@@ -10,7 +10,8 @@
     app:cardElevation="@dimen/_3sdp"
     android:padding="@dimen/_2sdp"
     app:cardCornerRadius="8dp"
-    android:layout_width="match_parent">
+    android:layout_width="match_parent"
+    android:contentDescription="@string/surah_item_card_ar">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -28,6 +29,7 @@
             android:textColor="@android:color/white"
             android:textStyle="bold"
             android:textAlignment="center"
+            android:contentDescription="@string/surah_number_ar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -38,6 +40,7 @@
             android:layout_marginStart="@dimen/_10sdp"
             android:gravity="start"
             android:orientation="vertical"
+            android:contentDescription="@string/surah_name_container_ar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/relative"
             app:layout_constraintStart_toEndOf="@+id/soraNumber"
@@ -51,7 +54,8 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_color"
                 android:fontFamily="@font/amiri_regular"
-                android:text="Al-Fatihah" />
+                android:text="Al-Fatihah"
+                android:contentDescription="@string/surah_name_ar" />
 
         </LinearLayout>
 
@@ -59,6 +63,7 @@
             android:id="@+id/relative"
             android:layout_width="wrap_content"
             android:orientation="horizontal"
+            android:contentDescription="@string/surah_actions_container_ar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -73,7 +78,8 @@
                 android:layout_margin="@dimen/_5sdp"
                 android:padding="@dimen/_2sdp"
                 android:background="?android:attr/selectableItemBackground"
-                android:src="@drawable/ic_baseline_favorite_border_24" />
+                android:src="@drawable/ic_baseline_favorite_border_24"
+                android:contentDescription="@string/favorite_button_ar" />
 
             <ImageView
                 android:id="@+id/download"
@@ -85,7 +91,7 @@
                 android:padding="@dimen/_2sdp"
                 android:background="?android:attr/selectableItemBackground"
                 android:src="@drawable/ic_baseline_arrow_circle_down_24"
-                android:contentDescription="Download surah"
+                android:contentDescription="@string/download_button_ar"
                 tools:src="@drawable/ic_baseline_download_done_24"
                 tools:tint="@color/success_green" />
 

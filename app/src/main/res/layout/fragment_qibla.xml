@@ -1,54 +1,50 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/constraint">
+    android:layout_height="match_parent">
 
-   <include layout="@layout/custom_toolbar"
-       android:layout_height="wrap_content"
-       android:layout_width="match_parent"
-       android:id="@+id/toolbar"/>
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/custom_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/desc_toolbar" />
 
-   <ImageView
-       android:id="@+id/main_image_dial"
-       android:layout_width="320dp"
-       android:layout_height="320dp"
-       android:layout_centerInParent="true"
-       android:src="@drawable/dial" />
+    <ImageView
+        android:id="@+id/main_image_dial"
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/dial"
+        android:contentDescription="@string/desc_main_image_dial" />
 
-   <ImageView
-       android:id="@+id/compass"
-       android:layout_width="20dp"
-       android:layout_height="240dp"
-       android:layout_centerInParent="true"
-       android:contentDescription="@string/compass_hands"
-       android:scaleType="fitXY"
+    <ImageView
+        android:id="@+id/compass"
+        android:layout_width="20dp"
+        android:layout_height="240dp"
+        android:layout_centerInParent="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/compass"
+        android:contentDescription="@string/compass_hands" />
 
-       android:src="@drawable/compass" />
+    <TextView
+        android:id="@+id/sotw_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:contentDescription="@string/desc_sotw_label" />
 
-
-   <TextView
-       android:id="@+id/sotw_label"
-       android:layout_width="wrap_content"
-       android:visibility="gone"
-       android:layout_height="wrap_content"
-
-
-       />
-
-   <TextView
-
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_below="@id/main_image_dial"
-       android:layout_centerInParent="true"
-       android:layout_marginTop="@dimen/_60sdp"
-       android:textSize="@dimen/_17sdp"
-       android:fontFamily="@font/amiri_bold"
-       android:textColor="@color/white"
-       android:text="اتجاه القبلة(سيتغير لون الخلفيه عند القبله الصحيحه)" />
-
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_image_dial"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="@dimen/_60sdp"
+        android:fontFamily="@font/amiri_bold"
+        android:text="@string/qibla_direction_text"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_17sdp"
+        android:contentDescription="@string/desc_qibla_text" />
 
 </RelativeLayout>

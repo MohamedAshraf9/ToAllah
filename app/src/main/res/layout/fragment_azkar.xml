@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".feature_data.presentation.ui.azkar.AzkarFragment"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context=".feature_data.presentation.ui.azkar.AzkarFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/favorites"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_2sdp"
-            android:id="@+id/favorites"
             android:layout_centerInParent="true"
             android:layout_alignParentStart="true"
+            android:layout_margin="@dimen/_2sdp"
             android:orientation="vertical">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -29,73 +29,75 @@
                 android:elevation="@dimen/_5sdp"
                 android:layout_gravity="center"
                 android:gravity="center"
-                app:fabSize="mini"
-                app:tint="@color/red_200"
                 android:src="@drawable/ic_favorite_red_24"
-                android:transitionName="fab" />
+                android:contentDescription="@string/desc_fav_button"
+                android:transitionName="fab"
+                app:fabSize="mini"
+                app:tint="@color/red_200" />
 
             <TextView
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/favorite"
+                android:textAlignment="center"
                 android:textSize="@dimen/_12ssp"
                 android:textStyle="bold"
-                android:textAlignment="center"
-                android:layout_gravity="center"
                 android:gravity="center"
-                android:layout_height="wrap_content"/>
+                android:layout_gravity="center" />
 
         </LinearLayout>
+
         <androidx.cardview.widget.CardView
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_5sdp"
-            app:cardElevation="@dimen/_3sdp"
-            android:layout_toEndOf="@+id/favorites"
             android:id="@+id/namesOfAllah"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/favorites"
+            android:layout_margin="@dimen/_5sdp"
             android:padding="@dimen/_2sdp"
             app:cardCornerRadius="@dimen/_12sdp"
-            android:layout_width="match_parent">
+            app:cardElevation="@dimen/_3sdp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:padding="@dimen/_3sdp"
-                android:layout_marginBottom="@dimen/_1sdp"
                 android:layout_marginTop="@dimen/_1sdp"
-                android:layout_height="wrap_content">
+                android:layout_marginBottom="@dimen/_1sdp">
+
                 <TextView
-                    android:layout_width="wrap_content"
                     android:id="@+id/zakarCatName"
-                    android:textSize="@dimen/_16ssp"
-                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:layout_alignParentStart="true"
-                    android:text="@string/namesOfAllah"
                     android:layout_margin="@dimen/_3sdp"
                     android:padding="@dimen/_3sdp"
-                    android:layout_toStartOf="@id/allah"
-                    android:layout_height="wrap_content"/>
+                    android:text="@string/namesOfAllah"
+                    android:textSize="@dimen/_16ssp"
+                    android:textStyle="bold" />
+
                 <ImageView
                     android:id="@+id/allah"
                     android:layout_width="@dimen/_50sdp"
-                    android:src="@drawable/allah"
+                    android:layout_height="@dimen/_50sdp"
+                    android:layout_alignParentEnd="true"
                     android:layout_margin="@dimen/_3sdp"
                     android:padding="@dimen/_3sdp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_height="@dimen/_50sdp"/>
-            </RelativeLayout>
+                    android:src="@drawable/allah"
+                    android:contentDescription="@string/desc_allah_image" />
 
+            </RelativeLayout>
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
-
-
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:fastScrollEnabled="true"
-        app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
-        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
         app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
         app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
-        android:layout_height="match_parent" />
+        app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
+        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable" />
 
 </LinearLayout>

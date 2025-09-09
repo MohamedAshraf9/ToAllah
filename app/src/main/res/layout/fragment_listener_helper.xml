@@ -10,6 +10,7 @@
     <include
         android:id="@+id/toolbar"
         layout="@layout/custom_toolbar"
+        android:contentDescription="@string/desc_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -32,6 +33,7 @@
                 android:visibility="gone"
                 app:cardCornerRadius="@dimen/_12sdp"
                 app:cardElevation="@dimen/_4sdp"
+                android:contentDescription="@string/desc_memorization_schedule_card"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
@@ -71,6 +73,7 @@
                         android:layout_marginTop="@dimen/_4sdp"
                         android:textColor="@color/text_color"
                         android:textSize="@dimen/_14ssp"
+                        android:contentDescription="@string/desc_schedule_title"
                         tools:text="@string/example_schedule_title" />
 
                     <LinearLayout
@@ -95,6 +98,7 @@
                                 android:textColor="@color/colorPrimary"
                                 android:textSize="@dimen/_18ssp"
                                 android:textStyle="bold"
+                                android:contentDescription="@string/desc_today_progress"
                                 tools:text="5/5" />
 
                             <TextView
@@ -118,6 +122,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="7"
+                                android:contentDescription="@string/desc_current_streak"
                                 android:textColor="@color/colorAccent"
                                 android:textSize="@dimen/_18ssp"
                                 android:textStyle="bold" />
@@ -144,6 +149,7 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:text="75%"
+                                android:contentDescription="@string/desc_total_progress"
                                 android:textColor="#4CAF50"
                                 android:textSize="@dimen/_18ssp"
                                 android:textStyle="bold" />
@@ -173,6 +179,7 @@
                                 android:gravity="center"
                                 android:text="15/20"
                                 android:textColor="@color/colorAccent"
+                                android:contentDescription="@string/desc_total_progress_of_schedule"
                                 android:textSize="@dimen/_18ssp" />
 
                             <TextView
@@ -208,6 +215,7 @@
                     android:layout_weight="1"
                     android:text="@string/create_schedule_button"
                     android:textSize="@dimen/_12ssp"
+                    android:contentDescription="@string/desc_btn_create_schedule"
                     app:icon="@drawable/ic_add"
                     app:iconGravity="start" />
 
@@ -221,6 +229,8 @@
                     android:text="@string/track_memorization_button"
                     android:textSize="@dimen/_12ssp"
                     app:icon="@drawable/ic_track_changes"
+                    android:contentDescription="@string/desc_btn_memorization_tracker"
+
                     app:iconGravity="start" />
 
             </LinearLayout>
@@ -250,6 +260,7 @@
                         android:textSize="@dimen/_16ssp"
                         android:textStyle="bold"
                         app:drawableStartCompat="@drawable/ic_person"
+                        android:contentDescription="@string/desc_choose_reader_label"
                         app:drawableTint="@color/colorPrimary" />
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -258,6 +269,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/chooseReader"
+                        android:contentDescription="@string/desc_reader_spinner"
                         app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                         app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                         app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -267,6 +279,7 @@
                             android:id="@+id/list_of_rewat"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:contentDescription="@string/desc_reader_list"
                             android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -315,6 +328,7 @@
                             android:layout_weight="1"
                             android:enabled="false"
                             android:hint="@string/sora"
+                            android:contentDescription="@string/desc_sora_start_spinner"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                             app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -324,6 +338,7 @@
                                 android:id="@+id/list_soura_name"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:contentDescription="@string/desc_list_soura_name"
                                 android:inputType="none" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -336,6 +351,7 @@
                             android:layout_weight="1"
                             android:enabled="false"
                             android:hint="@string/ayaNum"
+                            android:contentDescription="@string/desc_sora_start_aya_spinner"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                             app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -346,6 +362,7 @@
                                 android:id="@+id/nb_aya"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:contentDescription="@string/desc_nb_aya"
                                 android:inputType="none" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -371,6 +388,7 @@
                         android:layout_height="wrap_content"
                         android:enabled="false"
                         android:hint="@string/ayaNum"
+                        android:contentDescription="@string/desc_sora_end_spinner"
                         app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                         app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                         app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -381,6 +399,7 @@
                             android:id="@+id/nb_eya_end"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:contentDescription="@string/desc_nb_eya_end"
                             android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -388,7 +407,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Repeat Settings Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -428,6 +446,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/ayaRepeat"
+                            android:contentDescription="@string/desc_aya_repeat_label"
                             android:textColor="@color/text_color"
                             android:textSize="@dimen/_14ssp"
                             android:textStyle="bold" />
@@ -438,6 +457,7 @@
                             android:layout_width="@dimen/_100sdp"
                             android:layout_height="wrap_content"
                             android:hint="@string/ayaRepeatNum"
+                            android:contentDescription="@string/desc_aya_repeat_input"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                             app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -450,6 +470,7 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:inputType="number"
+                                android:contentDescription="@string/desc_nb_aya_repeat"
                                 android:text="1" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -469,6 +490,7 @@
                             android:text="@string/cycleRepeat"
                             android:textColor="@color/text_color"
                             android:textSize="@dimen/_14ssp"
+                            android:contentDescription="@string/desc_cycle_repeat_label"
                             android:textStyle="bold" />
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -477,6 +499,7 @@
                             android:layout_width="@dimen/_100sdp"
                             android:layout_height="wrap_content"
                             android:hint="@string/ayaRepeatNum"
+                            android:contentDescription="@string/desc_cycle_repeat_input"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                             app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -489,6 +512,7 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:inputType="number"
+                                android:contentDescription="@string/desc_sura_repeat"
                                 android:text="1" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -513,6 +537,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/custom_button"
                     android:text="@string/start"
+                    android:contentDescription="@string/desc_btn_start"
                     android:textAllCaps="false"
                     android:textColor="@color/text_color"
                     android:textSize="@dimen/_16ssp"
@@ -529,6 +554,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/custom_button"
                     android:text="@string/end"
+                    android:contentDescription="@string/desc_btn_stop"
                     android:textAllCaps="false"
                     android:textColor="@color/text_color"
                     android:textSize="@dimen/_16ssp"
