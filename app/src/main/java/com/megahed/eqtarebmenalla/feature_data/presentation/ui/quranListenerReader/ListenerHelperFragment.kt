@@ -38,6 +38,7 @@ import androidx.core.content.edit
 import androidx.fragment.app.viewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.megahed.eqtarebmenalla.db.model.DailyTarget
+import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
 import com.megahed.eqtarebmenalla.db.model.OfflineSettings
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
@@ -286,9 +287,32 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     binding.btnMemorizationTracker.visibility = View.VISIBLE
                     binding.scheduleTitle.text = schedule.title
                     loadScheduleProgress()
+
+                    val isCompleted = checkIfScheduleCompleted(schedule)
+
+                    if (isCompleted) {
+                        binding.btnCreateSchedule.text = getString(R.string.create_schedule)
+                        binding.btnCreateSchedule.setOnClickListener {
+                            requireView().findNavController()
+                                .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
+                        }
+                    } else {
+                        binding.btnCreateSchedule.text = "تعديل الجدول"
+                        binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit)
+                        binding.btnCreateSchedule.setOnClickListener {
+                            val action = ListenerHelperFragmentDirections
+                                .actionListenerHelperFragmentToScheduleCreationFragment(schedule.id)
+                            requireView().findNavController().navigate(action)
+                        }
+                    }
                 } else {
                     binding.memorizationScheduleCard.visibility = View.GONE
                     binding.btnMemorizationTracker.visibility = View.GONE
+                    binding.btnCreateSchedule.text = getString(R.string.create_schedule)
+                    binding.btnCreateSchedule.setOnClickListener {
+                        requireView().findNavController()
+                            .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
+                    }
                 }
             }
         }
@@ -327,6 +351,33 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     binding.totalProgress.text = "0%"
                 }
             }
+        }
+        lifecycleScope.launch {
+            memorizationViewModel.currentSchedule.collectLatest { schedule ->
+                if (schedule != null && !schedule.isActive) {
+                    binding.btnCreateSchedule.text = getString(R.string.edit_schedule)
+                    binding.btnCreateSchedule.setOnClickListener {
+                        val action = ListenerHelperFragmentDirections
+                            .actionListenerHelperFragmentToScheduleCreationFragment(schedule.id)
+                        requireView().findNavController().navigate(action)
+                    }
+                } else {
+                    binding.btnCreateSchedule.text = getString(R.string.create_schedule)
+                    binding.btnCreateSchedule.setOnClickListener {
+                        requireView().findNavController()
+                            .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
+                    }
+                }
+            }
+        }
+
+    }
+    private suspend fun checkIfScheduleCompleted(schedule: MemorizationSchedule): Boolean {
+        return try {
+            val progress = memorizationViewModel.getScheduleProgress(schedule.id)
+            progress.progressPercentage >= 100
+        } catch (e: Exception) {
+            false
         }
     }
 

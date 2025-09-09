@@ -339,6 +339,9 @@ class MemorizationRepository @Inject constructor(
     suspend fun getCurrentActiveScheduleSync(): MemorizationSchedule? {
         return scheduleDao.getCurrentActiveSchedule()
     }
+    suspend fun deleteDailyTargetsForSchedule(scheduleId: Long) {
+        dailyTargetDao.deleteTargetsForSchedule(scheduleId)
+    }
 }
 
 

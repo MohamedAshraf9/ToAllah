@@ -10,6 +10,7 @@ import com.megahed.eqtarebmenalla.db.model.SessionType
 import com.megahed.eqtarebmenalla.db.model.UserStreak
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
 import com.megahed.eqtarebmenalla.feature_data.data.repository.MemorizationRepository
+import com.megahed.eqtarebmenalla.feature_data.data.repository.ScheduleProgress
 import com.megahed.eqtarebmenalla.feature_data.data.repository.WeeklyStats
 import com.megahed.eqtarebmenalla.feature_data.states.MemorizationUiState
 import com.megahed.eqtarebmenalla.feature_data.states.VerseProgress
@@ -27,7 +28,7 @@ import javax.inject.Inject
 class MemorizationViewModel @Inject constructor(
     private val memorizationRepository: MemorizationRepository,
     private val offlineAudioManager: OfflineAudioManager,
-    private val quranListenerReaderRepository: QuranListenerReaderRepository
+    private val quranListenerReaderRepository: QuranListenerReaderRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MemorizationUiState())
@@ -46,6 +47,53 @@ class MemorizationViewModel @Inject constructor(
         loadCurrentSchedule()
         loadTodayTarget()
         loadUserStreak()
+    }
+    suspend fun getScheduleProgress(scheduleId: Long): ScheduleProgress {
+        return memorizationRepository.getScheduleProgress(scheduleId)
+    }
+
+    suspend fun getScheduleWithTargets(scheduleId: Long): Pair<MemorizationSchedule?, List<DailyTarget>> {
+        return try {
+            val schedule = memorizationRepository.getScheduleById(scheduleId)
+            val targets = if (schedule != null) {
+                memorizationRepository.getDailyTargetsByScheduleId(scheduleId)
+            } else {
+                emptyList()
+            }
+            Pair(schedule, targets)
+        } catch (e: Exception) {
+            Pair(null, emptyList())
+        }
+    }
+
+    fun updateScheduleWithTargets(
+        schedule: MemorizationSchedule,
+        newTargets: List<DailyTarget>
+    ) = viewModelScope.launch {
+        try {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            memorizationRepository.updateSchedule(schedule)
+
+            memorizationRepository.deleteDailyTargetsForSchedule(schedule.id)
+            val targetsWithScheduleId = newTargets.map { it.copy(scheduleId = schedule.id) }
+            memorizationRepository.insertDailyTargets(targetsWithScheduleId)
+
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                message = "تم تحديث جدول الحفظ بنجاح",
+                lastCreatedScheduleId = schedule.id
+            )
+
+            // Refresh data
+            refreshAllData()
+
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = "فشل في تحديث جدول الحفظ: ${e.message}"
+            )
+        }
     }
 
     private fun loadCurrentSchedule() {
@@ -88,7 +136,7 @@ class MemorizationViewModel @Inject constructor(
         description: String,
         startDate: Date,
         endDate: Date,
-        dailyTargets: List<DailyTarget>
+        dailyTargets: List<DailyTarget>,
     ) {
         viewModelScope.launch {
             try {
@@ -121,7 +169,7 @@ class MemorizationViewModel @Inject constructor(
         schedule: MemorizationSchedule,
         readerId: String,
         readerName: String,
-        onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }
+        onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
     ) {
         viewModelScope.launch {
             try {
@@ -248,7 +296,8 @@ class MemorizationViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(error = "لم يتم العثور على هدف لليوم")
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = "فشل في تحديد هدف اليوم كهدف مكتمل: ${e.message}")
+                _uiState.value =
+                    _uiState.value.copy(error = "فشل في تحديد هدف اليوم كهدف مكتمل: ${e.message}")
             }
         }
     }
@@ -330,5 +379,12 @@ class MemorizationViewModel @Inject constructor(
 
     fun dismissCelebration() {
         _uiState.value = _uiState.value.copy(showCelebration = false)
+    }
+
+    suspend fun getScheduleById(scheduleId: Long): MemorizationSchedule? =
+        memorizationRepository.getScheduleById(scheduleId)
+
+    fun updateSchedule(schedule: MemorizationSchedule) = viewModelScope.launch {
+        memorizationRepository.updateSchedule(schedule)
     }
 }

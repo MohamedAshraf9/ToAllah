@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
@@ -27,6 +28,7 @@ import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.FragmentScheduleCreationBinding
 import com.megahed.eqtarebmenalla.db.model.DailyTarget
+import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.verse.RecitersVerse
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
@@ -41,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.toString
@@ -51,6 +54,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     private var _binding: FragmentScheduleCreationBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MemorizationViewModel by viewModels()
+    private var existingSchedule: MemorizationSchedule? = null
+    private var scheduleId: Long = -1L
 
     private val hefzViewModel: HefzViewModel by activityViewModels()
 
@@ -62,6 +67,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
     private var selectedOfflineReader: RecitersVerse? = null
     private var availableReaders = mutableListOf<RecitersVerse>()
+    private val memorizationViewModel: MemorizationViewModel by viewModels()
 
     @Inject
     lateinit var offlineAudioManager: OfflineAudioManager
@@ -74,6 +80,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -84,15 +91,188 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         setupListeners()
         setupObservers()
         loadMemorizationReaders()
+        setupButtonForCreateMode()
+
+        scheduleId = arguments?.getLong("scheduleId", -1L) ?: -1L
+
+        if (scheduleId != -1L) {
+            loadExistingSchedule()
+        }
+    }
+
+    private fun loadExistingSchedule() {
+        lifecycleScope.launch {
+            try {
+                val (schedule, targets) = memorizationViewModel.getScheduleWithTargets(scheduleId)
+
+                schedule?.let {
+                    existingSchedule = it
+                    populateFormWithScheduleData(it, targets)
+                }
+            } catch (e: Exception) {
+                Snackbar.make(
+                    binding.root,
+                    "خطأ في تحميل بيانات الجدول: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun createSchedule() {
+        try {
+            val title = binding.etScheduleTitle.text.toString()
+            val description = binding.etScheduleDescription.text.toString()
+
+            val startCalendar = Calendar.getInstance().apply {
+                time = calendar.time
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val startDate = startCalendar.time
+
+            val startVerse = binding.etStartVerse.text.toString().toInt()
+            val endVerse = binding.etEndVerse.text.toString().toInt()
+            val dailyVerses = binding.etDailyVerses.text.toString().toInt()
+
+            val totalVerses = endVerse - startVerse + 1
+            val daysNeeded = (totalVerses + dailyVerses - 1) / dailyVerses
+            val endCalendar = Calendar.getInstance().apply {
+                time = startDate
+                add(Calendar.DAY_OF_YEAR, daysNeeded)
+            }
+            val endDate = endCalendar.time
+
+            val dailyTargets = mutableListOf<DailyTarget>()
+            var currentVerse = startVerse
+            val currentDate = Calendar.getInstance().apply { time = startDate }
+
+            while (currentVerse <= endVerse) {
+                val targetEndVerse = minOf(currentVerse + dailyVerses - 1, endVerse)
+
+                val normalizedDate = Calendar.getInstance().apply {
+                    time = currentDate.time
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.time
+
+                dailyTargets.add(
+                    DailyTarget(
+                        scheduleId = existingSchedule?.id ?: 0,
+                        targetDate = normalizedDate,
+                        surahId = selectedSurahId,
+                        surahName = selectedSurahName,
+                        startVerse = currentVerse,
+                        endVerse = targetEndVerse,
+                        estimatedDurationMinutes = 30
+                    )
+                )
+
+                currentVerse = targetEndVerse + 1
+                currentDate.add(Calendar.DAY_OF_YEAR, 1)
+            }
+
+            if (existingSchedule != null) {
+                // Update existing schedule
+                val updatedSchedule = existingSchedule!!.copy(
+                    title = title,
+                    description = description,
+                    startDate = startDate,
+                    endDate = endDate,
+                    updatedAt = Date()
+                )
+                viewModel.updateScheduleWithTargets(updatedSchedule, dailyTargets)
+            } else {
+                viewModel.createSchedule(title, description, startDate, endDate, dailyTargets)
+            }
+
+        } catch (e: Exception) {
+            Snackbar.make(
+                binding.root,
+                "خطأ في ${if (existingSchedule != null) "تحديث" else "إنشاء"} الجدول: ${e.message}",
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    fun Date.formatToUi(): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return sdf.format(this)
+    }
+
+    private fun setupButtonForCreateMode() {
+        binding.btnCreateSchedule.text = "إنشاء الجدول"
+        binding.btnCreateSchedule.setCompoundDrawablesWithIntrinsicBounds(
+            R.drawable.ic_add, // Left drawable (add/create icon)
+            0, 0, 0
+        )
+        binding.toolbar.toolbar.title = getString(R.string.create_memorization_schedule)
+    }
+
+    private fun setupButtonForEditMode() {
+        binding.btnCreateSchedule.text = "تحديث"
+        binding.toolbar.toolbar.title = "تعديل جدول الحفظ"
+        binding.stepTitle.text = "تعديل الجدول الحالي"
+    }
+
+    private fun populateFormWithScheduleData(
+        schedule: MemorizationSchedule,
+        targets: List<DailyTarget>,
+    ) {
+        binding.etScheduleTitle.setText(schedule.title)
+        binding.etScheduleDescription.setText(schedule.description ?: "")
+        binding.etStartDate.setText(schedule.startDate.formatToUi())
+
+        setupButtonForEditMode()
+
+        if (targets.isNotEmpty()) {
+            val firstTarget = targets.first()
+            val lastTarget = targets.last()
+
+            selectedSurahId = firstTarget.surahId
+            selectedSurahName = firstTarget.surahName
+
+            val surahNames = Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key }
+            val surahIndex = surahNames.indexOf(selectedSurahName)
+
+            if (surahIndex >= 0) {
+                binding.spinnerSurah.setText(selectedSurahName, false)
+                selectedSurahVerseCount =
+                    Constants.SORA_OF_QURAN_WITH_NB_EYA[selectedSurahName] ?: 0
+
+                binding.etStartVerse.setText(firstTarget.startVerse.toString())
+                binding.etEndVerse.setText(lastTarget.endVerse.toString())
+
+                val avgDailyVerses = if (targets.size > 1) {
+                    val totalVerses = lastTarget.endVerse - firstTarget.startVerse + 1
+                    totalVerses / targets.size
+                } else {
+                    firstTarget.endVerse - firstTarget.startVerse + 1
+                }
+                binding.etDailyVerses.setText(avgDailyVerses.toString())
+
+                updateVerseCount()
+                calculateEstimatedCompletion()
+            }
+        }
+
+        calendar.time = schedule.startDate
     }
 
     private fun loadMemorizationReaders() {
         lifecycleScope.launch {
             hefzViewModel.state.collect { ayaHefzState ->
                 val filteredReaders = ayaHefzState.recitersVerse.filter {
-                    (it.audio_url_bit_rate_32_.trim().isNotEmpty() && it.audio_url_bit_rate_32_.trim() != "0") ||
-                            (it.audio_url_bit_rate_64.trim().isNotEmpty() && it.audio_url_bit_rate_64.trim() != "0") ||
-                            (it.audio_url_bit_rate_128.trim().isNotEmpty() && it.audio_url_bit_rate_128.trim() != "0")
+                    (it.audio_url_bit_rate_32_.trim()
+                        .isNotEmpty() && it.audio_url_bit_rate_32_.trim() != "0") ||
+                            (it.audio_url_bit_rate_64.trim()
+                                .isNotEmpty() && it.audio_url_bit_rate_64.trim() != "0") ||
+                            (it.audio_url_bit_rate_128.trim()
+                                .isNotEmpty() && it.audio_url_bit_rate_128.trim() != "0")
                 }
 
                 availableReaders.clear()
@@ -105,7 +285,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
     private fun setupOfflineReaderSpinner() {
         if (availableReaders.isNotEmpty()) {
-            val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, availableReaders)
+            val adapter =
+                ArrayAdapter(requireContext(), R.layout.list_item_spinner, availableReaders)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerOfflineReader.setAdapter(adapter)
 
@@ -131,6 +312,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             }
         }
     }
+
     private fun downloadScheduleForOffline() {
         selectedOfflineReader?.let { reader ->
             lifecycleScope.launch {
@@ -141,7 +323,10 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 1
                     val totalVerses = endVerse - startVerse + 1
 
-                    Log.d("SCHEDULE_DOWNLOAD", "Downloading verses $startVerse to $endVerse (total: $totalVerses)")
+                    Log.d(
+                        "SCHEDULE_DOWNLOAD",
+                        "Downloading verses $startVerse to $endVerse (total: $totalVerses)"
+                    )
 
                     val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
                         reader.audio_url_bit_rate_64.trim().ifEmpty {
@@ -188,18 +373,31 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
                     hideDownloadProgress()
                     if (successCount == totalVerses) {
-                        Snackbar.make(binding.root, "تم تحميل جميع الآيات بنجاح ($successCount آية)", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(
+                            binding.root,
+                            "تم تحميل جميع الآيات بنجاح ($successCount آية)",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
                     } else {
-                        Snackbar.make(binding.root, "تم تحميل $successCount من $totalVerses آية", Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(
+                            binding.root,
+                            "تم تحميل $successCount من $totalVerses آية",
+                            Snackbar.LENGTH_LONG
+                        ).show()
                     }
 
                 } catch (e: Exception) {
                     hideDownloadProgress()
-                    Snackbar.make(binding.root, "خطأ في تحميل الآيات: ${e.message}", Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(
+                        binding.root,
+                        "خطأ في تحميل الآيات: ${e.message}",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
             }
         }
     }
+
     private fun downloadFullScheduleRange() {
         selectedOfflineReader?.let { reader ->
             lifecycleScope.launch {
@@ -244,14 +442,26 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
                     hideDownloadProgress()
                     if (downloadedCount == totalVerses) {
-                        Snackbar.make(binding.root, "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(
+                            binding.root,
+                            "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
                     } else {
-                        Snackbar.make(binding.root, "تم تحميل $downloadedCount من $totalVerses آية", Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(
+                            binding.root,
+                            "تم تحميل $downloadedCount من $totalVerses آية",
+                            Snackbar.LENGTH_LONG
+                        ).show()
                     }
 
                 } catch (e: Exception) {
                     hideDownloadProgress()
-                    Snackbar.make(binding.root, "خطأ في تحميل الآيات: ${e.message}", Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(
+                        binding.root,
+                        "خطأ في تحميل الآيات: ${e.message}",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -272,7 +482,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     private fun setupOfflineControls() {
         binding.switchOfflineMemorization.setOnCheckedChangeListener { _, isChecked ->
             binding.tilOfflineReader.visibility = if (isChecked) View.VISIBLE else View.GONE
-            binding.btnDownloadSchedule.visibility = if (isChecked && selectedOfflineReader != null) View.VISIBLE else View.GONE
+            binding.btnDownloadSchedule.visibility =
+                if (isChecked && selectedOfflineReader != null) View.VISIBLE else View.GONE
 
             lifecycleScope.launch {
                 val settings = offlineAudioManager.getOfflineSettings()
@@ -300,7 +511,11 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         }
 
         if (selectedOfflineReader == null) {
-            Snackbar.make(binding.root, "يرجى اختيار القارئ للوضع غير المتصل", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(
+                binding.root,
+                "يرجى اختيار القارئ للوضع غير المتصل",
+                Snackbar.LENGTH_SHORT
+            ).show()
             return false
         }
 
@@ -317,10 +532,14 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
     private fun getReaderAudioUrl(reader: RecitersVerse): String {
         val rawBase = when {
-            reader.audio_url_bit_rate_32_.trim().isNotEmpty() && reader.audio_url_bit_rate_32_.trim() != "0" ->
+            reader.audio_url_bit_rate_32_.trim()
+                .isNotEmpty() && reader.audio_url_bit_rate_32_.trim() != "0" ->
                 reader.audio_url_bit_rate_32_
-            reader.audio_url_bit_rate_64.trim().isNotEmpty() && reader.audio_url_bit_rate_64.trim() != "0" ->
+
+            reader.audio_url_bit_rate_64.trim()
+                .isNotEmpty() && reader.audio_url_bit_rate_64.trim() != "0" ->
                 reader.audio_url_bit_rate_64
+
             else -> reader.audio_url_bit_rate_128
         }.trim()
 
@@ -344,7 +563,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     val isDownloaded = offlineAudioManager.isAudioDownloaded(readerId, surahId)
                     if (isDownloaded) {
                         hideDownloadProgress()
-                        Snackbar.make(binding.root, "تم التحميل بنجاح", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root, "تم التحميل بنجاح", Snackbar.LENGTH_SHORT)
+                            .show()
                     }
                 }
             }
@@ -490,7 +710,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             completionCalendar.add(Calendar.DAY_OF_YEAR, daysNeeded)
 
             val completionDate = dateFormat.format(completionCalendar.time)
-            binding.tvEstimatedCompletion.text = getString(R.string.estimated_completion_date, completionDate)
+            binding.tvEstimatedCompletion.text =
+                getString(R.string.estimated_completion_date, completionDate)
 
             binding.previewCard.visibility = View.VISIBLE
             binding.tvPreviewContent.text = getString(
@@ -521,7 +742,11 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         }
 
         if (selectedSurahId == -1) {
-            Snackbar.make(binding.root, getString(R.string.error_select_surah), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_select_surah),
+                Snackbar.LENGTH_SHORT
+            ).show()
             isValid = false
         }
 
@@ -530,7 +755,11 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         val dailyVerses = binding.etDailyVerses.text.toString().toIntOrNull() ?: 0
 
         if (startVerse < 1 || endVerse < 1 || endVerse < startVerse || endVerse > selectedSurahVerseCount) {
-            Snackbar.make(binding.root, getString(R.string.error_invalid_verse_range), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_invalid_verse_range),
+                Snackbar.LENGTH_SHORT
+            ).show()
             isValid = false
         }
         val maxAllowed = if (endVerse >= startVerse) endVerse - startVerse + 1 else 0
@@ -545,77 +774,14 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         }
 
         if (binding.switchOfflineMemorization.isChecked && selectedOfflineReader == null) {
-            Snackbar.make(binding.root, "يرجى اختيار قارئ للوضع غير المتصل", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, "يرجى اختيار قارئ للوضع غير المتصل", Snackbar.LENGTH_SHORT)
+                .show()
             isValid = false
         }
 
         return isValid
     }
 
-
-    private fun createSchedule() {
-        try {
-            val title = binding.etScheduleTitle.text.toString()
-            val description = binding.etScheduleDescription.text.toString()
-
-            val startCalendar = Calendar.getInstance().apply {
-                time = calendar.time
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val startDate = startCalendar.time
-
-            val startVerse = binding.etStartVerse.text.toString().toInt()
-            val endVerse = binding.etEndVerse.text.toString().toInt()
-            val dailyVerses = binding.etDailyVerses.text.toString().toInt()
-
-            val totalVerses = endVerse - startVerse + 1
-            val daysNeeded = (totalVerses + dailyVerses - 1) / dailyVerses
-            val endCalendar = Calendar.getInstance().apply {
-                time = startDate
-                add(Calendar.DAY_OF_YEAR, daysNeeded)
-            }
-            val endDate = endCalendar.time
-
-            val dailyTargets = mutableListOf<DailyTarget>()
-            var currentVerse = startVerse
-            val currentDate = Calendar.getInstance().apply { time = startDate }
-
-            while (currentVerse <= endVerse) {
-                val targetEndVerse = minOf(currentVerse + dailyVerses - 1, endVerse)
-
-                val normalizedDate = Calendar.getInstance().apply {
-                    time = currentDate.time
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.time
-
-                dailyTargets.add(
-                    DailyTarget(
-                        scheduleId = 0,
-                        targetDate = normalizedDate,
-                        surahId = selectedSurahId,
-                        surahName = selectedSurahName,
-                        startVerse = currentVerse,
-                        endVerse = targetEndVerse,
-                        estimatedDurationMinutes = 30
-                    )
-                )
-
-                currentVerse = targetEndVerse + 1
-                currentDate.add(Calendar.DAY_OF_YEAR, 1)
-            }
-
-            viewModel.createSchedule(title, description, startDate, endDate, dailyTargets)
-
-        } catch (e: Exception) {
-            Snackbar.make(binding.root, "خطأ في إنشاء الجدول: ${e.message}", Snackbar.LENGTH_LONG).show()
-        }
-    }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {}
 
@@ -625,6 +791,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 findNavController().popBackStack()
                 true
             }
+
             else -> false
         }
     }
@@ -634,9 +801,10 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         _binding = null
     }
 }
+
 data class TempSchedule(
     val surahId: Int,
     val surahName: String,
     val startVerse: Int,
-    val endVerse: Int
+    val endVerse: Int,
 )

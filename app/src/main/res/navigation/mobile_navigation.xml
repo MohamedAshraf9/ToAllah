@@ -9,7 +9,7 @@
         android:id="@+id/navigation_home"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_navigation_home_to_qiblaFragment2"
             app:destination="@id/qiblaFragment2" />
@@ -25,19 +25,18 @@
     </fragment>
 
 
-
     <fragment
         android:id="@+id/navigation_quran"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran.QuranFragment"
         android:label="@string/quran"
-        tools:layout="@layout/fragment_quran" >
+        tools:layout="@layout/fragment_quran">
         <action
             android:id="@+id/action_navigation_quran_to_ayatFragment"
             app:destination="@id/ayatFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_quran_to_quranImageFragment"
             app:destination="@id/quranImageFragment" />
@@ -47,45 +46,45 @@
         android:id="@+id/navigation_listener"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener.QuranListenerFragment"
         android:label="@string/listener"
-        tools:layout="@layout/fragment_quran_listener" >
+        tools:layout="@layout/fragment_quran_listener">
         <action
             android:id="@+id/action_navigation_listener_to_quranListenerReaderFragment"
             app:destination="@id/quranListenerReaderFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_listener_self"
             app:destination="@id/navigation_listener"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <argument
             android:name="fromFavorite"
-            app:argType="boolean"
-            android:defaultValue="false" />
+            android:defaultValue="false"
+            app:argType="boolean" />
         <action
             android:id="@+id/action_navigation_listener_to_soraFavoriteFragment"
             app:destination="@id/soraFavoriteFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_listener_to_listenerHelperFragment"
             app:destination="@id/listenerHelperFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/ayatFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyatFragment"
         android:label="fragment_ayat"
-        tools:layout="@layout/fragment_ayat" >
+        tools:layout="@layout/fragment_ayat">
         <argument
             android:name="soraId"
             app:argType="integer" />
@@ -100,27 +99,27 @@
         android:id="@+id/navigation_azkar"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.azkar.AzkarFragment"
         android:label="@string/azkar"
-        tools:layout="@layout/fragment_azkar" >
+        tools:layout="@layout/fragment_azkar">
         <action
             android:id="@+id/action_navigation_azkar_to_elzekrFragment"
             app:destination="@id/elzekrFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_azkar_to_namesOfAllahFragment"
             app:destination="@id/namesOfAllahFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/elzekrFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.elzekr.ElzekrFragment"
         android:label="fragment_elzekr"
-        tools:layout="@layout/fragment_elzekr" >
+        tools:layout="@layout/fragment_elzekr">
         <argument
             android:name="azkarCatId"
             app:argType="integer" />
@@ -140,7 +139,7 @@
         android:id="@+id/quranListenerReaderFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.QuranListenerReaderFragment"
         android:label="fragment_quran_listener_reader"
-        tools:layout="@layout/fragment_quran_listener_reader" >
+        tools:layout="@layout/fragment_quran_listener_reader">
         <argument
             android:name="id"
             app:argType="string" />
@@ -153,27 +152,27 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/navigation_tasbeh"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.tasbeh.TasbehFragment"
         android:label="@string/tasbeh"
-        tools:layout="@layout/fragment_tasbeh" >
+        tools:layout="@layout/fragment_tasbeh">
         <action
             android:id="@+id/action_navigation_tasbeh_to_editTasbehFragment"
             app:destination="@id/editTasbehFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_tasbeh_to_tasbehAnalizeFragment"
             app:destination="@id/tasbehAnalizeFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/editTasbehFragment"
@@ -189,27 +188,27 @@
         android:id="@+id/soraFavoriteFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.SoraFavoriteFragment"
         android:label="fragment_sora_favorite"
-        tools:layout="@layout/fragment_sora_favorite" >
+        tools:layout="@layout/fragment_sora_favorite">
         <action
             android:id="@+id/action_soraFavoriteFragment_to_songFragment"
             app:destination="@id/songFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/listenerHelperFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader.ListenerHelperFragment"
         android:label="fragment_listener_helper"
-        tools:layout="@layout/fragment_listener_helper" >
+        tools:layout="@layout/fragment_listener_helper">
         <action
             android:id="@+id/action_listenerHelperFragment_to_hefzRepeatActivity"
             app:destination="@id/hefzRepeatActivity"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_listenerHelperFragment_to_scheduleCreationFragment"
             app:destination="@id/scheduleCreationFragment" />
@@ -222,7 +221,7 @@
         android:id="@+id/qiblaFragment2"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.qibla.QiblaFragment"
         android:label="fragment_qibla"
-        tools:layout="@layout/fragment_qibla" >
+        tools:layout="@layout/fragment_qibla">
         <action
             android:id="@+id/action_qiblaFragment2_to_navigation_home"
             app:destination="@id/navigation_home" />
@@ -231,7 +230,7 @@
         android:id="@+id/quranImageFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.QuranImageFragment"
         android:label="fragment_quran_image"
-        tools:layout="@layout/fragment_quran_image" >
+        tools:layout="@layout/fragment_quran_image">
         <argument
             android:name="soraId"
             app:argType="integer" />
@@ -248,7 +247,7 @@
         android:id="@+id/readersListFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.readersList.ReadersListFragment"
         android:label="fragment_readers_list"
-        tools:layout="@layout/fragment_readers_list" >
+        tools:layout="@layout/fragment_readers_list">
 
         <argument
             android:name="soraId"
@@ -264,7 +263,7 @@
         android:id="@+id/hefzRepeatActivity"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz.HefzRepeatActivity"
         android:label="activity_hefz_repeat"
-        tools:layout="@layout/activity_hefz_repeat" >
+        tools:layout="@layout/activity_hefz_repeat">
         <argument
             android:name="link"
             app:argType="string" />
@@ -294,7 +293,12 @@
         android:id="@+id/scheduleCreationFragment"
         android:name="com.megahed.eqtarebmenalla.feature_data.presentation.ui.schedule.ScheduleCreationFragment"
         android:label="fragment_schedule_creation"
-        tools:layout="@layout/fragment_schedule_creation" />
+        tools:layout="@layout/fragment_schedule_creation">
+        <argument
+            android:name="scheduleId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
 
 
 </navigation>

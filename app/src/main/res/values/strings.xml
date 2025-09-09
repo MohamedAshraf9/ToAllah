@@ -338,6 +338,9 @@
 
     <string name="please_connect_internet">يرجى الاتصال بالإنترنت</string>
     <string name="complete_schedule_info_first">من فضلك قم بملئ معلومات جدول الحفظ أولاً</string>
+    <string name="estimated_completion">تاريخ الانتهاء المتوقع: %1$s</string>
+    <string name="update_schedule_button_text">تحديث الجدول</string>
+
 
 
 </resources>
