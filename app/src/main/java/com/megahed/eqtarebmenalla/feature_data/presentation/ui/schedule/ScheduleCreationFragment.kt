@@ -2,7 +2,10 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.schedule
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.provider.Settings.Global.putString
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -14,6 +17,7 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
@@ -56,7 +60,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     private val viewModel: MemorizationViewModel by viewModels()
     private var existingSchedule: MemorizationSchedule? = null
     private var scheduleId: Long = -1L
-
+    private lateinit var sharedPreferences: SharedPreferences
     private val hefzViewModel: HefzViewModel by activityViewModels()
 
     private var selectedSurahId: Int = -1
@@ -92,7 +96,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         setupObservers()
         loadMemorizationReaders()
         setupButtonForCreateMode()
-
+        sharedPreferences = requireActivity().getSharedPreferences("offline_prefs", Context.MODE_PRIVATE)
         scheduleId = arguments?.getLong("scheduleId", -1L) ?: -1L
 
         if (scheduleId != -1L) {
@@ -282,6 +286,26 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             }
         }
     }
+    private fun updateOfflineSettings() {
+        lifecycleScope.launch {
+            selectedOfflineReader?.let { reader ->
+                val settings = offlineAudioManager.getOfflineSettings()
+                val updatedSettings = settings.copy(
+                    selectedOfflineReaderId = reader.id,
+                    selectedOfflineReaderName = reader.name
+                )
+                offlineAudioManager.updateOfflineSettings(updatedSettings)
+
+                sharedPreferences.edit {
+                    putString("selected_offline_reader_id", reader.id)
+                    putString("selected_offline_reader_name", reader.name)
+                    putString("selected_offline_reader_url_128", reader.audio_url_bit_rate_128)
+                    putString("selected_offline_reader_url_64", reader.audio_url_bit_rate_64)
+                    putString("selected_offline_reader_url_32", reader.audio_url_bit_rate_32_)
+                }
+            }
+        }
+    }
 
     private fun setupOfflineReaderSpinner() {
         if (availableReaders.isNotEmpty()) {
@@ -296,19 +320,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 if (binding.switchOfflineMemorization.isChecked) {
                     binding.btnDownloadSchedule.visibility = View.VISIBLE
                 }
-            }
-        }
-    }
-
-    private fun updateOfflineSettings() {
-        lifecycleScope.launch {
-            selectedOfflineReader?.let { reader ->
-                val settings = offlineAudioManager.getOfflineSettings()
-                val updatedSettings = settings.copy(
-                    selectedOfflineReaderId = reader.id.toString(),
-                    selectedOfflineReaderName = reader.name
-                )
-                offlineAudioManager.updateOfflineSettings(updatedSettings)
             }
         }
     }
@@ -704,16 +715,23 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
         if (startVerse > 0 && endVerse > 0 && endVerse >= startVerse && dailyVerses > 0) {
             val totalVerses = endVerse - startVerse + 1
-            val daysNeeded = (totalVerses + dailyVerses - 1) / dailyVerses
+            val daysNeeded = if (totalVerses <= dailyVerses) {
+                0
+            } else {
+                (totalVerses - dailyVerses + dailyVerses - 1) / dailyVerses
+            }
 
             val completionCalendar = Calendar.getInstance().apply { time = calendar.time }
-            completionCalendar.add(Calendar.DAY_OF_YEAR, daysNeeded)
+            if (daysNeeded > 0) {
+                completionCalendar.add(Calendar.DAY_OF_YEAR, daysNeeded)
+            }
 
             val completionDate = dateFormat.format(completionCalendar.time)
             binding.tvEstimatedCompletion.text =
                 getString(R.string.estimated_completion_date, completionDate)
 
             binding.previewCard.visibility = View.VISIBLE
+            val actualDays = daysNeeded + 1
             binding.tvPreviewContent.text = getString(
                 R.string.schedule_preview,
                 binding.etScheduleTitle.text,
@@ -721,14 +739,13 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 startVerse,
                 endVerse,
                 dailyVerses,
-                daysNeeded
+                actualDays
             )
         } else {
             binding.tvEstimatedCompletion.text = getString(R.string.estimated_completion_undefined)
             binding.previewCard.visibility = View.GONE
         }
     }
-
     private fun validateInputs(): Boolean {
         var isValid = true
 
