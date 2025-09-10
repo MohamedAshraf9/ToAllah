@@ -168,7 +168,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         surahName = selectedSurahName,
                         startVerse = currentVerse,
                         endVerse = targetEndVerse,
-                        estimatedDurationMinutes = 30
+                        estimatedDurationMinutes = (targetEndVerse - currentVerse + 1) * 5
                     )
                 )
 
