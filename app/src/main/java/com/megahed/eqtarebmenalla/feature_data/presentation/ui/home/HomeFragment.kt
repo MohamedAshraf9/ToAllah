@@ -166,17 +166,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun updateScheduleInfo(schedule: MemorizationSchedule) {
-        binding.scheduleSubtitle.text = schedule.title
-
-        val daysRemaining = calculateDaysRemaining(schedule.endDate)
-        if (daysRemaining > 0) {
-            binding.scheduleSubtitle.text = "${schedule.title} - متبقي $daysRemaining يوم"
-        } else {
-            binding.scheduleSubtitle.text = "${schedule.title} - منتهي"
-        }
-    }
 
     private fun showCelebrationDialog() {
         MaterialAlertDialogBuilder(requireContext())
@@ -233,16 +222,43 @@ class HomeFragment : Fragment() {
             binding.memorizationWidget.visibility = View.VISIBLE
             memorizationViewModel.loadScheduleProgress()
 
-            val daysRemaining = calculateDaysRemaining(schedule.endDate)
-            if (daysRemaining > 0) {
-                binding.scheduleSubtitle.text = "${schedule.title} - متبقي $daysRemaining يوم"
-            } else {
-                binding.scheduleSubtitle.text = "${schedule.title} - منتهي"
-            }
+            val timeRemaining = calculateTimeRemaining(schedule.endDate)
+            binding.scheduleSubtitle.text = "${schedule.title} - $timeRemaining"
         } else {
             showMemorizationEmptyState()
         }
     }
+
+    private fun calculateTimeRemaining(endDate: Date): String {
+        val currentTime = System.currentTimeMillis()
+        val endTime = endDate.time
+        val timeDifference = endTime - currentTime
+
+        return when {
+            timeDifference <= 0 -> "منتهي"
+            timeDifference < 24 * 60 * 60 * 1000 -> {
+                formatCountdown(timeDifference)
+            }
+            else -> {
+                val daysRemaining = (timeDifference / (24 * 60 * 60 * 1000)).toInt()
+                val hoursRemaining = ((timeDifference % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)).toInt()
+                "متبقي $daysRemaining يوم و $hoursRemaining ساعة"
+            }
+        }
+    }
+
+    private fun formatCountdown(milliseconds: Long): String {
+        val hours = (milliseconds / (1000 * 60 * 60)).toInt()
+        val minutes = ((milliseconds % (1000 * 60 * 60)) / (1000 * 60)).toInt()
+        val seconds = ((milliseconds % (1000 * 60)) / 1000).toInt()
+
+        return when {
+            hours > 0 -> "متبقي ${hours}س ${minutes}د"
+            minutes > 0 -> "متبقي ${minutes}د ${seconds}ث"
+            else -> "متبقي ${seconds}ث"
+        }
+    }
+
 
     @SuppressLint("SetTextI18n")
     private fun updateTodayTargetUI(target: DailyTarget?) {
