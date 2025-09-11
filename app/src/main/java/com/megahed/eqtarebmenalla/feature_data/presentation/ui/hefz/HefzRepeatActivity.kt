@@ -10,6 +10,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -20,12 +21,14 @@ import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.megahed.eqtarebmenalla.MethodHelper
@@ -43,6 +46,7 @@ import com.megahed.eqtarebmenalla.offline.SmartAudioUrlHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -78,7 +82,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private var currentRepeatIndex = 0
 
     private lateinit var sharedPreferences: SharedPreferences
-    private var exoPlayer: SimpleExoPlayer? = null
+    private var exoPlayer: ExoPlayer? = null
     private lateinit var dataSourceFactory: DefaultDataSource.Factory
 
     private var isOfflineMode = false
@@ -131,32 +135,34 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private fun observeConnection(ayaViewModel: AyaViewModel) {
         soraId?.let { id ->
-            lifecycleScope.launchWhenStarted {
-                ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
-                    ayaList.clear()
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
+                        ayaList.clear()
 
-                    for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
-                        val aya = ayaResult[i]
-                        val verseNumber = i + 1
+                        for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
+                            val aya = ayaResult[i]
+                            val verseNumber = i + 1
 
-                        lifecycleScope.launch {
-                            aya.url = SmartAudioUrlHelper.getAudioUrl(
-                                offlineAudioManager = offlineAudioManager,
-                                readerId = normalizeToAsciiDigits(readerId ?: ""),
-                                surahId = id.toInt(),
-                                verseId = verseNumber,
-                                onlineBaseUrl = normalizeUrl(baseUrl ?: "")
-                            )
+                            lifecycleScope.launch {
+                                aya.url = SmartAudioUrlHelper.getAudioUrl(
+                                    offlineAudioManager = offlineAudioManager,
+                                    readerId = normalizeToAsciiDigits(readerId ?: ""),
+                                    surahId = id.toInt(),
+                                    verseId = verseNumber,
+                                    onlineBaseUrl = normalizeUrl(baseUrl ?: "")
+                                )
+                            }
+
+                            ayaList.add(aya)
                         }
 
-                        ayaList.add(aya)
+                        ayaHefzPagerAdapter.setData(ayaList)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            launchNotificationPermission()
+                        }
+                        startMemorizationProcess()
                     }
-
-                    ayaHefzPagerAdapter.setData(ayaList)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        launchNotificationPermission()
-                    }
-                    startMemorizationProcess()
                 }
             }
         }
@@ -186,7 +192,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         }
 
         isOfflineMode = false
-        sharedPreferences.edit().putBoolean("is_offline_mode", false).apply()
+        sharedPreferences.edit { putBoolean("is_offline_mode", false) }
         binding.toolbar.toolbar.subtitle = "الوضع المتصل نشط"
 
         lifecycleScope.launch {
@@ -261,6 +267,13 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         }
     }
 
+    private fun initializePlayer() {
+        exoPlayer = ExoPlayer.Builder(this).build()
+        dataSourceFactory = DefaultDataSource.Factory(this)
+        exoPlayer?.addListener(this)
+    }
+
+    @OptIn(UnstableApi::class)
     private fun playAya(aya: Aya) {
         exoPlayer?.let { player ->
             player.stop()
@@ -506,12 +519,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .show()
     }
 
-    private fun initializePlayer() {
-        exoPlayer = SimpleExoPlayer.Builder(this).build()
-        dataSourceFactory = DefaultDataSource.Factory(this)
-        exoPlayer?.addListener(this)
-    }
-
 
     private fun showExitConfirmationDialog() {
         MaterialAlertDialogBuilder(this)
@@ -546,6 +553,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         stopMemorization()
         exoPlayer?.release()
         exoPlayer = null
+        lifecycleScope.cancel()
         super.onDestroy()
     }
 

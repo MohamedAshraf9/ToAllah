@@ -572,4 +572,6 @@
     <string name="counter_value_ar">قيمة العداد</string>
     <string name="increase_button_ar">زر زيادة العداد</string>
     <string name="reset_button_ar">زر إعادة الضبط</string>
+    <string name="session_completed_with_tracking">تم إنهاء وتتبع جلسة الحفظ بنجاح</string>
+    <string name="session_completed_without_tracking">تم إنهاء الجلسة بدون تتبع التقدم</string>
 </resources>
