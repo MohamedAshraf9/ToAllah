@@ -286,44 +286,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             }
         }
     }
-    private fun updateOfflineSettings() {
-        lifecycleScope.launch {
-            selectedOfflineReader?.let { reader ->
-                val settings = offlineAudioManager.getOfflineSettings()
-                val updatedSettings = settings.copy(
-                    selectedOfflineReaderId = reader.id,
-                    selectedOfflineReaderName = reader.name
-                )
-                offlineAudioManager.updateOfflineSettings(updatedSettings)
-
-                sharedPreferences.edit {
-                    putString("selected_offline_reader_id", reader.id)
-                    putString("selected_offline_reader_name", reader.name)
-                    putString("selected_offline_reader_url_128", reader.audio_url_bit_rate_128)
-                    putString("selected_offline_reader_url_64", reader.audio_url_bit_rate_64)
-                    putString("selected_offline_reader_url_32", reader.audio_url_bit_rate_32_)
-                }
-            }
-        }
-    }
-
-    private fun setupOfflineReaderSpinner() {
-        if (availableReaders.isNotEmpty()) {
-            val adapter =
-                ArrayAdapter(requireContext(), R.layout.list_item_spinner, availableReaders)
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            binding.spinnerOfflineReader.setAdapter(adapter)
-
-            binding.spinnerOfflineReader.setOnItemClickListener { _, _, position, _ ->
-                selectedOfflineReader = availableReaders[position]
-                updateOfflineSettings()
-                if (binding.switchOfflineMemorization.isChecked) {
-                    binding.btnDownloadSchedule.visibility = View.VISIBLE
-                }
-            }
-        }
-    }
-
     private fun downloadScheduleForOffline() {
         selectedOfflineReader?.let { reader ->
             lifecycleScope.launch {
@@ -350,15 +312,15 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
                     for (verseNumber in startVerse..endVerse) {
                         val task = async {
-                            delay((verseNumber - startVerse) * 200L) // Stagger downloads
+                            delay((verseNumber - startVerse) * 200L)
 
-                            val surahFormatted = String.format("%03d", selectedSurahId)
-                            val verseFormatted = String.format("%03d", verseNumber)
+                            val surahFormatted = String.format(Locale.US, "%03d", selectedSurahId)
+                            val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
                             val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
                             val verseName = "${selectedSurahName}_آية_${verseNumber}"
 
                             val success = offlineAudioManager.downloadVerseAudio(
-                                readerId = reader.id.toString(),
+                                readerId = normalizeToAsciiDigits(reader.id.toString()),
                                 surahId = selectedSurahId,
                                 verseId = verseNumber,
                                 verseName = verseName,
@@ -426,15 +388,15 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     var downloadedCount = 0
 
                     for (verseNumber in startVerse..endVerse) {
-                        val surahFormatted = String.format("%03d", selectedSurahId)
-                        val verseFormatted = String.format("%03d", verseNumber)
+                        val surahFormatted = String.format(Locale.US, "%03d", selectedSurahId)
+                        val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
                         val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
                         val verseName = "${selectedSurahName}_آية_${verseNumber}"
 
                         Log.d("DEBUG_DOWNLOAD", "Downloading verse $verseNumber: $verseUrl")
 
                         val success = offlineAudioManager.downloadAudio(
-                            readerId = reader.id.toString(),
+                            readerId = normalizeToAsciiDigits(reader.id.toString()),
                             surahId = selectedSurahId,
                             surahName = verseName,
                             readerName = reader.name,
@@ -445,9 +407,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             downloadedCount++
                             val progress = (downloadedCount * 100) / totalVerses
                             showDownloadProgress(progress, 100)
-
                             delay(500)
-                        } else {
                         }
                     }
 
@@ -473,6 +433,62 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         "خطأ في تحميل الآيات: ${e.message}",
                         Snackbar.LENGTH_LONG
                     ).show()
+                }
+            }
+        }
+    }
+
+    private fun normalizeToAsciiDigits(input: String): String {
+        return input.replace(Regex("[٠-٩]")) { matchResult ->
+            when (matchResult.value) {
+                "٠" -> "0"
+                "١" -> "1"
+                "٢" -> "2"
+                "٣" -> "3"
+                "٤" -> "4"
+                "٥" -> "5"
+                "٦" -> "6"
+                "٧" -> "7"
+                "٨" -> "8"
+                "٩" -> "9"
+                else -> matchResult.value
+            }
+        }
+    }
+
+    private fun updateOfflineSettings() {
+        lifecycleScope.launch {
+            selectedOfflineReader?.let { reader ->
+                val settings = offlineAudioManager.getOfflineSettings()
+                val updatedSettings = settings.copy(
+                    selectedOfflineReaderId = normalizeToAsciiDigits(reader.id),
+                    selectedOfflineReaderName = reader.name
+                )
+                offlineAudioManager.updateOfflineSettings(updatedSettings)
+
+                sharedPreferences.edit {
+                    putString("selected_offline_reader_id", normalizeToAsciiDigits(reader.id))
+                    putString("selected_offline_reader_name", reader.name)
+                    putString("selected_offline_reader_url_128", reader.audio_url_bit_rate_128)
+                    putString("selected_offline_reader_url_64", reader.audio_url_bit_rate_64)
+                    putString("selected_offline_reader_url_32", reader.audio_url_bit_rate_32_)
+                }
+            }
+        }
+    }
+
+    private fun setupOfflineReaderSpinner() {
+        if (availableReaders.isNotEmpty()) {
+            val adapter =
+                ArrayAdapter(requireContext(), R.layout.list_item_spinner, availableReaders)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.spinnerOfflineReader.setAdapter(adapter)
+
+            binding.spinnerOfflineReader.setOnItemClickListener { _, _, position, _ ->
+                selectedOfflineReader = availableReaders[position]
+                updateOfflineSettings()
+                if (binding.switchOfflineMemorization.isChecked) {
+                    binding.btnDownloadSchedule.visibility = View.VISIBLE
                 }
             }
         }

@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Date
+import java.util.Locale
 
 @Singleton
 class OfflineAudioManager @Inject constructor(
@@ -293,13 +294,32 @@ class OfflineAudioManager @Inject constructor(
     }
     private suspend fun constructAudioUrl(readerId: String, surahId: Int): String {
         return try {
-            val reader = quranListenerReaderRepository.getQuranListenerReaderById(readerId)
+            val normalizedReaderId = normalizeToAsciiDigits(readerId)
+            val reader = quranListenerReaderRepository.getQuranListenerReaderById(normalizedReaderId)
             reader?.let { quranReader ->
                 Constants.getSoraLink(quranReader.server, surahId)
-            } ?: throw Exception("Reader not found with ID: $readerId")
+            } ?: throw Exception("Reader not found with ID: $normalizedReaderId")
         } catch (e: Exception) {
+            val normalizedReaderId = normalizeToAsciiDigits(readerId)
+            "https://www.mp3quran.net/api/reader/$normalizedReaderId/${String.format(Locale.US, "%03d", surahId)}.mp3"
+        }
+    }
 
-            "https://www.mp3quran.net/api/reader/$readerId/${String.format("%03d", surahId)}.mp3"
+    private fun normalizeToAsciiDigits(input: String): String {
+        return input.replace(Regex("[٠-٩]")) { matchResult ->
+            when (matchResult.value) {
+                "٠" -> "0"
+                "١" -> "1"
+                "٢" -> "2"
+                "٣" -> "3"
+                "٤" -> "4"
+                "٥" -> "5"
+                "٦" -> "6"
+                "٧" -> "7"
+                "٨" -> "8"
+                "٩" -> "9"
+                else -> matchResult.value
+            }
         }
     }
 

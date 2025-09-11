@@ -1,7 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.hefz
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
@@ -32,7 +31,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.megahed.eqtarebmenalla.MethodHelper
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.adapter.AyaHefzPagerAdapter
-import com.megahed.eqtarebmenalla.common.CommonUtils
 import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.ActivityHefzRepeatBinding
@@ -46,10 +44,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -144,12 +142,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                         lifecycleScope.launch {
                             aya.url = SmartAudioUrlHelper.getAudioUrl(
                                 offlineAudioManager = offlineAudioManager,
-                                readerId = readerId ?: "",
+                                readerId = normalizeToAsciiDigits(readerId ?: ""),
                                 surahId = id.toInt(),
                                 verseId = verseNumber,
-                                onlineBaseUrl = baseUrl ?: ""
+                                onlineBaseUrl = normalizeUrl(baseUrl ?: "")
                             )
-
                         }
 
                         ayaList.add(aya)
@@ -161,6 +158,105 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     }
                     startMemorizationProcess()
                 }
+            }
+        }
+    }
+
+    private fun normalizeUrl(url: String): String {
+        return url.replace(Regex("[٠-٩]")) { matchResult ->
+            when (matchResult.value) {
+                "٠" -> "0"
+                "١" -> "1"
+                "٢" -> "2"
+                "٣" -> "3"
+                "٤" -> "4"
+                "٥" -> "5"
+                "٦" -> "6"
+                "٧" -> "7"
+                "٨" -> "8"
+                "٩" -> "9"
+                else -> matchResult.value
+            }
+        }
+    }
+    private fun switchToOnlineMode() {
+        if (!offlineAudioManager.isNetworkAvailable()) {
+            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        isOfflineMode = false
+        sharedPreferences.edit().putBoolean("is_offline_mode", false).apply()
+        binding.toolbar.toolbar.subtitle = "الوضع المتصل نشط"
+
+        lifecycleScope.launch {
+            try {
+                val readerId = normalizeToAsciiDigits(extractReaderIdFromIntent() ?: "")
+                val baseUrl = getOnlineBaseUrl(readerId)
+
+                ayaList.forEachIndexed { index, aya ->
+                    val verseNumber = startAya!!.toInt() + index
+                    val surahFormatted = String.format(Locale.US, "%03d", soraId!!.toInt())
+                    val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
+                    aya.url = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
+                }
+
+                ayaHefzPagerAdapter.notifyDataSetChanged()
+                Snackbar.make(binding.root, "تم التبديل للوضع المتصل", Snackbar.LENGTH_SHORT).show()
+
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "فشل في التبديل للوضع المتصل", Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun downloadMissingVerses(readerId: String, surahId: Int, missingVerses: List<Int>) {
+        if (!offlineAudioManager.isNetworkAvailable()) {
+            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                var downloadedCount = 0
+                val totalMissing = missingVerses.size
+
+                binding.toolbar.toolbar.subtitle = "جاري تحميل الآيات المفقودة..."
+
+                for (verseId in missingVerses) {
+                    val normalizedReaderId = normalizeToAsciiDigits(readerId)
+                    val baseUrl = getOnlineBaseUrl(normalizedReaderId)
+                    val surahFormatted = String.format(Locale.US, "%03d", surahId)
+                    val verseFormatted = String.format(Locale.US, "%03d", verseId)
+                    val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
+                    val verseName = "${getSurahName(surahId)}_آية_${verseId}"
+
+                    val success = offlineAudioManager.downloadVerseAudio(
+                        readerId = normalizedReaderId,
+                        surahId = surahId,
+                        verseId = verseId,
+                        verseName = verseName,
+                        readerName = readerName ?: "Unknown",
+                        audioUrl = verseUrl
+                    )
+
+                    if (success) {
+                        downloadedCount++
+                        binding.toolbar.toolbar.subtitle = "تحميل: $downloadedCount/$totalMissing"
+                    }
+                }
+
+                if (downloadedCount == totalMissing) {
+                    binding.toolbar.toolbar.subtitle = "تم التحميل - وضع عدم الاتصال نشط"
+                    Snackbar.make(binding.root, "تم تحميل جميع الآيات المفقودة", Snackbar.LENGTH_SHORT).show()
+                } else {
+                    binding.toolbar.toolbar.subtitle = "تحميل جزئي - $downloadedCount/$totalMissing"
+                    Snackbar.make(binding.root, "تم تحميل $downloadedCount من $totalMissing آية", Snackbar.LENGTH_LONG).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("HefzRepeat", "Error downloading missing verses", e)
+                Snackbar.make(binding.root, "فشل في تحميل الآيات المفقودة", Snackbar.LENGTH_LONG).show()
             }
         }
     }
@@ -263,61 +359,9 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .show()
     }
 
-    private fun downloadMissingVerses(readerId: String, surahId: Int, missingVerses: List<Int>) {
-        if (!offlineAudioManager.isNetworkAvailable()) {
-            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
-            return
-        }
-
-        lifecycleScope.launch {
-            try {
-                var downloadedCount = 0
-                val totalMissing = missingVerses.size
-
-                binding.toolbar.toolbar.subtitle = "جاري تحميل الآيات المفقودة..."
-
-                for (verseId in missingVerses) {
-                    val baseUrl = "getReaderBaseUrl(readerId)"
-                    val surahFormatted = String.format("%03d", surahId)
-                    val verseFormatted = String.format("%03d", verseId)
-                    val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
-                    val verseName = "${getSurahName(surahId)}_آية_${verseId}"
-
-                    val success = offlineAudioManager.downloadVerseAudio(
-                        readerId = readerId,
-                        surahId = surahId,
-                        verseId = verseId,
-                        verseName = verseName,
-                        readerName = readerName ?: "Unknown",
-                        audioUrl = verseUrl
-                    )
-
-                    if (success) {
-                        downloadedCount++
-                        binding.toolbar.toolbar.subtitle = "تحميل: $downloadedCount/$totalMissing"
-                    }
-                }
-
-                if (downloadedCount == totalMissing) {
-                    binding.toolbar.toolbar.subtitle = "تم التحميل - وضع عدم الاتصال نشط"
-                    Snackbar.make(binding.root, "تم تحميل جميع الآيات المفقودة", Snackbar.LENGTH_SHORT).show()
-                } else {
-                    binding.toolbar.toolbar.subtitle = "تحميل جزئي - $downloadedCount/$totalMissing"
-                    Snackbar.make(binding.root, "تم تحميل $downloadedCount من $totalMissing آية", Snackbar.LENGTH_LONG).show()
-                }
-
-            } catch (e: Exception) {
-                Log.e("HefzRepeat", "Error downloading missing verses", e)
-                Snackbar.make(binding.root, "فشل في تحميل الآيات المفقودة", Snackbar.LENGTH_LONG).show()
-            }
-        }
-    }
-
     private fun extractReaderIdFromIntent(): String? {
         return intent.getStringExtra("readerId") ?: run {
-            readerName?.let { name ->
-                null
-            }
+            null
         }
     }
 
@@ -345,41 +389,28 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         return Constants.SORA_OF_QURAN.getOrElse(surahId) { "Surah $surahId" }
     }
 
-    private fun switchToOnlineMode() {
-        if (!offlineAudioManager.isNetworkAvailable()) {
-            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
-            return
-        }
-
-        isOfflineMode = false
-        sharedPreferences.edit().putBoolean("is_offline_mode", false).apply()
-        binding.toolbar.toolbar.subtitle = "الوضع المتصل نشط"
-
-        lifecycleScope.launch {
-            try {
-                val readerId = extractReaderIdFromIntent()
-                val baseUrl = getOnlineBaseUrl(readerId)
-
-                ayaList.forEachIndexed { index, aya ->
-                    val verseNumber = startAya!!.toInt() + index
-                    val surahFormatted = String.format("%03d", soraId!!.toInt())
-                    val verseFormatted = String.format("%03d", verseNumber)
-                    aya.url = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
-                }
-
-                ayaHefzPagerAdapter.notifyDataSetChanged()
-
-                Snackbar.make(binding.root, "تم التبديل للوضع المتصل", Snackbar.LENGTH_SHORT).show()
-
-            } catch (e: Exception) {
-                Snackbar.make(binding.root, "فشل في التبديل للوضع المتصل", Snackbar.LENGTH_LONG).show()
-            }
-        }
-    }
-
 
     private fun getOnlineBaseUrl(readerId: String?): String {
-        return "https://verse.mp3quran.net/arabic/reader_$readerId/128"
+        val normalizedReaderId = readerId?.let { normalizeToAsciiDigits(it) } ?: ""
+        return "https://verse.mp3quran.net/arabic/reader_$normalizedReaderId/128"
+    }
+
+    private fun normalizeToAsciiDigits(input: String): String {
+        return input.replace(Regex("[٠-٩]")) { matchResult ->
+            when (matchResult.value) {
+                "٠" -> "0"
+                "١" -> "1"
+                "٢" -> "2"
+                "٣" -> "3"
+                "٤" -> "4"
+                "٥" -> "5"
+                "٦" -> "6"
+                "٧" -> "7"
+                "٨" -> "8"
+                "٩" -> "9"
+                else -> matchResult.value
+            }
+        }
     }
 
     private fun setupProgressObservers() {
