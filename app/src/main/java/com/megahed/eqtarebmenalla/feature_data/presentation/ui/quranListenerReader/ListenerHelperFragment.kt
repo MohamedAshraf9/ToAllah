@@ -413,29 +413,15 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     binding.btnMemorizationTracker.visibility = View.VISIBLE
                     binding.scheduleTitle.text = schedule.title
                     loadScheduleProgress()
-
-                    val isCompleted = checkIfScheduleCompleted(schedule)
-
-                    if (isCompleted) {
-                        binding.btnCreateSchedule.text = getString(R.string.create_schedule)
-                        binding.btnCreateSchedule.setOnClickListener {
-                            requireView().findNavController()
-                                .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
-                        }
-                    } else {
-                        binding.btnCreateSchedule.text = "تعديل الجدول"
-                        binding.btnCreateSchedule.icon =
-                            ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit)
-                        binding.btnCreateSchedule.setOnClickListener {
-                            val action = ListenerHelperFragmentDirections
-                                .actionListenerHelperFragmentToScheduleCreationFragment(schedule.id)
-                            requireView().findNavController().navigate(action)
-                        }
+                    lifecycleScope.launch {
+                        val isCompleted = checkIfScheduleCompleted(schedule)
+                        updateCreateScheduleButton(schedule, isCompleted)
                     }
                 } else {
                     binding.memorizationScheduleCard.visibility = View.GONE
                     binding.btnMemorizationTracker.visibility = View.GONE
                     binding.btnCreateSchedule.text = getString(R.string.create_schedule)
+                    binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add)
                     binding.btnCreateSchedule.setOnClickListener {
                         requireView().findNavController()
                             .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
@@ -466,8 +452,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             memorizationViewModel.uiState.collectLatest { state ->
                 if (state.verseProgress != null) {
                     val verseProgress = state.verseProgress
-                    val verseDetails =
-                        "${verseProgress.completedVerses}/${verseProgress.totalVerses}"
+                    val verseDetails = "${verseProgress.completedVerses}/${verseProgress.totalVerses}"
                     val percentageText = "${verseProgress.progressPercentage}%"
                     binding.totalProgress.text = percentageText
                     binding.totalProgressOfSchedule.text = verseDetails
@@ -478,27 +463,35 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 } else {
                     binding.totalProgress.text = "0%"
                 }
-            }
-        }
-        lifecycleScope.launch {
-            memorizationViewModel.currentSchedule.collectLatest { schedule ->
-                if (schedule != null && !schedule.isActive) {
-                    binding.btnCreateSchedule.text = getString(R.string.edit_schedule)
-                    binding.btnCreateSchedule.setOnClickListener {
-                        val action = ListenerHelperFragmentDirections
-                            .actionListenerHelperFragmentToScheduleCreationFragment(schedule.id)
-                        requireView().findNavController().navigate(action)
-                    }
-                } else {
-                    binding.btnCreateSchedule.text = getString(R.string.create_schedule)
-                    binding.btnCreateSchedule.setOnClickListener {
-                        requireView().findNavController()
-                            .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
+
+                val currentSchedule = memorizationViewModel.currentSchedule.value
+                if (currentSchedule != null) {
+                    lifecycleScope.launch {
+                        val isCompleted = checkIfScheduleCompleted(currentSchedule)
+                        updateCreateScheduleButton(currentSchedule, isCompleted)
                     }
                 }
             }
         }
 
+    }
+    private fun updateCreateScheduleButton(schedule: MemorizationSchedule, isCompleted: Boolean) {
+        if (isCompleted) {
+            binding.btnCreateSchedule.text = getString(R.string.create_schedule)
+            binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add)
+            binding.btnCreateSchedule.setOnClickListener {
+                requireView().findNavController()
+                    .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
+            }
+        } else {
+            binding.btnCreateSchedule.text = "تعديل الجدول"
+            binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit)
+            binding.btnCreateSchedule.setOnClickListener {
+                val action = ListenerHelperFragmentDirections
+                    .actionListenerHelperFragmentToScheduleCreationFragment(schedule.id)
+                requireView().findNavController().navigate(action)
+            }
+        }
     }
     private fun enableAllFields(enable: Boolean) {
         binding.listOfRewat.isEnabled = enable
@@ -701,6 +694,17 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             }
 
             else -> false
+        }
+    }
+    override fun onResume() {
+        super.onResume()
+        val currentSchedule = memorizationViewModel.currentSchedule.value
+        if (currentSchedule != null) {
+            loadScheduleProgress()
+            lifecycleScope.launch {
+                val isCompleted = checkIfScheduleCompleted(currentSchedule)
+                updateCreateScheduleButton(currentSchedule, isCompleted)
+            }
         }
     }
 
