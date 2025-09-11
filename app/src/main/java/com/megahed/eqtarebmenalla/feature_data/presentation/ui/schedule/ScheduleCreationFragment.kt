@@ -4,9 +4,10 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.Build
 import android.os.Bundle
-import android.provider.Settings.Global.putString
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -16,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -38,13 +38,8 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzView
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
 import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -76,6 +71,24 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     @Inject
     lateinit var offlineAudioManager: OfflineAudioManager
 
+    private val connectivityManager by lazy {
+        requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            lifecycleScope.launch {
+                delay(2000)
+                if (isNetworkAvailable()) {
+                    selectedOfflineReader?.let { reader ->
+                        val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 1
+                        val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 1
+                        retryFailedDownloads(startVerse, endVerse, reader)
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -101,6 +114,34 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
         if (scheduleId != -1L) {
             loadExistingSchedule()
+        }
+        binding.btnDownloadSchedule.setOnClickListener {
+            if (!isNetworkAvailable()) {
+                Snackbar.make(
+                    binding.root,
+                    "لا يوجد اتصال بالإنترنت. يرجى التحقق من الاتصال وإعادة المحاولة",
+                    Snackbar.LENGTH_LONG
+                ).show()
+                return@setOnClickListener
+            }
+
+            if (validateInputsForDownload()) {
+                downloadScheduleForOffline()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            connectivityManager.registerDefaultNetworkCallback(networkCallback)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
         }
     }
 
@@ -181,7 +222,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             }
 
             if (existingSchedule != null) {
-                // Update existing schedule
                 val updatedSchedule = existingSchedule!!.copy(
                     title = title,
                     description = description,
@@ -290,16 +330,11 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         selectedOfflineReader?.let { reader ->
             lifecycleScope.launch {
                 try {
-                    showDownloadProgress(0, 100)
+                    showDownloadProgress(0, 100, "جاري البدء في التحميل...")
 
                     val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 1
                     val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 1
                     val totalVerses = endVerse - startVerse + 1
-
-                    Log.d(
-                        "SCHEDULE_DOWNLOAD",
-                        "Downloading verses $startVerse to $endVerse (total: $totalVerses)"
-                    )
 
                     val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
                         reader.audio_url_bit_rate_64.trim().ifEmpty {
@@ -308,11 +343,13 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     }.trimEnd('/')
 
                     var downloadedCount = 0
-                    val downloadTasks = mutableListOf<Deferred<Boolean>>()
+                    val failedVerses = mutableListOf<Int>()
 
                     for (verseNumber in startVerse..endVerse) {
-                        val task = async {
-                            delay((verseNumber - startVerse) * 200L)
+                        try {
+                            if (!isNetworkAvailable()) {
+                                throw java.net.UnknownHostException("انقطع الاتصال بالإنترنت")
+                            }
 
                             val surahFormatted = String.format(Locale.US, "%03d", selectedSurahId)
                             val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
@@ -329,34 +366,36 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             )
 
                             if (success) {
-                                withContext(Dispatchers.Main) {
-                                    downloadedCount++
-                                    val progress = (downloadedCount * 100) / totalVerses
-                                    showDownloadProgress(progress, 100)
-                                }
+                                downloadedCount++
+                                val progress = (downloadedCount * 100) / totalVerses
+                                showDownloadProgress(progress, 100, "تم تحميل $downloadedCount من $totalVerses")
+                            } else {
+                                failedVerses.add(verseNumber)
                             }
 
-                            success
+                            delay(300)
+
+                        } catch (e: Exception) {
+                            failedVerses.add(verseNumber)
                         }
-                        downloadTasks.add(task)
                     }
 
-                    val results = downloadTasks.awaitAll()
-                    val successCount = results.count { it }
-
                     hideDownloadProgress()
-                    if (successCount == totalVerses) {
+
+                    if (failedVerses.isEmpty()) {
                         Snackbar.make(
                             binding.root,
-                            "تم تحميل جميع الآيات بنجاح ($successCount آية)",
+                            "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)",
                             Snackbar.LENGTH_SHORT
                         ).show()
                     } else {
                         Snackbar.make(
                             binding.root,
-                            "تم تحميل $successCount من $totalVerses آية",
+                            "تم تحميل $downloadedCount من $totalVerses آية. فشل في تحميل ${failedVerses.size} آية",
                             Snackbar.LENGTH_LONG
-                        ).show()
+                        ).setAction("إعادة المحاولة") {
+                            retryFailedDownloads(startVerse, endVerse, reader)
+                        }.show()
                     }
 
                 } catch (e: Exception) {
@@ -367,6 +406,139 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
+            }
+        }
+    }
+    private fun retryFailedDownloads(startVerse: Int, endVerse: Int, reader: RecitersVerse) {
+        lifecycleScope.launch {
+            try {
+                if (!isNetworkAvailable()) {
+                    Snackbar.make(
+                        binding.root,
+                        "لا يوجد اتصال بالإنترنت. يرجى التحقق من الاتصال وإعادة المحاولة",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
+
+                showDownloadProgress(0, 100, "جاري البحث عن الآيات غير المحملة...")
+
+                val readerId = normalizeToAsciiDigits(reader.id.toString())
+                val missingVerses = offlineAudioManager.getMissingVerses(readerId, selectedSurahId, startVerse, endVerse)
+
+                if (missingVerses.isEmpty()) {
+                    hideDownloadProgress()
+                    Snackbar.make(
+                        binding.root,
+                        "جميع الآيات محملة بالفعل",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                    return@launch
+                }
+
+                showDownloadProgress(0, missingVerses.size, "جاري إعادة تحميل ${missingVerses.size} آية...")
+
+                val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
+                    reader.audio_url_bit_rate_64.trim().ifEmpty {
+                        reader.audio_url_bit_rate_32_.trim()
+                    }
+                }.trimEnd('/')
+
+                var successCount = 0
+                val totalVerses = missingVerses.size
+
+                for (verseNumber in missingVerses) {
+                    try {
+                        val surahFormatted = String.format(Locale.US, "%03d", selectedSurahId)
+                        val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
+                        val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
+                        val verseName = "${selectedSurahName}_آية_${verseNumber}"
+
+                        val success = offlineAudioManager.downloadVerseAudio(
+                            readerId = readerId,
+                            surahId = selectedSurahId,
+                            verseId = verseNumber,
+                            verseName = verseName,
+                            readerName = reader.name,
+                            audioUrl = verseUrl
+                        )
+
+                        if (success) {
+                            successCount++
+                        }
+
+                        val progress = (successCount * 100) / totalVerses
+                        showDownloadProgress(progress, 100, "تم إعادة تحميل $successCount من $totalVerses آية")
+
+                        delay(500) // Add delay between retries
+
+                    } catch (e: Exception) {
+
+                    }
+                }
+
+                hideDownloadProgress()
+
+                if (successCount == totalVerses) {
+                    Snackbar.make(
+                        binding.root,
+                        "تم تحميل جميع الآيات الناقصة بنجاح",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        "تم تحميل $successCount من $totalVerses آية ناقصة",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                hideDownloadProgress()
+                Snackbar.make(
+                    binding.root,
+                    "خطأ في إعادة المحاولة: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun showDownloadProgress(current: Int, total: Int, customMessage: String? = null) {
+        binding.downloadProgressLayout.visibility = View.VISIBLE
+        binding.btnDownloadSchedule.isEnabled = false
+
+        if (total > 0) {
+            binding.progressDownload.isIndeterminate = false
+            binding.progressDownload.max = total
+            binding.progressDownload.progress = current
+            val percentage = if (total > 0) (current * 100) / total else 0
+            binding.tvDownloadStatus.text = customMessage ?: "جاري التحميل: $percentage%"
+        } else {
+            binding.progressDownload.isIndeterminate = true
+            binding.tvDownloadStatus.text = customMessage ?: "جاري تحضير التحميل..."
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        return offlineAudioManager.isNetworkAvailable()
+    }
+
+    private fun setupOfflineControls() {
+        binding.switchOfflineMemorization.setOnCheckedChangeListener { _, isChecked ->
+            binding.tilOfflineReader.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.btnDownloadSchedule.visibility =
+                if (isChecked && selectedOfflineReader != null) View.VISIBLE else View.GONE
+
+            lifecycleScope.launch {
+                val settings = offlineAudioManager.getOfflineSettings()
+                val updatedSettings = settings.copy(isOfflineMemorizationEnabled = isChecked)
+                offlineAudioManager.updateOfflineSettings(updatedSettings)
+            }
+
+            if (!isChecked) {
+                hideDownloadProgress()
+                selectedOfflineReader = null
             }
         }
     }
@@ -393,7 +565,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
                         val verseName = "${selectedSurahName}_آية_${verseNumber}"
 
-                        Log.d("DEBUG_DOWNLOAD", "Downloading verse $verseNumber: $verseUrl")
 
                         val success = offlineAudioManager.downloadAudio(
                             readerId = normalizeToAsciiDigits(reader.id.toString()),
@@ -504,31 +675,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         toolbar.title = getString(R.string.create_memorization_schedule)
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun setupOfflineControls() {
-        binding.switchOfflineMemorization.setOnCheckedChangeListener { _, isChecked ->
-            binding.tilOfflineReader.visibility = if (isChecked) View.VISIBLE else View.GONE
-            binding.btnDownloadSchedule.visibility =
-                if (isChecked && selectedOfflineReader != null) View.VISIBLE else View.GONE
-
-            lifecycleScope.launch {
-                val settings = offlineAudioManager.getOfflineSettings()
-                val updatedSettings = settings.copy(isOfflineMemorizationEnabled = isChecked)
-                offlineAudioManager.updateOfflineSettings(updatedSettings)
-            }
-
-            if (!isChecked) {
-                hideDownloadProgress()
-                selectedOfflineReader = null
-            }
-        }
-
-        binding.btnDownloadSchedule.setOnClickListener {
-            if (validateInputsForDownload()) {
-                downloadScheduleForOffline()
-            }
-        }
     }
 
     private fun validateInputsForDownload(): Boolean {

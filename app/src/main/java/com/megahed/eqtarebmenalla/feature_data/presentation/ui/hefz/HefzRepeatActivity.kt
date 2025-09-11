@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -62,7 +61,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     @Inject
     lateinit var offlineAudioManager: OfflineAudioManager
 
-    private var link: String? = null
     private var readerId: String? = null
     private var baseUrl: String? = null
     private var soraId: String? = null
@@ -86,7 +84,10 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private lateinit var dataSourceFactory: DefaultDataSource.Factory
 
     private var isOfflineMode = false
-    private var offlineAudioPaths = mutableMapOf<Int, String>()
+    private var lastFailedVerseIndex = -1
+    private var hasShownOfflineWarning = false
+    private var waitingForUserDecision = false
+    private var userRequestedRetry = false
 
     private var sessionId: Long? = null
     private var sessionStartTime: Date? = null
@@ -119,10 +120,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         setupProgressObservers()
         checkProgressTrackingEligibility()
     }
+
     private fun extractIntentExtras() {
         intent.extras?.let {
             val args = HefzRepeatActivityArgs.fromBundle(it)
-            baseUrl = args.link // This is now the base URL
+            baseUrl = args.link
             soraId = args.soraId
             startAya = args.startAya
             endAya = args.endAya
@@ -139,11 +141,9 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     ayaViewModel.getAyaOfSoraId(id.toInt()).collect { ayaResult ->
                         ayaList.clear()
-
                         for (i in startAya!!.toInt() - 1 until endAya!!.toInt()) {
                             val aya = ayaResult[i]
                             val verseNumber = i + 1
-
                             lifecycleScope.launch {
                                 aya.url = SmartAudioUrlHelper.getAudioUrl(
                                     offlineAudioManager = offlineAudioManager,
@@ -153,15 +153,15 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                                     onlineBaseUrl = normalizeUrl(baseUrl ?: "")
                                 )
                             }
-
                             ayaList.add(aya)
                         }
-
                         ayaHefzPagerAdapter.setData(ayaList)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             launchNotificationPermission()
                         }
-                        startMemorizationProcess()
+                        lifecycleScope.launch {
+                            showPreSessionMissingVersesDialog()
+                        }
                     }
                 }
             }
@@ -185,31 +185,27 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             }
         }
     }
+
     private fun switchToOnlineMode() {
         if (!offlineAudioManager.isNetworkAvailable()) {
             Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
             return
         }
-
         isOfflineMode = false
         sharedPreferences.edit { putBoolean("is_offline_mode", false) }
         binding.toolbar.toolbar.subtitle = "الوضع المتصل نشط"
-
         lifecycleScope.launch {
             try {
                 val readerId = normalizeToAsciiDigits(extractReaderIdFromIntent() ?: "")
                 val baseUrl = getOnlineBaseUrl(readerId)
-
                 ayaList.forEachIndexed { index, aya ->
                     val verseNumber = startAya!!.toInt() + index
                     val surahFormatted = String.format(Locale.US, "%03d", soraId!!.toInt())
                     val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
                     aya.url = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
                 }
-
                 ayaHefzPagerAdapter.notifyDataSetChanged()
                 Snackbar.make(binding.root, "تم التبديل للوضع المتصل", Snackbar.LENGTH_SHORT).show()
-
             } catch (e: Exception) {
                 Snackbar.make(binding.root, "فشل في التبديل للوضع المتصل", Snackbar.LENGTH_LONG).show()
             }
@@ -221,14 +217,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
             return
         }
-
         lifecycleScope.launch {
             try {
                 var downloadedCount = 0
                 val totalMissing = missingVerses.size
-
                 binding.toolbar.toolbar.subtitle = "جاري تحميل الآيات المفقودة..."
-
                 for (verseId in missingVerses) {
                     val normalizedReaderId = normalizeToAsciiDigits(readerId)
                     val baseUrl = getOnlineBaseUrl(normalizedReaderId)
@@ -236,7 +229,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     val verseFormatted = String.format(Locale.US, "%03d", verseId)
                     val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
                     val verseName = "${getSurahName(surahId)}_آية_${verseId}"
-
                     val success = offlineAudioManager.downloadVerseAudio(
                         readerId = normalizedReaderId,
                         surahId = surahId,
@@ -245,13 +237,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                         readerName = readerName ?: "Unknown",
                         audioUrl = verseUrl
                     )
-
                     if (success) {
                         downloadedCount++
                         binding.toolbar.toolbar.subtitle = "تحميل: $downloadedCount/$totalMissing"
                     }
                 }
-
                 if (downloadedCount == totalMissing) {
                     binding.toolbar.toolbar.subtitle = "تم التحميل - وضع عدم الاتصال نشط"
                     Snackbar.make(binding.root, "تم تحميل جميع الآيات المفقودة", Snackbar.LENGTH_SHORT).show()
@@ -259,9 +249,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     binding.toolbar.toolbar.subtitle = "تحميل جزئي - $downloadedCount/$totalMissing"
                     Snackbar.make(binding.root, "تم تحميل $downloadedCount من $totalMissing آية", Snackbar.LENGTH_LONG).show()
                 }
-
             } catch (e: Exception) {
-                Log.e("HefzRepeat", "Error downloading missing verses", e)
                 Snackbar.make(binding.root, "فشل في تحميل الآيات المفقودة", Snackbar.LENGTH_LONG).show()
             }
         }
@@ -274,36 +262,314 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     @OptIn(UnstableApi::class)
-    private fun playAya(aya: Aya) {
-        exoPlayer?.let { player ->
+    private suspend fun playAya(aya: Aya): Boolean {
+        return try {
+            val player = exoPlayer ?: return false
             player.stop()
             player.clearMediaItems()
-
-            if (aya.url?.isEmpty() == true) {
-                return
+            if (aya.url.isNullOrEmpty()) {
+                handleMissingAudio(currentVerseIndex + 1)
+                return false
             }
-
+            if (isOfflineMode) {
+                val file = File(aya.url!!)
+                if (!file.exists() || file.length() == 0L) {
+                    handleMissingAudio(currentVerseIndex + 1)
+                    return false
+                }
+            }
             val mediaItem = if (aya.url?.startsWith("http") == true) {
+                if (!offlineAudioManager.isNetworkAvailable()) {
+                    handleNetworkError(currentVerseIndex + 1)
+                    return false
+                }
                 MediaItem.fromUri(Uri.parse(aya.url))
             } else {
                 MediaItem.fromUri(Uri.fromFile(File(aya.url)))
             }
-
             val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
-
             player.setMediaSource(mediaSource)
             player.prepare()
-
-            CoroutineScope(Dispatchers.Main).launch {
+            var retryCount = 0
+            while (player.playbackState == Player.STATE_IDLE && retryCount < 50) {
                 delay(100)
-                player.playWhenReady = true
+                retryCount++
+            }
+            if (player.playbackState == Player.STATE_IDLE) {
+                handlePlaybackError(currentVerseIndex + 1)
+                return false
+            }
+            player.playWhenReady = true
+            true
+        } catch (e: Exception) {
+            handlePlaybackError(currentVerseIndex + 1, e.message)
+            false
+        }
+    }
+
+    private fun handleMissingAudio(verseNumber: Int) {
+        lastFailedVerseIndex = currentVerseIndex
+        val surahName = Constants.SORA_OF_QURAN[soraId?.toInt()?:0]
+        runOnUiThread {
+            if (!hasShownOfflineWarning) {
+                hasShownOfflineWarning = true
+                waitingForUserDecision = true
+                userRequestedRetry = false
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("آية غير متوفرة")
+                    .setMessage("الآية رقم $verseNumber من $surahName غير متوفرة للتشغيل في وضع عدم الاتصال.\n\nهل تريد:")
+                    .setPositiveButton("تخطي الآيات المفقودة") { _, _ ->
+                        hasShownOfflineWarning = false
+                        waitingForUserDecision = false
+                        userRequestedRetry = false
+                        lastFailedVerseIndex = -1
+                    }
+                    .setNegativeButton("إيقاف الحفظ") { _, _ ->
+                        waitingForUserDecision = false
+                        userRequestedRetry = false
+                        stopMemorization()
+                    }
+                    .setNeutralButton("المحاولة مرة أخرى") { _, _ ->
+                        hasShownOfflineWarning = false
+                        if (offlineAudioManager.isNetworkAvailable()) {
+                            userRequestedRetry = true
+                            waitingForUserDecision = false
+                            attemptToDownloadMissingVerse(verseNumber)
+                        } else {
+                            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+                        }
+                    }
+                    .setCancelable(false)
+                    .show()
             }
         }
     }
+
+    private fun handleNetworkError(verseNumber: Int) {
+        lastFailedVerseIndex = currentVerseIndex
+        waitingForUserDecision = true
+        userRequestedRetry = false
+        runOnUiThread {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("لا يوجد اتصال بالإنترنت")
+                .setMessage("فشل في تشغيل الآية رقم $verseNumber بسبب عدم وجود اتصال بالإنترنت.")
+                .setPositiveButton("إعادة المحاولة") { _, _ ->
+                    if (offlineAudioManager.isNetworkAvailable()) {
+                        userRequestedRetry = true
+                        waitingForUserDecision = false
+                    } else {
+                        handleNetworkError(verseNumber)
+                    }
+                }
+                .setNegativeButton("إيقاف") { _, _ ->
+                    waitingForUserDecision = false
+                    userRequestedRetry = false
+                    stopMemorization()
+                }
+                .show()
+        }
+    }
+
+    private fun handlePlaybackError(verseNumber: Int, errorMessage: String? = null) {
+        lastFailedVerseIndex = currentVerseIndex
+        runOnUiThread {
+            val message = if (errorMessage != null) {
+                "خطأ في تشغيل الآية رقم $verseNumber:\n$errorMessage"
+            } else {
+                "فشل في تشغيل الآية رقم $verseNumber"
+            }
+            MaterialAlertDialogBuilder(this)
+                .setTitle("خطأ في التشغيل")
+                .setMessage(message)
+                .setPositiveButton("تخطي") { _, _ ->
+                    resumeFromCurrentPosition()
+                }
+                .setNegativeButton("إيقاف") { _, _ ->
+                    stopMemorization()
+                }
+                .show()
+        }
+    }
+
+    private fun attemptToDownloadMissingVerse(verseNumber: Int) {
+        lifecycleScope.launch {
+            try {
+                val readerId = normalizeToAsciiDigits(extractReaderIdFromIntent() ?: "")
+                val surahId = soraId!!.toInt()
+                val surahName = Constants.SORA_OF_QURAN[surahId]
+                val baseUrl = getOnlineBaseUrl(readerId)
+                val surahFormatted = String.format(Locale.US, "%03d", surahId)
+                val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
+                val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
+                val verseName = "${surahName}_آية_${verseNumber}"
+                binding.toolbar.toolbar.subtitle = "جاري تحميل الآية $verseNumber..."
+                val success = offlineAudioManager.downloadVerseAudio(
+                    readerId = readerId,
+                    surahId = surahId,
+                    verseId = verseNumber,
+                    verseName = verseName,
+                    readerName = readerName ?: "Unknown",
+                    audioUrl = verseUrl
+                )
+                if (success) {
+                    val localPath = offlineAudioManager.getVerseAudioPath(
+                        readerId ,
+                        soraId?.toInt() ?: return@launch,
+                        verseNumber
+                    )
+                    if (localPath != null) {
+                        ayaList.find { it.ayaId == verseNumber }?.url = localPath
+                    }
+                    binding.toolbar.toolbar.subtitle = "تم تحميل الآية - وضع عدم الاتصال نشط"
+                    Snackbar.make(binding.root, "تم تحميل الآية $verseNumber بنجاح", Snackbar.LENGTH_SHORT).show()
+                    userRequestedRetry = true
+                    waitingForUserDecision = false
+                } else {
+                    binding.toolbar.toolbar.subtitle = "فشل التحميل - وضع عدم الاتصال نشط"
+                    handleMissingAudio(verseNumber)
+                }
+            } catch (e: Exception) {
+                binding.toolbar.toolbar.subtitle = "فشل التحميل - وضع عدم الاتصال نشط"
+                Snackbar.make(binding.root, "خطأ في تحميل الآية: ${e.message}", Snackbar.LENGTH_LONG).show()
+                resumeFromCurrentPosition()
+            }
+        }
+    }
+
+    private fun resumeFromCurrentPosition() {
+        userRequestedRetry = true
+        waitingForUserDecision = false
+    }
+
+    private fun startMemorizationProcess() {
+        CoroutineScope(Dispatchers.Main).launch {
+            currentVerseIndex = 0
+            for (k in 0 until allRepeat!!) {
+                if (isMemorizationStopped) break
+                for (i in 0 until ayaList.size) {
+                    if (isMemorizationStopped) break
+                    currentVerseIndex = i
+                    val aya = ayaList[i]
+                    binding.viewPager.setCurrentItem(i, true)
+                    delay(300)
+                    if (isProgressTrackingEnabled) {
+                        versesCompleted = i + 1
+                        updateProgressDisplay()
+                    }
+                    for (j in 0 until ayaRepeat!!) {
+                        if (isMemorizationStopped) break
+                        currentRepeatIndex = j
+                        while (isMemorizationPaused && !isMemorizationStopped) {
+                            delay(100)
+                        }
+                        if (isMemorizationStopped) break
+                        var playbackSuccess = playAya(aya)
+                        if (!playbackSuccess) {
+                            while (waitingForUserDecision && !isMemorizationStopped) {
+                                delay(100)
+                            }
+                            if (isMemorizationStopped) break
+                            var retryAttempts = 0
+                            val maxRetries = 3
+                            while (!playbackSuccess && retryAttempts < maxRetries && !isMemorizationStopped) {
+                                playbackSuccess = playAya(aya)
+                                if (!playbackSuccess) {
+                                    while (waitingForUserDecision && !isMemorizationStopped) {
+                                        delay(100)
+                                    }
+                                    if (isMemorizationStopped) break
+                                    if (!userRequestedRetry) {
+                                        break
+                                    } else {
+                                        userRequestedRetry = false
+                                        retryAttempts++
+                                    }
+                                }
+                            }
+                            if (!playbackSuccess && !isMemorizationStopped) {
+                                continue
+                            }
+                            if (isMemorizationStopped) break
+                        }
+                        awaitAyaCompletion()
+                        if (skipToNext) {
+                            skipToNext = false
+                            break
+                        }
+                        if (j < ayaRepeat!! - 1) delay(500)
+                    }
+                }
+                if (!isMemorizationStopped) {
+                    sharedPreferences.edit { putInt("all_repeat_counter", k + 1) }
+                    delay(1000)
+                }
+            }
+            if (!isMemorizationStopped) {
+                if (isProgressTrackingEnabled && sessionId != null) {
+                    showAutoCompletionDialog()
+                }
+                updateUIForCompletion()
+            }
+        }
+    }
+
+    private suspend fun checkVerseAvailability(): List<Int> {
+        val missingVerses = mutableListOf<Int>()
+        val readerId = normalizeToAsciiDigits(extractReaderIdFromIntent() ?: "")
+        val surahId = soraId!!.toInt()
+        val startVerse = startAya!!.toInt()
+        val endVerse = endAya!!.toInt()
+        if (isOfflineMode) {
+            for (verseNumber in startVerse..endVerse) {
+                val isAvailable = offlineAudioManager.isVerseAudioDownloaded(readerId, surahId, verseNumber)
+                if (!isAvailable) {
+                    missingVerses.add(verseNumber)
+                }
+            }
+        }
+        return missingVerses
+    }
+
+    private suspend fun showPreSessionMissingVersesDialog() {
+        if (isOfflineMode) {
+            val missingVerses = checkVerseAvailability()
+            if (missingVerses.isNotEmpty()) {
+                val totalVerses = endAya!!.toInt() - startAya!!.toInt() + 1
+                val availableVerses = totalVerses - missingVerses.size
+                runOnUiThread {
+                    MaterialAlertDialogBuilder(this@HefzRepeatActivity)
+                        .setTitle("تحذير: آيات مفقودة")
+                        .setMessage("في وضع عدم الاتصال:\n• متوفر: $availableVerses من $totalVerses آية\n• مفقود: ${missingVerses.joinToString(", ")}\n\nستتوقف الجلسة عند الآيات المفقودة. هل تريد المتابعة؟")
+                        .setPositiveButton("متابعة") { _, _ ->
+                            startMemorizationProcess()
+                        }
+                        .setNegativeButton("إلغاء") { _, _ ->
+                            finish()
+                        }
+                        .setNeutralButton("تحميل المفقود") { _, _ ->
+                            if (offlineAudioManager.isNetworkAvailable()) {
+                                downloadMissingVerses(
+                                    extractReaderIdFromIntent() ?: "",
+                                    soraId!!.toInt(),
+                                    missingVerses
+                                )
+                            } else {
+                                Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+                                startMemorizationProcess()
+                            }
+                        }
+                        .setCancelable(false)
+                        .show()
+                }
+                return
+            }
+        }
+        startMemorizationProcess()
+    }
+
     private fun checkOfflineMode() {
         isOfflineMode = sharedPreferences.getBoolean("is_offline_mode", false)
-
         if (isOfflineMode) {
             setupOfflineAudio()
         }
@@ -312,14 +578,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private fun setupOfflineAudio() {
         lifecycleScope.launch {
             try {
-                val readerId = extractReaderIdFromIntent() // Get from intent extras
+                val readerId = extractReaderIdFromIntent()
                 if (readerId != null && soraId != null) {
                     val surahId = soraId!!.toInt()
                     val startVerse = startAya!!.toInt()
                     val endVerse = endAya!!.toInt()
-
                     val allDownloaded = offlineAudioManager.areVersesDownloaded(readerId, surahId, startVerse, endVerse)
-
                     if (allDownloaded) {
                         binding.toolbar.toolbar.subtitle = "وضع عدم الاتصال نشط"
                     } else {
@@ -341,7 +605,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             val missingVerses = offlineAudioManager.getMissingVerses(readerId, surahId, startVerse, endVerse)
             val totalVerses = endVerse - startVerse + 1
             val availableVerses = totalVerses - missingVerses.size
-
             MaterialAlertDialogBuilder(this@HefzRepeatActivity)
                 .setTitle("المحتوى غير متوفر بالكامل")
                 .setMessage("متوفر $availableVerses من $totalVerses آية للوضع غير المتصل.\nالآيات المفقودة: ${missingVerses.joinToString(", ")}\n\nهل تريد تحميل الآيات المفقودة أم التبديل للوضع المتصل؟")
@@ -373,35 +636,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     private fun extractReaderIdFromIntent(): String? {
-        return intent.getStringExtra("readerId") ?: run {
-            null
-        }
-    }
-
-
-    private fun extractReaderIdFromLink(): String? {
-        return try {
-            link?.let { url ->
-                val segments = url.split("/")
-
-                segments.find { segment ->
-                    segment.matches("""\d+""".toRegex()) || segment.length > 10
-                }
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun getOriginalAudioUrl(): String {
-        return link ?: ""
+        return intent.getStringExtra("readerId")
     }
 
     private fun getSurahName(surahId: Int): String {
-        // Get surah name from constants
         return Constants.SORA_OF_QURAN.getOrElse(surahId) { "Surah $surahId" }
     }
-
 
     private fun getOnlineBaseUrl(readerId: String?): String {
         val normalizedReaderId = readerId?.let { normalizeToAsciiDigits(it) } ?: ""
@@ -433,12 +673,10 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     Snackbar.make(binding.root, state.message, Snackbar.LENGTH_SHORT).show()
                     memorizationViewModel.dismissMessage()
                 }
-
                 if (state.error != null) {
                     Snackbar.make(binding.root, state.error, Snackbar.LENGTH_LONG).show()
                     memorizationViewModel.dismissError()
                 }
-
                 if (state.showCelebration) {
                     showCelebrationDialog()
                     memorizationViewModel.dismissCelebration()
@@ -454,16 +692,13 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     val sessionSurahId = soraId?.toIntOrNull() ?: -1
                     val sessionStartVerse = startAya?.toIntOrNull() ?: -1
                     val sessionEndVerse = endAya?.toIntOrNull() ?: -1
-
                     isProgressTrackingEnabled = (sessionSurahId == target.surahId &&
                             sessionStartVerse == target.startVerse &&
                             sessionEndVerse == target.endVerse &&
                             !target.isCompleted)
-
                     if (isProgressTrackingEnabled) {
                         val modeText = if (isOfflineMode) " (وضع عدم الاتصال)" else ""
                         binding.toolbar.toolbar.subtitle = "تتبع التقدم نشط - ${target.surahName}$modeText"
-
                         showProgressTrackingConfirmation(target.surahName, target.startVerse, target.endVerse)
                     } else if (isOfflineMode) {
                         binding.toolbar.toolbar.subtitle = getString(R.string.offline_mode_active)
@@ -475,7 +710,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private fun showProgressTrackingConfirmation(surahName: String, startVerse: Int, endVerse: Int) {
         val modeText = if (isOfflineMode) "\n\n(سيتم الحفظ في وضع عدم الاتصال)" else ""
-
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.progress_tracking_title))
             .setMessage("تم اكتشاف أن هذه الجلسة تطابق هدف اليوم:\n$surahName - الآيات $startVerse-$endVerse\n\nهل تريد تتبع تقدمك وتسجيل هذه الجلسة?$modeText")
@@ -488,22 +722,17 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .show()
     }
 
-
     private fun startProgressTracking() {
         lifecycleScope.launch {
             try {
                 sessionStartTime = Date()
                 memorizationViewModel.startMemorizationSession(SessionType.LISTENING)
-
                 memorizationViewModel.uiState.collect { state ->
                     if (state.isSessionActive && state.currentSessionId != null) {
                         sessionId = state.currentSessionId
                         return@collect
                     }
-                    Snackbar.make(binding.root, getString(R.string.start_tracking_session), Snackbar.LENGTH_SHORT).show()
-
                 }
-
             } catch (e: Exception) {
                 Snackbar.make(binding.root, "فشل في بدء تتبع التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
                 isProgressTrackingEnabled = false
@@ -518,7 +747,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .setPositiveButton(getString(R.string.thanks)) { dialog, _ -> dialog.dismiss() }
             .show()
     }
-
 
     private fun showExitConfirmationDialog() {
         MaterialAlertDialogBuilder(this)
@@ -569,12 +797,10 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         ayaHefzPagerAdapter = AyaHefzPagerAdapter(this)
         binding.viewPager.adapter = ayaHefzPagerAdapter
         binding.viewPager.isUserInputEnabled = true
-
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 updatePositionIndicator(position)
-
                 if (isProgressTrackingEnabled) {
                     versesCompleted = position + 1
                     updateProgressDisplay()
@@ -582,7 +808,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             }
         })
     }
-
 
     private fun updateProgressDisplay() {
         if (isProgressTrackingEnabled) {
@@ -600,7 +825,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 finish()
             }
         }
-
         binding.stopMemorization.setOnClickListener {
             if (isProgressTrackingEnabled && sessionId != null) {
                 showCompletionConfirmationDialog()
@@ -608,7 +832,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 stopMemorization()
             }
         }
-
         binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
         binding.skipForwardButton.setOnClickListener { skipToNextVerse() }
     }
@@ -638,68 +861,15 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     } else {
                         "جلسة غير مكتملة - تم حفظ $versesCompleted من ${ayaList.size} آية"
                     }
-
                     memorizationViewModel.completeSession(versesCompleted, notes)
-
                     if (markTargetCompleted) {
                         memorizationViewModel.markTodayTargetCompleted()
                     }
                 }
-
                 isProgressTrackingEnabled = false
                 sessionId = null
             } catch (e: Exception) {
                 Snackbar.make(binding.root, "فشل في حفظ التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    private fun startMemorizationProcess() {
-        CoroutineScope(Dispatchers.Main).launch {
-            currentVerseIndex = 0
-            for (k in 0 until allRepeat!!) {
-                if (isMemorizationStopped) break
-                for (i in 0 until ayaList.size) {
-                    if (isMemorizationStopped) break
-                    currentVerseIndex = i
-                    val aya = ayaList[i]
-                    binding.viewPager.setCurrentItem(i, true)
-                    delay(300)
-
-                    if (isProgressTrackingEnabled) {
-                        versesCompleted = i + 1
-                        updateProgressDisplay()
-                    }
-
-                    for (j in 0 until ayaRepeat!!) {
-                        if (isMemorizationStopped) break
-                        currentRepeatIndex = j
-                        while (isMemorizationPaused && !isMemorizationStopped) {
-                            delay(100)
-                        }
-                        if (isMemorizationStopped) break
-                        playAya(aya)
-                        awaitAyaCompletion()
-                        if (skipToNext) {
-                            skipToNext = false
-                            break
-                        }
-                        if (j < ayaRepeat!! - 1) delay(500)
-                    }
-                }
-                if (!isMemorizationStopped) {
-                    sharedPreferences.edit { putInt("all_repeat_counter", k + 1) }
-                    delay(1000)
-                }
-            }
-            if (!isMemorizationStopped) {
-                showMessage(this@HefzRepeatActivity, getString(R.string.memorization_completed))
-
-                if (isProgressTrackingEnabled && sessionId != null) {
-                    showAutoCompletionDialog()
-                }
-
-                updateUIForCompletion()
             }
         }
     }
@@ -721,7 +891,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         exoPlayer?.let { player ->
             var waitCount = 0
             val maxWaitCount = 500
-
             while (player.playbackState != Player.STATE_READY &&
                 player.playbackState != Player.STATE_BUFFERING &&
                 waitCount < maxWaitCount &&
@@ -730,12 +899,10 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 delay(100)
                 waitCount++
             }
-
             if (skipToNext) {
                 player.stop()
                 return
             }
-
             waitCount = 0
             while (player.playbackState != Player.STATE_ENDED &&
                 waitCount < maxWaitCount &&
@@ -748,7 +915,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 delay(100)
                 waitCount++
             }
-
             if (skipToNext || waitCount >= maxWaitCount) player.stop()
         }
     }
@@ -770,24 +936,19 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         isMemorizationStopped = false
         isMemorizationPaused = false
         skipToNext = false
-
         binding.stopMemorization.isEnabled = true
         binding.skipForwardButton.isEnabled = true
         binding.cancel.isEnabled = true
-
         binding.pauseResumeButton.text = getString(R.string.pause)
         binding.pauseResumeButton.icon =
             ResourcesCompat.getDrawable(resources, R.drawable.ic_pause, theme)
         binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
         exoPlayer?.stop()
         binding.viewPager.setCurrentItem(0, true)
-
         versesCompleted = 0
         updateProgressDisplay()
-
         startMemorizationProcess()
     }
-
 
     private fun togglePauseResume() {
         if (isMemorizationPaused) {
@@ -824,7 +985,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         isMemorizationStopped = true
         isMemorizationPaused = false
         exoPlayer?.stop()
-
         binding.stopMemorization.apply {
             isEnabled = false
             text = getString(R.string.stopped)

@@ -12,10 +12,8 @@ import com.megahed.eqtarebmenalla.db.dao.DownloadedAudioDao
 import com.megahed.eqtarebmenalla.db.dao.OfflineSettingsDao
 import com.megahed.eqtarebmenalla.db.model.DownloadType
 import com.megahed.eqtarebmenalla.db.model.DownloadedAudio
-import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
 import com.megahed.eqtarebmenalla.db.model.OfflineSettings
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.schedule.TempSchedule
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -26,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Date
 import java.util.Locale
@@ -35,9 +34,10 @@ class OfflineAudioManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val downloadedAudioDao: DownloadedAudioDao,
     private val offlineSettingsDao: OfflineSettingsDao,
-    private val quranListenerReaderRepository: QuranListenerReaderRepository
+    private val quranListenerReaderRepository: QuranListenerReaderRepository,
 ) {
-    private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    private val downloadManager =
+        context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     private val _downloadProgress = MutableStateFlow<Map<String, Int>>(emptyMap())
     val downloadProgress: StateFlow<Map<String, Int>> = _downloadProgress.asStateFlow()
 
@@ -45,7 +45,8 @@ class OfflineAudioManager @Inject constructor(
         return try {
 
             if (verseId != null) {
-                val verseAudio = downloadedAudioDao.getDownloadedVerseAudio(readerId, surahId, verseId)
+                val verseAudio =
+                    downloadedAudioDao.getDownloadedVerseAudio(readerId, surahId, verseId)
                 if (verseAudio?.isComplete == true && File(verseAudio.localFilePath).exists()) {
                     return verseAudio.localFilePath
                 }
@@ -70,18 +71,191 @@ class OfflineAudioManager @Inject constructor(
         verseId: Int,
         verseName: String,
         readerName: String,
-        audioUrl: String
+        audioUrl: String,
     ): Boolean {
-        return downloadAudio(
-            audioId = "${readerId}_${surahId}_${verseId}",
-            readerId = readerId,
-            surahId = surahId,
-            verseId = verseId,
-            audioName = verseName,
-            readerName = readerName,
-            audioUrl = audioUrl,
-            downloadType = DownloadType.INDIVIDUAL_VERSE
-        )
+        return try {
+            // Check network first
+            if (!isNetworkAvailable()) {
+                throw java.net.UnknownHostException("لا يوجد اتصال بالإنترنت")
+            }
+
+            val existing = downloadedAudioDao.getDownloadedVerseAudio(readerId, surahId, verseId)
+            if (existing?.isComplete == true && File(existing.localFilePath).exists()) {
+                return true
+            }
+
+            val audioId = "${readerId}_${surahId}_${verseId}"
+            val folderType = "verses"
+            val fileName = "${verseName}_${readerName}.mp3"
+            val folder = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+                "offline_audio/$readerName/$folderType"
+            )
+            if (!folder.exists()) folder.mkdirs()
+
+            val localFile = File(folder, fileName)
+
+            val success = downloadFileWithTimeout(audioUrl, localFile, audioId)
+
+            if (success) {
+                val downloadedAudio = DownloadedAudio(
+                    id = audioId,
+                    readerId = readerId,
+                    surahId = surahId,
+                    verseId = verseId,
+                    surahName = verseName,
+                    readerName = readerName,
+                    localFilePath = localFile.absolutePath,
+                    originalUrl = audioUrl,
+                    downloadDate = Date(),
+                    fileSize = localFile.length(),
+                    isComplete = true,
+                    downloadType = DownloadType.INDIVIDUAL_VERSE
+                )
+                downloadedAudioDao.insertDownloadedAudio(downloadedAudio)
+            }
+
+            success
+        } catch (e: java.net.UnknownHostException) {
+            throw e
+        } catch (e: java.net.SocketTimeoutException) {
+            throw e
+        } catch (e: java.net.ConnectException) {
+            throw e
+        } catch (e: javax.net.ssl.SSLException) {
+            throw e
+        } catch (e: java.io.IOException) {
+            throw e
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    private suspend fun downloadFileWithTimeout(
+        url: String,
+        localFile: File,
+        audioId: String,
+        timeoutMs: Long = 30000L,
+    ): Boolean = withContext(Dispatchers.IO) {
+        var inputStream: java.io.InputStream? = null
+        var outputStream: java.io.FileOutputStream? = null
+        var connection: java.net.HttpURLConnection? = null
+
+        try {
+            val urlConnection = java.net.URL(url)
+            connection = urlConnection.openConnection() as java.net.HttpURLConnection
+            connection.connectTimeout = timeoutMs.toInt()
+            connection.readTimeout = timeoutMs.toInt()
+            connection.requestMethod = "GET"
+
+            val responseCode = connection.responseCode
+            if (responseCode != java.net.HttpURLConnection.HTTP_OK) {
+                throw java.io.IOException("خطأ في الخادم: كود الخطأ $responseCode")
+            }
+
+            val fileLength = connection.contentLength
+            inputStream = connection.inputStream
+            outputStream = java.io.FileOutputStream(localFile)
+
+            val buffer = ByteArray(4096)
+            var downloaded = 0L
+            var bytesRead: Int
+
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+                downloaded += bytesRead
+
+                if (fileLength > 0) {
+                    val progress = ((downloaded * 100) / fileLength).toInt().coerceIn(0, 100)
+                    withContext(Dispatchers.Main) {
+                        _downloadProgress.value = _downloadProgress.value.toMutableMap().apply {
+                            put(audioId, progress)
+                        }
+                    }
+                }
+
+                if (!isNetworkAvailable()) {
+                    throw java.net.UnknownHostException("انقطع الاتصال بالإنترنت أثناء التحميل")
+                }
+            }
+
+            outputStream.flush()
+
+            withContext(Dispatchers.Main) {
+                _downloadProgress.value = _downloadProgress.value.toMutableMap().apply {
+                    remove(audioId)
+                }
+            }
+
+            true
+
+        } catch (e: java.net.UnknownHostException) {
+            localFile.delete() // Clean up partial file
+            throw java.net.UnknownHostException("لا يوجد اتصال بالإنترنت")
+        } catch (e: java.net.SocketTimeoutException) {
+            localFile.delete()
+            throw java.net.SocketTimeoutException("انتهت مهلة الاتصال")
+        } catch (e: java.net.ConnectException) {
+            localFile.delete()
+            throw java.net.ConnectException("فشل في الاتصال بالخادم")
+        } catch (e: javax.net.ssl.SSLException) {
+            localFile.delete()
+            throw javax.net.ssl.SSLException("خطأ في شهادة الأمان")
+        } catch (e: java.io.IOException) {
+            localFile.delete()
+            throw java.io.IOException("خطأ في التحميل أو التخزين")
+        } catch (e: Exception) {
+            localFile.delete()
+            throw Exception("خطأ غير معروف: ${e.message}")
+        } finally {
+            try {
+                inputStream?.close()
+                outputStream?.close()
+                connection?.disconnect()
+            } catch (e: Exception) {
+
+            }
+
+            withContext(Dispatchers.Main) {
+                _downloadProgress.value = _downloadProgress.value.toMutableMap().apply {
+                    remove(audioId)
+                }
+            }
+        }
+    }
+
+    suspend fun isVerseAudioDownloaded(readerId: String, surahId: Int, verseId: Int): Boolean {
+        return try {
+            val audio = downloadedAudioDao.getDownloadedVerseAudio(readerId, surahId, verseId)
+            audio?.isComplete == true && File(audio.localFilePath).exists() && File(audio.localFilePath).length() > 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun isNetworkAvailable(): Boolean {
+        return try {
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val network = connectivityManager.activeNetwork ?: return false
+                val capabilities =
+                    connectivityManager.getNetworkCapabilities(network) ?: return false
+
+                return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                        capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+                        (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
+            } else {
+                @Suppress("DEPRECATION")
+                val networkInfo = connectivityManager.activeNetworkInfo
+                return networkInfo?.isConnectedOrConnecting == true
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     suspend fun downloadSurahAudio(
@@ -89,7 +263,7 @@ class OfflineAudioManager @Inject constructor(
         surahId: Int,
         surahName: String,
         readerName: String,
-        audioUrl: String
+        audioUrl: String,
     ): Boolean {
         return downloadAudio(
             audioId = "${readerId}_${surahId}",
@@ -111,7 +285,7 @@ class OfflineAudioManager @Inject constructor(
         audioName: String,
         readerName: String,
         audioUrl: String,
-        downloadType: DownloadType
+        downloadType: DownloadType,
     ): Boolean {
         return try {
 
@@ -128,7 +302,10 @@ class OfflineAudioManager @Inject constructor(
 
             val folderType = if (verseId != null) "verses" else "surahs"
             val fileName = "${audioName}_${readerName}.mp3"
-            val folder = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), "offline_audio/$readerName/$folderType")
+            val folder = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+                "offline_audio/$readerName/$folderType"
+            )
             if (!folder.exists()) folder.mkdirs()
 
             val localFile = File(folder, fileName)
@@ -172,11 +349,15 @@ class OfflineAudioManager @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             var isComplete = false
             while (!isComplete) {
-                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+                val cursor =
+                    downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
                 if (cursor != null && cursor.moveToFirst()) {
-                    val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                    val downloaded = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                    val total = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                    val status =
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                    val downloaded =
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                    val total =
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
 
                     if (total > 0L) {
                         val progress = ((downloaded * 100) / total).toInt().coerceIn(0, 100)
@@ -196,14 +377,24 @@ class OfflineAudioManager @Inject constructor(
 
                                 if (surahId != null) {
                                     val existingAudio = if (verseId != null) {
-                                        downloadedAudioDao.getDownloadedVerseAudio(readerId, surahId, verseId)
+                                        downloadedAudioDao.getDownloadedVerseAudio(
+                                            readerId,
+                                            surahId,
+                                            verseId
+                                        )
                                     } else {
-                                        downloadedAudioDao.getDownloadedSurahAudio(readerId, surahId)
+                                        downloadedAudioDao.getDownloadedSurahAudio(
+                                            readerId,
+                                            surahId
+                                        )
                                     }
 
                                     existingAudio?.let {
                                         downloadedAudioDao.insertDownloadedAudio(
-                                            it.copy(isComplete = true, fileSize = localFile.length())
+                                            it.copy(
+                                                isComplete = true,
+                                                fileSize = localFile.length()
+                                            )
                                         )
                                     }
                                 }
@@ -214,6 +405,7 @@ class OfflineAudioManager @Inject constructor(
                                 remove(audioId)
                             }
                         }
+
                         DownloadManager.STATUS_FAILED -> {
                             isComplete = true
                             _downloadProgress.value = _downloadProgress.value.toMutableMap().apply {
@@ -236,7 +428,12 @@ class OfflineAudioManager @Inject constructor(
         offlineSettingsDao.insertOfflineSettings(settings)
     }
 
-    suspend fun areVersesDownloaded(readerId: String, surahId: Int, startVerse: Int, endVerse: Int): Boolean {
+    suspend fun areVersesDownloaded(
+        readerId: String,
+        surahId: Int,
+        startVerse: Int,
+        endVerse: Int,
+    ): Boolean {
         for (verseId in startVerse..endVerse) {
             val audio = getDownloadedVerseAudio(readerId, surahId, verseId)
             if (audio?.isComplete != true || !File(audio.localFilePath).exists()) {
@@ -256,11 +453,20 @@ class OfflineAudioManager @Inject constructor(
         }
     }
 
-    private suspend fun getDownloadedVerseAudio(readerId: String, surahId: Int, verseId: Int): DownloadedAudio? {
+    private suspend fun getDownloadedVerseAudio(
+        readerId: String,
+        surahId: Int,
+        verseId: Int,
+    ): DownloadedAudio? {
         return downloadedAudioDao.getDownloadedVerseAudio(readerId, surahId, verseId)
     }
 
-    suspend fun getMissingVerses(readerId: String, surahId: Int, startVerse: Int, endVerse: Int): List<Int> {
+    suspend fun getMissingVerses(
+        readerId: String,
+        surahId: Int,
+        startVerse: Int,
+        endVerse: Int,
+    ): List<Int> {
         val missing = mutableListOf<Int>()
         for (verseId in startVerse..endVerse) {
             val audio = getDownloadedVerseAudio(readerId, surahId, verseId)
@@ -270,6 +476,7 @@ class OfflineAudioManager @Inject constructor(
         }
         return missing
     }
+
     suspend fun getDownloadedSurahAudio(readerId: String, surahId: Int): DownloadedAudio? {
         return downloadedAudioDao.getDownloadedSurahAudio(readerId, surahId)
     }
@@ -279,29 +486,23 @@ class OfflineAudioManager @Inject constructor(
         return downloaded?.isComplete == true && File(downloaded.localFilePath).exists()
     }
 
-    fun isNetworkAvailable(): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork
-            val capabilities = connectivityManager.getNetworkCapabilities(network)
-            capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
-                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        } else {
-            @Suppress("DEPRECATION")
-            val networkInfo = connectivityManager.activeNetworkInfo
-            networkInfo?.isConnectedOrConnecting == true
-        }
-    }
     private suspend fun constructAudioUrl(readerId: String, surahId: Int): String {
         return try {
             val normalizedReaderId = normalizeToAsciiDigits(readerId)
-            val reader = quranListenerReaderRepository.getQuranListenerReaderById(normalizedReaderId)
+            val reader =
+                quranListenerReaderRepository.getQuranListenerReaderById(normalizedReaderId)
             reader?.let { quranReader ->
                 Constants.getSoraLink(quranReader.server, surahId)
             } ?: throw Exception("Reader not found with ID: $normalizedReaderId")
         } catch (e: Exception) {
             val normalizedReaderId = normalizeToAsciiDigits(readerId)
-            "https://www.mp3quran.net/api/reader/$normalizedReaderId/${String.format(Locale.US, "%03d", surahId)}.mp3"
+            "https://www.mp3quran.net/api/reader/$normalizedReaderId/${
+                String.format(
+                    Locale.US,
+                    "%03d",
+                    surahId
+                )
+            }.mp3"
         }
     }
 
@@ -323,48 +524,13 @@ class OfflineAudioManager @Inject constructor(
         }
     }
 
-    suspend fun downloadScheduleAudio(
-        schedule: Any,
-        readerId: String,
-        readerName: String,
-        onProgress: (Int, Int) -> Unit
-    ): Boolean {
-        return try {
-            when (schedule) {
-                is TempSchedule -> {
-
-                    val audioUrl = constructAudioUrl(readerId, schedule.surahId)
-
-                    val success = downloadAudio(
-                        readerId = readerId,
-                        surahId = schedule.surahId,
-                        surahName = schedule.surahName,
-                        readerName = readerName,
-                        audioUrl = audioUrl
-                    )
-
-                    if (success) {
-                        onProgress(1, 1)
-                    }
-                    success
-                }
-                is MemorizationSchedule -> {
-                    true
-                }
-                else -> false
-            }
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     suspend fun downloadAudio(
         readerId: String,
         surahId: Int,
         surahName: String,
         readerName: String,
         audioUrl: String,
-        verseId: Int? = null
+        verseId: Int? = null,
     ): Boolean {
         return try {
             val audioId = if (verseId != null) {
@@ -385,14 +551,18 @@ class OfflineAudioManager @Inject constructor(
                 "${surahName}_${readerName}.mp3"
             }
 
-            val folder = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), "offline_audio/$readerName")
+            val folder = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+                "offline_audio/$readerName"
+            )
             if (!folder.exists()) {
                 folder.mkdirs()
             }
 
             val localFile = File(folder, fileName)
 
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val downloadManager =
+                context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             val request = DownloadManager.Request(Uri.parse(audioUrl))
                 .setDestinationUri(Uri.fromFile(localFile))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
@@ -429,7 +599,11 @@ class OfflineAudioManager @Inject constructor(
     }
 
 
-    suspend fun getDownloadedAudio(readerId: String, surahId: Int, verseId: Int? = null): DownloadedAudio? {
+    suspend fun getDownloadedAudio(
+        readerId: String,
+        surahId: Int,
+        verseId: Int? = null,
+    ): DownloadedAudio? {
         return downloadedAudioDao.getDownloadedAudio(readerId, surahId, verseId)
     }
 
