@@ -61,6 +61,8 @@ import com.megahed.eqtarebmenalla.feature_data.states.MemorizationUiState
 import kotlinx.coroutines.flow.collectLatest
 import java.text.NumberFormat
 import androidx.core.view.isGone
+import com.megahed.eqtarebmenalla.db.model.getTotalVerses
+import com.megahed.eqtarebmenalla.feature_data.data.repository.DailyTargetProgress
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -149,7 +151,19 @@ class HomeFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             memorizationViewModel.todayTarget.collectLatest { target ->
-                updateTodayTargetUI(target)
+                if (target != null) {
+                    updateTodayProgressText(target)
+                    memorizationViewModel.loadTodayTargetProgress()
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            memorizationViewModel.todayTargetProgress.collectLatest { targetProgress ->
+                if (targetProgress != null) {
+                    updateTodayProgressText(targetProgress.target)
+                    updateTodayTargetUI(targetProgress.target, targetProgress)
+                }
             }
         }
 
@@ -165,7 +179,29 @@ class HomeFragment : Fragment() {
             }
         }
     }
+    private fun updateTodayProgressText(target: DailyTarget) {
+        val totalVerses = target.getTotalVerses()
+        val completedText = "${target.completedVerses}/$totalVerses آيات"
+        binding.todayProgressText.text = completedText
 
+        when {
+            target.isCompleted -> {
+                binding.todayProgressText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                )
+            }
+            target.completedVerses > 0 -> {
+                binding.todayProgressText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                )
+            }
+            else -> {
+                binding.todayProgressText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.text_secondary)
+                )
+            }
+        }
+    }
 
     private fun showCelebrationDialog() {
         MaterialAlertDialogBuilder(requireContext())
@@ -177,12 +213,17 @@ class HomeFragment : Fragment() {
             .setIcon(R.drawable.ic_celebration)
             .show()
     }
+
     private fun showScheduleDetails() {
         val schedule = memorizationViewModel.currentSchedule.value
         if (schedule != null) {
             showScheduleDetailsDialog(schedule)
         } else {
-            Snackbar.make(binding.root, getString(R.string.no_active_schedule), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(
+                binding.root,
+                getString(R.string.no_active_schedule),
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -190,14 +231,19 @@ class HomeFragment : Fragment() {
         val schedule = memorizationViewModel.currentSchedule.value
         val progress = memorizationViewModel.uiState.value.scheduleProgress
         val streak = memorizationViewModel.userStreak.value
+        val todayProgress = memorizationViewModel.todayTargetProgress.value
 
         if (schedule != null && progress != null) {
+            val todayProgressText = todayProgress?.let {
+                "\n📖 تقدم اليوم: ${it.completedVerses}/${it.totalVerses} آية (${it.progressPercentage}%)"
+            } ?: ""
+
             val message = """
             📚 الجدول: ${schedule.title}
             
             📊 التقدم الإجمالي: ${progress.progressPercentage}%
             ✅ الأهداف المكتملة: ${progress.completedTargets}/${progress.totalTargets}
-            📅 الأيام المتبقية: ${calculateDaysRemaining(schedule.endDate)} يوم
+            📅 الأيام المتبقية: ${calculateDaysRemaining(schedule.endDate)} يوم$todayProgressText
             
             🔥 السلسلة الحالية: ${streak?.currentStreak ?: 0} أيام
             🏆 أفضل سلسلة: ${streak?.longestStreak ?: 0} أيام
@@ -229,6 +275,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+
     private fun calculateTimeRemaining(endDate: Date): String {
         val currentTime = System.currentTimeMillis()
         val endTime = endDate.time
@@ -239,9 +286,11 @@ class HomeFragment : Fragment() {
             timeDifference < 24 * 60 * 60 * 1000 -> {
                 formatCountdown(timeDifference)
             }
+
             else -> {
                 val daysRemaining = (timeDifference / (24 * 60 * 60 * 1000)).toInt()
-                val hoursRemaining = ((timeDifference % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)).toInt()
+                val hoursRemaining =
+                    ((timeDifference % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)).toInt()
                 "متبقي $daysRemaining يوم و $hoursRemaining ساعة"
             }
         }
@@ -261,56 +310,129 @@ class HomeFragment : Fragment() {
 
 
     @SuppressLint("SetTextI18n")
-    private fun updateTodayTargetUI(target: DailyTarget?) {
-        if (target != null) {
+    private fun updateTodayTargetUI(target: DailyTarget?, targetProgress: DailyTargetProgress?) {
+        if (target != null && targetProgress != null) {
             binding.activeScheduleLayout.visibility = View.VISIBLE
             binding.noScheduleLayout.visibility = View.GONE
 
             val targetInfo = "${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}"
             binding.activeScheduleTitle.text = targetInfo
 
+            // Show partial progress in verse count
+            val progressText = "${targetProgress.completedVerses}/${targetProgress.totalVerses} آية"
+            binding.todayProgressText.text = progressText
+
             binding.estimatedTime.text = "الوقت المقدر: ${target.estimatedDurationMinutes} دقيقة"
 
-            if (target.isCompleted) {
-                binding.todayCompletionIcon.visibility = View.VISIBLE
-                binding.activeScheduleLayout.setBackgroundResource(R.drawable.memorization_completed_background)
-            } else {
-                binding.todayCompletionIcon.visibility = View.GONE
-                binding.activeScheduleLayout.setBackgroundResource(R.drawable.today_target_background)
+            when {
+                target.isCompleted -> {
+                    binding.todayCompletionIcon.visibility = View.VISIBLE
+                    binding.todayCompletionIcon.setImageResource(R.drawable.ic_check_circle)
+                    binding.activeScheduleLayout.setBackgroundResource(R.drawable.memorization_completed_background)
+                    binding.todayProgressText.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.green)
+                    )
+                }
+                targetProgress.completedVerses > 0 -> {
+                    binding.todayCompletionIcon.visibility = View.VISIBLE
+                    binding.todayCompletionIcon.setImageResource(R.drawable.ic_partial_progress)
+                    binding.todayProgressText.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                    )
+                }
+                else -> {
+                    binding.todayCompletionIcon.visibility = View.GONE
+                    binding.activeScheduleLayout.setBackgroundResource(R.drawable.today_target_background)
+                    binding.todayProgressText.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                    )
+                }
             }
+        } else if (target != null) {
+
+            updateTodayTargetUILegacy(target)
         } else {
             binding.activeScheduleLayout.visibility = View.GONE
             binding.noScheduleLayout.visibility = View.VISIBLE
         }
-        updateMemorizationButtons(target)
+        updateMemorizationButtons(target, targetProgress)
+    }
+    @SuppressLint("SetTextI18n")
+    private fun updateTodayTargetUILegacy(target: DailyTarget) {
+        binding.activeScheduleLayout.visibility = View.VISIBLE
+        binding.noScheduleLayout.visibility = View.GONE
+
+        val targetInfo = "${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}"
+        binding.activeScheduleTitle.text = targetInfo
+
+        val totalVerses = target.getTotalVerses()
+        val progressText = "${target.completedVerses}/$totalVerses آية"
+        binding.todayProgressText.text = progressText
+
+        binding.estimatedTime.text = "الوقت المقدر: ${target.estimatedDurationMinutes} دقيقة"
+
+        when {
+            target.isCompleted -> {
+                binding.todayCompletionIcon.visibility = View.VISIBLE
+                binding.todayCompletionIcon.setImageResource(R.drawable.ic_check_circle)
+                binding.activeScheduleLayout.setBackgroundResource(R.drawable.memorization_completed_background)
+                binding.todayProgressText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                )
+            }
+            target.completedVerses > 0 -> {
+                binding.todayCompletionIcon.visibility = View.VISIBLE
+                binding.todayCompletionIcon.setImageResource(R.drawable.ic_partial_progress)
+                binding.todayProgressText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                )
+            }
+            else -> {
+                binding.todayCompletionIcon.visibility = View.GONE
+                binding.activeScheduleLayout.setBackgroundResource(R.drawable.today_target_background)
+                binding.todayProgressText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                )
+            }
+        }
     }
 
-    private fun updateMemorizationButtons(target: DailyTarget?) {
+    private fun updateMemorizationButtons(target: DailyTarget?, targetProgress: DailyTargetProgress?) {
         val primaryButton = binding.btnPrimaryAction
         val secondaryButton = binding.btnSecondaryAction
 
-        if (target != null && !target.isCompleted) {
-            primaryButton.text = getString(R.string.start_memorization)
-            primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
-            primaryButton.isEnabled = true
-
-            secondaryButton.text = getString(R.string.view_schedule_details)
-            secondaryButton.visibility = View.VISIBLE
-        } else if (target?.isCompleted == true) {
-            primaryButton.text = getString(R.string.completed)
-            primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle)
-            primaryButton.isEnabled = false
-
-            secondaryButton.text = getString(R.string.review)
-            secondaryButton.visibility = View.VISIBLE
-        } else{
+        if (target != null) {
+            when {
+                target.isCompleted -> {
+                    primaryButton.text = getString(R.string.completed)
+                    primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle)
+                    primaryButton.isEnabled = false
+                    secondaryButton.text = getString(R.string.review)
+                    secondaryButton.visibility = View.VISIBLE
+                }
+                targetProgress != null && targetProgress.completedVerses > 0 -> {
+                    primaryButton.text = "متابعة الحفظ"
+                    primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
+                    primaryButton.isEnabled = true
+                    secondaryButton.text = getString(R.string.view_schedule_details)
+                    secondaryButton.visibility = View.VISIBLE
+                }
+                else -> {
+                    primaryButton.text = getString(R.string.start_memorization)
+                    primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
+                    primaryButton.isEnabled = true
+                    secondaryButton.text = getString(R.string.view_schedule_details)
+                    secondaryButton.visibility = View.VISIBLE
+                }
+            }
+        } else {
             primaryButton.text = getString(R.string.create_schedule)
             primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add_circle)
             primaryButton.isEnabled = true
-
             secondaryButton.visibility = View.GONE
         }
     }
+
 
     private fun updateStreakUI(streak: UserStreak?) {
         if (streak != null && streak.currentStreak > 0) {
@@ -321,9 +443,11 @@ class HomeFragment : Fragment() {
                 streak.currentStreak >= 50 -> {
                     binding.streakContainer.setBackgroundResource(R.drawable.streak_gold_background)
                 }
+
                 streak.currentStreak >= 14 -> {
                     binding.streakContainer.setBackgroundResource(R.drawable.streak_silver_background)
                 }
+
                 else -> {
                     binding.streakContainer.setBackgroundResource(R.drawable.streak_container_background)
                 }
@@ -343,6 +467,8 @@ class HomeFragment : Fragment() {
                 .setBackgroundTint(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
                 .show()
             memorizationViewModel.dismissMessage()
+
+            memorizationViewModel.loadTodayTargetProgress()
         }
 
         state.error?.let { error ->
@@ -355,17 +481,17 @@ class HomeFragment : Fragment() {
         if (state.showCelebration) {
             showCelebrationDialog()
             memorizationViewModel.dismissCelebration()
+
+            memorizationViewModel.loadTodayTargetProgress()
         }
 
         state.scheduleProgress?.let { progress ->
             binding.totalProgressText.text = "${progress.progressPercentage}%"
+        }
 
-            val target = memorizationViewModel.todayTarget.value
-            if (target != null) {
-                val verseCount = target.endVerse - target.startVerse + 1
-                val completedVerses = if (target.isCompleted) verseCount else 0
-                binding.todayProgressText.text = "$completedVerses/$verseCount آيات"
-            }
+        val target = memorizationViewModel.todayTarget.value
+        if (target != null) {
+            updateTodayProgressText(target)
         }
 
         val streak = memorizationViewModel.userStreak.value
@@ -375,7 +501,7 @@ class HomeFragment : Fragment() {
     private fun setupMemorizationClickListeners() {
         binding.btnPrimaryAction.setOnClickListener {
             when (binding.btnPrimaryAction.text.toString()) {
-                "بدء الحفظ" -> startMemorizationSession()
+                "بدء الحفظ", "متابعة الحفظ" -> startMemorizationSession()
                 "إنشاء جدول", "إنشاء جدول حفظ" -> navigateToScheduleCreation()
                 "مراجعة" -> startReviewSession()
             }
@@ -466,9 +592,16 @@ class HomeFragment : Fragment() {
     }
 
     private fun showMarkCompletedDialog(target: DailyTarget) {
+        val currentProgress = "${target.completedVerses}/${target.getTotalVerses()}"
+        val message = if (target.completedVerses > 0) {
+            "التقدم الحالي: $currentProgress آية\n\nهل أكملت حفظ ${target.surahName} - الآيات ${target.startVerse}-${target.endVerse} فعلاً؟"
+        } else {
+            "هل أكملت حفظ ${target.surahName} - الآيات ${target.startVerse}-${target.endVerse} فعلاً؟"
+        }
+
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.confirm_completion))
-            .setMessage("هل أكملت حفظ ${target.surahName} - الآيات ${target.startVerse}-${target.endVerse} فعلاً؟")
+            .setMessage(message)
             .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 memorizationViewModel.markTodayTargetCompleted()
             }
@@ -506,7 +639,7 @@ class HomeFragment : Fragment() {
                 putBoolean("autoFill", true)
             }
             findNavController().navigate(R.id.action_navigation_home_to_listenerHelperFragment2, bundle)
-        }else{
+        } else {
             findNavController().navigate(R.id.action_navigation_home_to_scheduleCreationFragment)
         }
     }
@@ -514,6 +647,7 @@ class HomeFragment : Fragment() {
     private fun navigateToScheduleCreation() {
         findNavController().navigate(R.id.action_navigation_home_to_scheduleCreationFragment)
     }
+
     private fun startReviewSession() {
         val target = memorizationViewModel.todayTarget.value
         if (target != null) {
@@ -524,7 +658,10 @@ class HomeFragment : Fragment() {
                 putInt("endVerse", target.endVerse)
                 putBoolean("isReviewMode", true)
             }
-            findNavController().navigate(R.id.action_navigation_home_to_listenerHelperFragment2, bundle)
+            findNavController().navigate(
+                R.id.action_navigation_home_to_listenerHelperFragment2,
+                bundle
+            )
         }
     }
 
@@ -539,7 +676,10 @@ class HomeFragment : Fragment() {
         mLocationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
-                    Log.d("HomeFragment", "Location received: ${location.latitude}, ${location.longitude}")
+                    Log.d(
+                        "HomeFragment",
+                        "Location received: ${location.latitude}, ${location.longitude}"
+                    )
                     handleLocationUpdate(location)
                     stopLocationUpdates()
                     break
@@ -561,7 +701,8 @@ class HomeFragment : Fragment() {
         if (!isLocationUpdateRequested && sharedPreference.getBoolean(PREF_LOCATION_SAVED, false)) {
             val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
             val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
-            val savedLocationName = sharedPreference.getString(PREF_LOCATION_NAME, "Unknown Location")
+            val savedLocationName =
+                sharedPreference.getString(PREF_LOCATION_NAME, "Unknown Location")
 
             binding.currentLocation.text = savedLocationName
 
@@ -611,7 +752,10 @@ class HomeFragment : Fragment() {
 
         isUpdatingLocation = false
         isLocationUpdateRequested = false
-        Log.d("HomeFragment", "Location updated and saved: ${location.latitude}, ${location.longitude}")
+        Log.d(
+            "HomeFragment",
+            "Location updated and saved: ${location.latitude}, ${location.longitude}"
+        )
     }
 
     private fun setupViewModelObservers(prayerTimeViewModel: PrayerTimeViewModel) {
@@ -660,6 +804,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
     fun formatHijriDate(hijriDate: String): String {
         val parts = hijriDate.split("-")
         if (parts.size != 3) return hijriDate
@@ -754,6 +899,7 @@ class HomeFragment : Fragment() {
                     CommonUtils.getTimeLong(prayerTime.Fajr, false) - currentTimeLong
                 )
             }
+
             CommonUtils.getTimeLong(prayerTime.Sunrise, false) >= currentTimeLong -> {
                 setDataViewWithCountdown(
                     getString(R.string.sunrise),
@@ -761,6 +907,7 @@ class HomeFragment : Fragment() {
                     CommonUtils.getTimeLong(prayerTime.Sunrise, false) - currentTimeLong
                 )
             }
+
             CommonUtils.getTimeLong(prayerTime.Dhuhr, false) >= currentTimeLong -> {
                 setDataViewWithCountdown(
                     getString(R.string.duhr),
@@ -768,6 +915,7 @@ class HomeFragment : Fragment() {
                     CommonUtils.getTimeLong(prayerTime.Dhuhr, false) - currentTimeLong
                 )
             }
+
             CommonUtils.getTimeLong(prayerTime.Asr, false) >= currentTimeLong -> {
                 setDataViewWithCountdown(
                     getString(R.string.asr),
@@ -775,6 +923,7 @@ class HomeFragment : Fragment() {
                     CommonUtils.getTimeLong(prayerTime.Asr, false) - currentTimeLong
                 )
             }
+
             CommonUtils.getTimeLong(prayerTime.Maghrib, false) >= currentTimeLong -> {
                 setDataViewWithCountdown(
                     getString(R.string.maghreb),
@@ -782,6 +931,7 @@ class HomeFragment : Fragment() {
                     CommonUtils.getTimeLong(prayerTime.Maghrib, false) - currentTimeLong
                 )
             }
+
             CommonUtils.getTimeLong(prayerTime.Isha, false) >= currentTimeLong -> {
                 setDataViewWithCountdown(
                     getString(R.string.isha),
@@ -789,6 +939,7 @@ class HomeFragment : Fragment() {
                     CommonUtils.getTimeLong(prayerTime.Isha, false) - currentTimeLong
                 )
             }
+
             else -> {
                 showCountdownToNextDayFajr(prayerTime)
             }
@@ -808,7 +959,8 @@ class HomeFragment : Fragment() {
             countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
                 @SuppressLint("SetTextI18n")
                 override fun onTick(millisUntilFinished: Long) {
-                    binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
+                    binding.prayerCountdown.text =
+                        "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
                 }
 
                 @SuppressLint("SetTextI18n")
@@ -816,7 +968,8 @@ class HomeFragment : Fragment() {
                     binding.prayerCountdown.text = "- 00:00:00"
                     if (MethodHelper.isOnline(requireContext())) {
                         val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
-                        val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
+                        val savedLongitude =
+                            sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
                         if (savedLatitude != 0.0 && savedLongitude != 0.0) {
                             mainViewModel.getAzanData(savedLatitude, savedLongitude)
                         }
@@ -851,14 +1004,19 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setDataViewWithCountdown(prayerName: String, prayerTime: String, timeRemaining: Long) {
+    private fun setDataViewWithCountdown(
+        prayerName: String,
+        prayerTime: String,
+        timeRemaining: Long,
+    ) {
         binding.salahName.text = prayerName
         binding.prayerTime.text = formatSalahTimeForLocale(prayerTime)
 
         countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
             @SuppressLint("SetTextI18n")
             override fun onTick(millisUntilFinished: Long) {
-                binding.prayerCountdown.text = "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
+                binding.prayerCountdown.text =
+                    "- ${CommonUtils.updateCountDownText(millisUntilFinished)}"
             }
 
             @SuppressLint("SetTextI18n")
@@ -873,7 +1031,8 @@ class HomeFragment : Fragment() {
         elapsedTimeRunnable = object : Runnable {
             @SuppressLint("SetTextI18n")
             override fun run() {
-                timeElapsed = CommonUtils.getTimeLong(CommonUtils.getCurrentTime(), true) - timeStarted
+                timeElapsed =
+                    CommonUtils.getTimeLong(CommonUtils.getCurrentTime(), true) - timeStarted
                 binding.prayerCountdown.text = "+ ${CommonUtils.updateCountDownText(timeElapsed)}"
                 handler.postDelayed(this, 1000)
             }
@@ -915,7 +1074,14 @@ class HomeFragment : Fragment() {
         binding.cbFajr.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean(Constants.AZAN.FAJR, isChecked).apply()
             if (isChecked) {
-                notifyAzan(requireContext(), prayerTimeAlarm.Fajr, 10, getString(R.string.fajr), getString(R.string.salahNow), 10)
+                notifyAzan(
+                    requireContext(),
+                    prayerTimeAlarm.Fajr,
+                    10,
+                    getString(R.string.fajr),
+                    getString(R.string.salahNow),
+                    10
+                )
             } else {
                 cancelAlarm(requireContext(), 10)
             }
@@ -924,7 +1090,14 @@ class HomeFragment : Fragment() {
         binding.cbDhuhr.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean(Constants.AZAN.DUHR, isChecked).apply()
             if (isChecked) {
-                notifyAzan(requireContext(), prayerTimeAlarm.Dhuhr, 11, getString(R.string.duhr), getString(R.string.salahNow), 11)
+                notifyAzan(
+                    requireContext(),
+                    prayerTimeAlarm.Dhuhr,
+                    11,
+                    getString(R.string.duhr),
+                    getString(R.string.salahNow),
+                    11
+                )
             } else {
                 cancelAlarm(requireContext(), 11)
             }
@@ -933,7 +1106,14 @@ class HomeFragment : Fragment() {
         binding.cbAsr.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean(Constants.AZAN.ASR, isChecked).apply()
             if (isChecked) {
-                notifyAzan(requireContext(), prayerTimeAlarm.Asr, 12, getString(R.string.asr), getString(R.string.salahNow), 12)
+                notifyAzan(
+                    requireContext(),
+                    prayerTimeAlarm.Asr,
+                    12,
+                    getString(R.string.asr),
+                    getString(R.string.salahNow),
+                    12
+                )
             } else {
                 cancelAlarm(requireContext(), 12)
             }
@@ -942,7 +1122,14 @@ class HomeFragment : Fragment() {
         binding.cbMaghrib.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean(Constants.AZAN.MAGREB, isChecked).apply()
             if (isChecked) {
-                notifyAzan(requireContext(), prayerTimeAlarm.Maghrib, 13, getString(R.string.maghreb), getString(R.string.salahNow), 13)
+                notifyAzan(
+                    requireContext(),
+                    prayerTimeAlarm.Maghrib,
+                    13,
+                    getString(R.string.maghreb),
+                    getString(R.string.salahNow),
+                    13
+                )
             } else {
                 cancelAlarm(requireContext(), 13)
             }
@@ -951,7 +1138,14 @@ class HomeFragment : Fragment() {
         binding.cbIsha.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean(Constants.AZAN.ISHA, isChecked).apply()
             if (isChecked) {
-                notifyAzan(requireContext(), prayerTimeAlarm.Isha, 14, getString(R.string.isha), getString(R.string.salahNow), 14)
+                notifyAzan(
+                    requireContext(),
+                    prayerTimeAlarm.Isha,
+                    14,
+                    getString(R.string.isha),
+                    getString(R.string.salahNow),
+                    14
+                )
             } else {
                 cancelAlarm(requireContext(), 14)
             }
@@ -979,7 +1173,10 @@ class HomeFragment : Fragment() {
                     val bundle = Bundle()
                     bundle.putString("altitude", savedLatitude.toString())
                     bundle.putString("longitude", savedLongitude.toString())
-                    findNavController().navigate(R.id.action_navigation_home_to_qiblaFragment2, bundle)
+                    findNavController().navigate(
+                        R.id.action_navigation_home_to_qiblaFragment2,
+                        bundle
+                    )
                 } else {
                     MethodHelper.toastMessage(getString(R.string.checkConnection))
                 }
@@ -1002,11 +1199,13 @@ class HomeFragment : Fragment() {
                         "https://play.google.com/store/apps/details?id=com.megahed.eqtarebmenalla"
                     )
                 }
+
                 R.id.setting -> {
                     val intent = Intent(requireContext(), SettingsActivity::class.java)
                     startActivity(intent)
                     drawerLayout.close()
                 }
+
                 else -> {
                     drawerLayout.closeDrawers()
                 }
@@ -1027,13 +1226,24 @@ class HomeFragment : Fragment() {
             Constants.AZAN.FAJR to Triple(prayerTimeAlarm.Fajr, 10, getString(R.string.fajr)),
             Constants.AZAN.DUHR to Triple(prayerTimeAlarm.Dhuhr, 11, getString(R.string.duhr)),
             Constants.AZAN.ASR to Triple(prayerTimeAlarm.Asr, 12, getString(R.string.asr)),
-            Constants.AZAN.MAGREB to Triple(prayerTimeAlarm.Maghrib, 13, getString(R.string.maghreb)),
+            Constants.AZAN.MAGREB to Triple(
+                prayerTimeAlarm.Maghrib,
+                13,
+                getString(R.string.maghreb)
+            ),
             Constants.AZAN.ISHA to Triple(prayerTimeAlarm.Isha, 14, getString(R.string.isha))
         )
 
         azanSettings.forEach { (key, value) ->
             if (sharedPreference.getBoolean(key, false)) {
-                notifyAzan(requireContext(), value.first, value.second, value.third, getString(R.string.salahNow), value.second)
+                notifyAzan(
+                    requireContext(),
+                    value.first,
+                    value.second,
+                    value.third,
+                    getString(R.string.salahNow),
+                    value.second
+                )
             }
         }
     }
@@ -1081,12 +1291,19 @@ class HomeFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private fun startGetLocation() {
         Log.d("HomeFragment", "Starting location updates...")
-        mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper())
+        mFusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            mLocationCallback,
+            Looper.getMainLooper()
+        )
 
         mFusedLocationClient.lastLocation
             .addOnSuccessListener(requireActivity()) { location ->
                 location?.let {
-                    Log.d("HomeFragment", "Got last known location: ${it.latitude}, ${it.longitude}")
+                    Log.d(
+                        "HomeFragment",
+                        "Got last known location: ${it.latitude}, ${it.longitude}"
+                    )
                     val locationTime = System.currentTimeMillis() - it.time
                     if (locationTime < 300000 && isUpdatingLocation) {
                         handleLocationUpdate(it)
@@ -1100,7 +1317,14 @@ class HomeFragment : Fragment() {
     }
 
     @SuppressLint("SimpleDateFormat")
-    fun notifyAzan(context: Context, myTime: String, alarmId: Int, title: String, desc: String, notificationId: Int) {
+    fun notifyAzan(
+        context: Context,
+        myTime: String,
+        alarmId: Int,
+        title: String,
+        desc: String,
+        notificationId: Int,
+    ) {
         val df = SimpleDateFormat("HH:mm")
         val d: Date = df.parse(myTime)!!
         val cal = Calendar.getInstance()
@@ -1117,8 +1341,14 @@ class HomeFragment : Fragment() {
         val calendar1 = calendar.clone() as Calendar
         val intent = Intent(context, NotifyMessing::class.java)
         intent.putExtra("AlarmTitle", title)
-        intent.putExtra("AlarmNote", desc + "\n" + com.megahed.eqtarebmenalla.common.Constants.maw3idha[(0..10).random()])
-        intent.putExtra("AlarmColor", ContextCompat.getColor(App.getInstance(), R.color.colorPrimary))
+        intent.putExtra(
+            "AlarmNote",
+            desc + "\n" + com.megahed.eqtarebmenalla.common.Constants.maw3idha[(0..10).random()]
+        )
+        intent.putExtra(
+            "AlarmColor",
+            ContextCompat.getColor(App.getInstance(), R.color.colorPrimary)
+        )
         intent.putExtra("interval", "daily")
         intent.putExtra("notificationId", notificationId)
         intent.action = "com.megahed.eqtarebmenalla.TIMEALARM"
@@ -1130,11 +1360,16 @@ class HomeFragment : Fragment() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val alarmManager = (App.getInstance().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+        val alarmManager =
+            (App.getInstance().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pendingIntent)
         } else {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pendingIntent)
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar1.timeInMillis,
+                pendingIntent
+            )
         }
     }
 
@@ -1153,7 +1388,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun statusLocationCheck() {
-        val manager = requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+        val manager =
+            requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             turnGPSOn()
         } else {
@@ -1187,7 +1423,10 @@ class HomeFragment : Fragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun getCountryFromLocation(location: Location, onLocationNameReceived: (String) -> Unit) {
+    private fun getCountryFromLocation(
+        location: Location,
+        onLocationNameReceived: (String) -> Unit,
+    ) {
         viewLifecycleOwner.lifecycleScope.launch {
             val locationName = GeocodingHelper.getAddressFromLocation(
                 requireContext(),
@@ -1237,7 +1476,11 @@ class HomeFragment : Fragment() {
                     val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
                     if (savedLatitude != 0.0 && savedLongitude != 0.0) {
                         mainViewModel.getAzanData(savedLatitude, savedLongitude)
-                        Toast.makeText(requireContext(), "جاري تحديث أوقات الصلاة ...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "جاري تحديث أوقات الصلاة ...",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
                     showNoInternetDialog()

@@ -27,23 +27,29 @@ data class DailyTarget(
     val endVerse: Int,
     val estimatedDurationMinutes: Int = 30,
     val isCompleted: Boolean = false,
-    val completedAt: Date? = null
+    val completedAt: Date? = null,
+    val completedVerses: Int = 0
 )
 
 fun DailyTarget.getTotalVerses(): Int {
     return endVerse - startVerse + 1
 }
-fun DailyTarget.getCompletionStatusText(): String {
-    return if (isCompleted) "مكتمل" else "غير مكتمل"
-}
 
-fun DailyTarget.getVerseRangeText(): String {
-    return if (startVerse == endVerse) {
-        "الآية $startVerse"
-    } else {
-        "الآيات $startVerse - $endVerse"
+fun DailyTarget.getCompletionStatusText(): String {
+    val total = getTotalVerses()
+    return when {
+        isCompleted -> "مكتمل"
+        completedVerses > 0 -> "مكتمل جزئياً ($completedVerses/$total)"
+        else -> "غير مكتمل"
     }
 }
-fun DailyTarget.getDisplayText(): String {
-    return "$surahName - ${getVerseRangeText()}"
+
+fun DailyTarget.getProgressPercentage(): Int {
+    val total = getTotalVerses()
+    return if (total > 0) (completedVerses * 100) / total else 0
+}
+
+fun DailyTarget.getVerseProgressText(): String {
+    val total = getTotalVerses()
+    return "$completedVerses/$total آيات"
 }

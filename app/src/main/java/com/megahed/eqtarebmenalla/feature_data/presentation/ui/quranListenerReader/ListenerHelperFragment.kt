@@ -39,7 +39,8 @@ import androidx.fragment.app.viewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.megahed.eqtarebmenalla.db.model.DailyTarget
 import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
-import com.megahed.eqtarebmenalla.db.model.OfflineSettings
+import com.megahed.eqtarebmenalla.db.model.getTotalVerses
+import com.megahed.eqtarebmenalla.feature_data.data.repository.DailyTargetProgress
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
 import com.megahed.eqtarebmenalla.offline.NetworkStateObserver
@@ -256,16 +257,33 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             binding.nbAya.setAdapter(verseAdapter)
             binding.nbEyaEnd.setAdapter(verseAdapter)
 
-            binding.nbAya.setText(target.startVerse.toString(), false)
+            val remainingStartVerse = if (target.completedVerses > 0) {
+                target.startVerse + target.completedVerses
+            } else {
+                target.startVerse
+            }
+
+            val actualStartVerse = minOf(remainingStartVerse, target.endVerse)
+
+            binding.nbAya.setText(actualStartVerse.toString(), false)
             binding.nbEyaEnd.setText(target.endVerse.toString(), false)
 
-            startAya = target.startVerse
+            startAya = actualStartVerse
             endAya = target.endVerse
 
             binding.soraStartSpinner.isEnabled = true
             binding.soraStartEditText.isEnabled = true
             binding.soraStartEndText.isEnabled = true
             binding.start.isEnabled = reader != null
+
+            val remainingVerses = endAya - startAya + 1
+            if (target.completedVerses > 0) {
+                Snackbar.make(
+                    binding.root,
+                    "تم ملء البيانات للآيات المتبقية: $remainingVerses آية (من $actualStartVerse إلى ${target.endVerse})",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
@@ -426,16 +444,25 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                         requireView().findNavController()
                             .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
                     }
+                    clearFormData()
+                }
+            }
+        }
+        lifecycleScope.launch {
+            memorizationViewModel.todayTargetProgress.collectLatest { targetProgress ->
+                targetProgress?.let { progress ->
+                    updateTodayProgressWithPartial(progress)
+                    updateScheduleCardWithProgress(progress)
                 }
             }
         }
 
         lifecycleScope.launch {
             memorizationViewModel.todayTarget.collectLatest { target ->
-                if (target != null) {
+                if (target != null && memorizationViewModel.todayTargetProgress.value == null) {
                     updateTodayProgress(target)
                     updateScheduleCardWithTarget(target)
-                } else {
+                } else if (target == null) {
                     binding.todayProgress.text = "0/0"
                     binding.scheduleTitle.text = "لا يوجد هدف لليوم"
                 }
@@ -475,6 +502,41 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
         }
 
     }
+    private fun updateTodayProgressWithPartial(targetProgress: DailyTargetProgress) {
+        val completedText = "${targetProgress.completedVerses}/${targetProgress.totalVerses}"
+        binding.todayProgress.text = completedText
+
+        when {
+            targetProgress.isCompleted -> {
+                binding.todayProgress.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                )
+            }
+            targetProgress.completedVerses > 0 -> {
+                binding.todayProgress.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                )
+            }
+            else -> {
+                binding.todayProgress.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.text_secondary)
+                )
+            }
+        }
+    }
+    @SuppressLint("SetTextI18n")
+    private fun updateScheduleCardWithProgress(targetProgress: DailyTargetProgress) {
+        val target = targetProgress.target
+        val progressIndicator = when {
+            target.isCompleted -> " ✓ (مكتمل)"
+            targetProgress.completedVerses > 0 -> " (${targetProgress.completedVerses}/${targetProgress.totalVerses} آية)"
+            else -> ""
+        }
+
+        binding.scheduleTitle.text =
+            "${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}$progressIndicator"
+    }
+
     private fun updateCreateScheduleButton(schedule: MemorizationSchedule, isCompleted: Boolean) {
         if (isCompleted) {
             binding.btnCreateSchedule.text = getString(R.string.create_schedule)
@@ -514,7 +576,6 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
         val surahIndex = surahNames.indexOf(target.surahName)
 
         if (surahIndex >= 0) {
-
             binding.listSouraName.setText(target.surahName, false)
             soraId = target.surahId
             selectedSurahName = target.surahName
@@ -530,19 +591,30 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             binding.nbAya.setAdapter(verseAdapter)
             binding.nbEyaEnd.setAdapter(verseAdapter)
 
-            binding.nbAya.setText(target.startVerse.toString(), false)
+            val remainingStartVerse = if (target.completedVerses > 0) {
+                target.startVerse + target.completedVerses
+            } else {
+                target.startVerse
+            }
+
+            val actualStartVerse = minOf(remainingStartVerse, target.endVerse)
+
+            binding.nbAya.setText(actualStartVerse.toString(), false)
             binding.nbEyaEnd.setText(target.endVerse.toString(), false)
 
-            startAya = target.startVerse
+            startAya = actualStartVerse
             endAya = target.endVerse
 
             binding.start.isEnabled = true
 
-            Snackbar.make(
-                binding.root,
-                "تم ملء البيانات تلقائياً من جدول اليوم (وضع غير متصل)",
-                Snackbar.LENGTH_LONG
-            ).show()
+            val remainingVerses = endAya - startAya + 1
+            val modeMessage = if (target.completedVerses > 0) {
+                "تم ملء البيانات للآيات المتبقية: $remainingVerses آية (وضع غير متصل)"
+            } else {
+                "تم ملء البيانات تلقائياً من جدول اليوم (وضع غير متصل)"
+            }
+
+            Snackbar.make(binding.root, modeMessage, Snackbar.LENGTH_LONG).show()
         }
     }
 
@@ -662,27 +734,44 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
 
     private fun updateTodayProgress(target: DailyTarget) {
         val totalVerses = target.endVerse - target.startVerse + 1
-        val completedText =
-            if (target.isCompleted) "$totalVerses/$totalVerses" else "0/$totalVerses"
+        val completedText = if (target.isCompleted) {
+            "$totalVerses/$totalVerses"
+        } else {
+            "${target.completedVerses}/$totalVerses"
+        }
         binding.todayProgress.text = completedText
 
-        if (target.isCompleted) {
-            binding.todayProgress.setTextColor(
-                ContextCompat.getColor(requireContext(), R.color.green)
-            )
-        } else {
-            binding.todayProgress.setTextColor(
-                ContextCompat.getColor(requireContext(), R.color.colorPrimary)
-            )
+        when {
+            target.isCompleted -> {
+                binding.todayProgress.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                )
+            }
+            target.completedVerses > 0 -> {
+                binding.todayProgress.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                )
+            }
+            else -> {
+                binding.todayProgress.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.text_secondary)
+                )
+            }
         }
     }
 
     @SuppressLint("SetTextI18n")
     private fun updateScheduleCardWithTarget(target: DailyTarget) {
-        val statusText = if (target.isCompleted) " (مكتمل)" else ""
+        val progressIndicator = when {
+            target.isCompleted -> " ✓ (مكتمل)"
+            target.completedVerses > 0 -> " (${target.completedVerses}/${target.getTotalVerses()} آية)"
+            else -> ""
+        }
+
         binding.scheduleTitle.text =
-            "${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}$statusText"
+            "${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}$progressIndicator"
     }
+
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {}
 
@@ -696,6 +785,54 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             else -> false
         }
     }
+    private fun isFragmentInitializing(): Boolean {
+        return !this::binding.isInitialized || binding.listOfRewat.adapter == null
+    }
+
+    private fun clearFormData() {
+        if (!isFragmentInitializing()) {
+            binding.listOfRewat.setText("")
+            binding.listSouraName.setText("")
+            binding.nbAya.setText("")
+            binding.nbEyaEnd.setText("")
+            binding.start.isEnabled = false
+            reader = null
+            soraId = 0
+            startAya = 0
+            endAya = 0
+            selectedSurahName = ""
+
+            enableAllFields(isNetworkAvailable())
+        }
+    }
+    private fun restoreOfflineReciter() {
+        val selectedReaderId = offlinePreferences.getString("selected_offline_reader_id", null)
+        val selectedReaderName = offlinePreferences.getString("selected_offline_reader_name", null)
+
+        if (selectedReaderId != null && selectedReaderName != null) {
+            val offlineReciter = RecitersVerse(
+                id = selectedReaderId,
+                name = selectedReaderName,
+                audio_url_bit_rate_128 = offlinePreferences.getString("selected_offline_reader_url_128", "") ?: "",
+                audio_url_bit_rate_64 = offlinePreferences.getString("selected_offline_reader_url_64", "") ?: "",
+                audio_url_bit_rate_32_ = offlinePreferences.getString("selected_offline_reader_url_32", "") ?: "",
+                musshaf_type = "",
+                rewaya = ""
+            )
+
+            reader = offlineReciter
+            readers.clear()
+            readers.add(offlineReciter)
+
+            val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.listOfRewat.setAdapter(adapter)
+            binding.listOfRewat.setText(offlineReciter.name, false)
+
+            disableFieldsForOffline()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         val currentSchedule = memorizationViewModel.currentSchedule.value
@@ -705,6 +842,10 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 val isCompleted = checkIfScheduleCompleted(currentSchedule)
                 updateCreateScheduleButton(currentSchedule, isCompleted)
             }
+        }
+        clearFormData()
+        if (!isNetworkAvailable()) {
+            restoreOfflineReciter()
         }
     }
 

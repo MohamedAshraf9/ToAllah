@@ -63,6 +63,42 @@ class MemorizationRepository @Inject constructor(
             scheduleDao.deleteSchedule(it)
         }
     }
+    suspend fun updateVerseProgress(targetId: Long, completedVerses: Int) {
+        dailyTargetDao.updateVerseProgress(targetId, completedVerses, Date())
+
+        val target = dailyTargetDao.getTargetById(targetId)
+        if (target != null && target.isCompleted) {
+            updateStreak()
+            checkAndUnlockAchievements()
+        }
+    }
+
+    suspend fun markTargetCompleted(targetId: Long) {
+        val target = dailyTargetDao.getTargetById(targetId)
+        target?.let {
+            val totalVerses = it.endVerse - it.startVerse + 1
+            dailyTargetDao.updateVerseProgress(targetId, totalVerses, Date())
+            updateStreak()
+            checkAndUnlockAchievements()
+        }
+    }
+
+    suspend fun getTodayTargetProgress(): DailyTargetProgress? {
+        val currentSchedule = scheduleDao.getCurrentActiveSchedule()
+        return currentSchedule?.let { schedule ->
+            val today = normalizeDate()
+            val target = dailyTargetDao.getTargetForDate(today, schedule.id)
+            target?.let {
+                DailyTargetProgress(
+                    target = it,
+                    totalVerses = it.getTotalVerses(),
+                    completedVerses = it.completedVerses,
+                    progressPercentage = it.getProgressPercentage(),
+                    isCompleted = it.isCompleted
+                )
+            }
+        }
+    }
 
     fun getTargetsForSchedule(scheduleId: Long): Flow<List<DailyTarget>> =
         dailyTargetDao.getTargetsForSchedule(scheduleId)
@@ -96,11 +132,6 @@ class MemorizationRepository @Inject constructor(
             }
         }
 
-    suspend fun markTargetCompleted(targetId: Long) {
-        dailyTargetDao.markTargetCompleted(targetId, Date())
-        updateStreak()
-        checkAndUnlockAchievements()
-    }
 
     suspend fun getCompletedTargetsInRange(scheduleId: Long, startDate: Date, endDate: Date): Int {
         return dailyTargetDao.getCompletedTargetsInRange(scheduleId, startDate, endDate)
@@ -209,7 +240,7 @@ class MemorizationRepository @Inject constructor(
             1 -> unlockAchievement(
                 AchievementType.FIRST_DAY,
                 "اليوم الأول!",
-                "لقد أكملت يومك الأول في حقظ القرآن الكريم بنجاح",
+                "لقد أكملت يومك الأول في حفظ القرآن الكريم بنجاح",
                 streak.currentStreak
             )
 
@@ -350,6 +381,8 @@ data class WeeklyStats(
     val completedDays: Int,
     val currentStreak: Int,
     val targetsCompleted: Int,
+    val partialTargetsWorkedOn: Int = 0,
+    val totalVersesMemorized: Int = 0
 )
 
 data class ScheduleVerseProgress(
@@ -364,4 +397,14 @@ data class ScheduleProgress(
     val completedTargets: Int,
     val totalTargets: Int,
     val progressPercentage: Int,
+    val partiallyCompletedTargets: Int = 0
+)
+
+data class DailyTargetProgress(
+    val target: DailyTarget,
+    val totalVerses: Int,
+    val completedVerses: Int,
+    val progressPercentage: Int,
+    val isCompleted: Boolean,
+    val wasWorkedOnToday: Boolean = false
 )

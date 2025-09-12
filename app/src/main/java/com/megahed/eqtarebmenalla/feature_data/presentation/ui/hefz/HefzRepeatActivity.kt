@@ -13,6 +13,7 @@ import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
@@ -37,7 +38,9 @@ import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.ActivityHefzRepeatBinding
 import com.megahed.eqtarebmenalla.db.model.Aya
+import com.megahed.eqtarebmenalla.db.model.DailyTarget
 import com.megahed.eqtarebmenalla.db.model.SessionType
+import com.megahed.eqtarebmenalla.db.model.getTotalVerses
 import com.megahed.eqtarebmenalla.feature_data.presentation.ui.ayat.AyaViewModel
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
 import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
@@ -58,6 +61,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private lateinit var binding: ActivityHefzRepeatBinding
     private lateinit var memorizationViewModel: MemorizationViewModel
+
     @Inject
     lateinit var offlineAudioManager: OfflineAudioManager
 
@@ -93,6 +97,18 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private var sessionStartTime: Date? = null
     private var versesCompleted = 0
     private var isProgressTrackingEnabled = false
+    private var totalVersesInTarget = 0
+    private var initialCompletedVerses = 0
+    private var targetStartVerse = 0
+    private var targetEndVerse = 0
+    private var sessionStartVerse = 0
+    private var sessionEndVerse = 0
+    private var isDialogShowing = false
+    private var hasShownCompletionDialog = false
+    private var userChoiceMade = false
+    private var userWantsAutoComplete = false
+    private var completionDialogShown = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -207,7 +223,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 ayaHefzPagerAdapter.notifyDataSetChanged()
                 Snackbar.make(binding.root, "تم التبديل للوضع المتصل", Snackbar.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Snackbar.make(binding.root, "فشل في التبديل للوضع المتصل", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, "فشل في التبديل للوضع المتصل", Snackbar.LENGTH_LONG)
+                    .show()
             }
         }
     }
@@ -244,13 +261,22 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 }
                 if (downloadedCount == totalMissing) {
                     binding.toolbar.toolbar.subtitle = "تم التحميل - وضع عدم الاتصال نشط"
-                    Snackbar.make(binding.root, "تم تحميل جميع الآيات المفقودة", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        binding.root,
+                        "تم تحميل جميع الآيات المفقودة",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                 } else {
                     binding.toolbar.toolbar.subtitle = "تحميل جزئي - $downloadedCount/$totalMissing"
-                    Snackbar.make(binding.root, "تم تحميل $downloadedCount من $totalMissing آية", Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(
+                        binding.root,
+                        "تم تحميل $downloadedCount من $totalMissing آية",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
             } catch (e: Exception) {
-                Snackbar.make(binding.root, "فشل في تحميل الآيات المفقودة", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, "فشل في تحميل الآيات المفقودة", Snackbar.LENGTH_LONG)
+                    .show()
             }
         }
     }
@@ -310,7 +336,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private fun handleMissingAudio(verseNumber: Int) {
         lastFailedVerseIndex = currentVerseIndex
-        val surahName = Constants.SORA_OF_QURAN[soraId?.toInt()?:0]
+        val surahName = Constants.SORA_OF_QURAN[soraId?.toInt() ?: 0]
         runOnUiThread {
             if (!hasShownOfflineWarning) {
                 hasShownOfflineWarning = true
@@ -337,7 +363,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                             waitingForUserDecision = false
                             attemptToDownloadMissingVerse(verseNumber)
                         } else {
-                            Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+                            Snackbar.make(
+                                binding.root,
+                                "لا يوجد اتصال بالإنترنت",
+                                Snackbar.LENGTH_LONG
+                            ).show()
                         }
                     }
                     .setCancelable(false)
@@ -414,7 +444,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 )
                 if (success) {
                     val localPath = offlineAudioManager.getVerseAudioPath(
-                        readerId ,
+                        readerId,
                         soraId?.toInt() ?: return@launch,
                         verseNumber
                     )
@@ -422,7 +452,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                         ayaList.find { it.ayaId == verseNumber }?.url = localPath
                     }
                     binding.toolbar.toolbar.subtitle = "تم تحميل الآية - وضع عدم الاتصال نشط"
-                    Snackbar.make(binding.root, "تم تحميل الآية $verseNumber بنجاح", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        binding.root,
+                        "تم تحميل الآية $verseNumber بنجاح",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                     userRequestedRetry = true
                     waitingForUserDecision = false
                 } else {
@@ -431,7 +465,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 }
             } catch (e: Exception) {
                 binding.toolbar.toolbar.subtitle = "فشل التحميل - وضع عدم الاتصال نشط"
-                Snackbar.make(binding.root, "خطأ في تحميل الآية: ${e.message}", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(
+                    binding.root,
+                    "خطأ في تحميل الآية: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
                 resumeFromCurrentPosition()
             }
         }
@@ -522,7 +560,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         val endVerse = endAya!!.toInt()
         if (isOfflineMode) {
             for (verseNumber in startVerse..endVerse) {
-                val isAvailable = offlineAudioManager.isVerseAudioDownloaded(readerId, surahId, verseNumber)
+                val isAvailable =
+                    offlineAudioManager.isVerseAudioDownloaded(readerId, surahId, verseNumber)
                 if (!isAvailable) {
                     missingVerses.add(verseNumber)
                 }
@@ -540,7 +579,13 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 runOnUiThread {
                     MaterialAlertDialogBuilder(this@HefzRepeatActivity)
                         .setTitle("تحذير: آيات مفقودة")
-                        .setMessage("في وضع عدم الاتصال:\n• متوفر: $availableVerses من $totalVerses آية\n• مفقود: ${missingVerses.joinToString(", ")}\n\nستتوقف الجلسة عند الآيات المفقودة. هل تريد المتابعة؟")
+                        .setMessage(
+                            "في وضع عدم الاتصال:\n• متوفر: $availableVerses من $totalVerses آية\n• مفقود: ${
+                                missingVerses.joinToString(
+                                    ", "
+                                )
+                            }\n\nستتوقف الجلسة عند الآيات المفقودة. هل تريد المتابعة؟"
+                        )
                         .setPositiveButton("متابعة") { _, _ ->
                             startMemorizationProcess()
                         }
@@ -555,7 +600,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                                     missingVerses
                                 )
                             } else {
-                                Snackbar.make(binding.root, "لا يوجد اتصال بالإنترنت", Snackbar.LENGTH_LONG).show()
+                                Snackbar.make(
+                                    binding.root,
+                                    "لا يوجد اتصال بالإنترنت",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
                                 startMemorizationProcess()
                             }
                         }
@@ -583,7 +632,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     val surahId = soraId!!.toInt()
                     val startVerse = startAya!!.toInt()
                     val endVerse = endAya!!.toInt()
-                    val allDownloaded = offlineAudioManager.areVersesDownloaded(readerId, surahId, startVerse, endVerse)
+                    val allDownloaded = offlineAudioManager.areVersesDownloaded(
+                        readerId,
+                        surahId,
+                        startVerse,
+                        endVerse
+                    )
                     if (allDownloaded) {
                         binding.toolbar.toolbar.subtitle = "وضع عدم الاتصال نشط"
                     } else {
@@ -600,14 +654,26 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         }
     }
 
-    private fun showOfflineUnavailableDialog(readerId: String, surahId: Int, startVerse: Int, endVerse: Int) {
+    private fun showOfflineUnavailableDialog(
+        readerId: String,
+        surahId: Int,
+        startVerse: Int,
+        endVerse: Int,
+    ) {
         lifecycleScope.launch {
-            val missingVerses = offlineAudioManager.getMissingVerses(readerId, surahId, startVerse, endVerse)
+            val missingVerses =
+                offlineAudioManager.getMissingVerses(readerId, surahId, startVerse, endVerse)
             val totalVerses = endVerse - startVerse + 1
             val availableVerses = totalVerses - missingVerses.size
             MaterialAlertDialogBuilder(this@HefzRepeatActivity)
                 .setTitle("المحتوى غير متوفر بالكامل")
-                .setMessage("متوفر $availableVerses من $totalVerses آية للوضع غير المتصل.\nالآيات المفقودة: ${missingVerses.joinToString(", ")}\n\nهل تريد تحميل الآيات المفقودة أم التبديل للوضع المتصل؟")
+                .setMessage(
+                    "متوفر $availableVerses من $totalVerses آية للوضع غير المتصل.\nالآيات المفقودة: ${
+                        missingVerses.joinToString(
+                            ", "
+                        )
+                    }\n\nهل تريد تحميل الآيات المفقودة أم التبديل للوضع المتصل؟"
+                )
                 .setPositiveButton("تحميل المفقود") { _, _ ->
                     downloadMissingVerses(readerId, surahId, missingVerses)
                 }
@@ -692,14 +758,23 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     val sessionSurahId = soraId?.toIntOrNull() ?: -1
                     val sessionStartVerse = startAya?.toIntOrNull() ?: -1
                     val sessionEndVerse = endAya?.toIntOrNull() ?: -1
-                    isProgressTrackingEnabled = (sessionSurahId == target.surahId &&
-                            sessionStartVerse == target.startVerse &&
-                            sessionEndVerse == target.endVerse &&
-                            !target.isCompleted)
+
+                    targetStartVerse = target.startVerse
+                    targetEndVerse = target.endVerse
+                    this@HefzRepeatActivity.sessionStartVerse = sessionStartVerse
+                    this@HefzRepeatActivity.sessionEndVerse = sessionEndVerse
+
+                    val hasOverlap = sessionSurahId == target.surahId &&
+                            sessionStartVerse <= target.endVerse &&
+                            sessionEndVerse >= target.startVerse &&
+                            !target.isCompleted
+
+                    isProgressTrackingEnabled = hasOverlap
+
                     if (isProgressTrackingEnabled) {
                         val modeText = if (isOfflineMode) " (وضع عدم الاتصال)" else ""
                         binding.toolbar.toolbar.subtitle = "تتبع التقدم نشط - ${target.surahName}$modeText"
-                        showProgressTrackingConfirmation(target.surahName, target.startVerse, target.endVerse)
+                        showProgressTrackingConfirmation(target.surahName, sessionStartVerse, sessionEndVerse, target)
                     } else if (isOfflineMode) {
                         binding.toolbar.toolbar.subtitle = getString(R.string.offline_mode_active)
                     }
@@ -708,13 +783,42 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         }
     }
 
-    private fun showProgressTrackingConfirmation(surahName: String, startVerse: Int, endVerse: Int) {
+
+    private fun showProgressTrackingConfirmation(surahName: String, startVerse: Int, endVerse: Int, target: DailyTarget) {
+        if (isDialogShowing || completionDialogShown) return
+
+        val overlapStart = maxOf(sessionStartVerse, target.startVerse)
+        val overlapEnd = minOf(sessionEndVerse, target.endVerse)
+
         val modeText = if (isOfflineMode) "\n\n(سيتم الحفظ في وضع عدم الاتصال)" else ""
+        val message = """
+            هدف اليوم: ${target.surahName} - الآيات ${target.startVerse}-${target.endVerse}
+            الجلسة الحالية: الآيات $sessionStartVerse-$sessionEndVerse
+            المنطقة المشتركة: الآيات $overlapStart-$overlapEnd
+            التقدم الحالي: ${target.completedVerses}/${target.getTotalVerses()} آية
+            
+            كيف تريد التعامل مع إكمال الهدف؟$modeText
+        """.trimIndent()
+
+        isDialogShowing = true
+        completionDialogShown = true
         MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.progress_tracking_title))
-            .setMessage("تم اكتشاف أن هذه الجلسة تطابق هدف اليوم:\n$surahName - الآيات $startVerse-$endVerse\n\nهل تريد تتبع تقدمك وتسجيل هذه الجلسة?$modeText")
-            .setPositiveButton(getString(R.string.yes)) { _, _ -> startProgressTracking() }
-            .setNegativeButton(getString(R.string.no)) { _, _ ->
+            .setTitle("إعدادات تتبع التقدم")
+            .setMessage(message)
+            .setPositiveButton("اكتمال تلقائي") { _, _ ->
+                isDialogShowing = false
+                userChoiceMade = true
+                userWantsAutoComplete = true
+                startProgressTracking(target)
+            }
+            .setNeutralButton("حفظ التقدم فقط") { _, _ ->
+                isDialogShowing = false
+                userChoiceMade = true
+                userWantsAutoComplete = false
+                startProgressTracking(target)
+            }
+            .setNegativeButton("بدون تتبع") { _, _ ->
+                isDialogShowing = false
                 isProgressTrackingEnabled = false
                 binding.toolbar.toolbar.subtitle = if (isOfflineMode) getString(R.string.offline_mode_active) else ""
             }
@@ -722,14 +826,21 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .show()
     }
 
-    private fun startProgressTracking() {
+    private fun startProgressTracking(target: DailyTarget) {
         lifecycleScope.launch {
             try {
                 sessionStartTime = Date()
+
+                totalVersesInTarget = target.getTotalVerses()
+                initialCompletedVerses = target.completedVerses
+
+                versesCompleted = 0
+
                 memorizationViewModel.startMemorizationSession(SessionType.LISTENING)
                 memorizationViewModel.uiState.collect { state ->
                     if (state.isSessionActive && state.currentSessionId != null) {
                         sessionId = state.currentSessionId
+                        updateProgressDisplay()
                         return@collect
                     }
                 }
@@ -749,19 +860,72 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     private fun showExitConfirmationDialog() {
+        if (isDialogShowing) return
+
+        val hasProgress = versesCompleted > 0
+
+        if (!hasProgress) {
+
+            MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.end_session))
+                .setMessage("لم يتم تسجيل أي تقدم في هذه الجلسة.\n\nهل تريد الخروج؟")
+                .setPositiveButton("خروج") { _, _ ->
+                    stopMemorization()
+                    finish()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+                .show()
+            return
+        }
+
+        val message = if (userChoiceMade && userWantsAutoComplete) {
+            "تقدمك في الجلسة: $versesCompleted آية\n\nسيتم حفظ التقدم وإكمال الهدف إذا وصلت للنهاية.\n\nهل تريد الخروج؟"
+        } else {
+            "تقدمك في الجلسة: $versesCompleted آية\n\nهل تريد حفظ التقدم قبل الخروج؟"
+        }
+
+        isDialogShowing = true
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.end_session))
-            .setMessage(getString(R.string.exit_session_message))
-            .setPositiveButton(getString(R.string.save_and_exit)) { _, _ ->
-                completeProgressTracking(true)
+            .setMessage(message)
+            .setPositiveButton("حفظ والخروج") { _, _ ->
+                isDialogShowing = false
+                completeProgressTracking(markAsCompleted = false, forceComplete = false)
                 stopMemorization()
                 finish()
             }
-            .setNegativeButton(getString(R.string.exit_without_saving)) { _, _ ->
+            .setNeutralButton("خروج بدون حفظ") { _, _ ->
+                isDialogShowing = false
                 stopMemorization()
                 finish()
             }
-            .setNeutralButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                isDialogShowing = false
+                dialog.dismiss()
+            }
+            .show()
+    }
+    private fun showManualCompletionDialog() {
+        if (isDialogShowing) return
+
+        isDialogShowing = true
+        MaterialAlertDialogBuilder(this)
+            .setTitle("إنهاء الجلسة")
+            .setMessage("كيف تريد إنهاء هذه الجلسة؟")
+            .setPositiveButton("إكمال الهدف") { _, _ ->
+                isDialogShowing = false
+                completeProgressTracking(markAsCompleted = true, forceComplete = true)
+                stopMemorization()
+            }
+            .setNeutralButton("حفظ التقدم فقط") { _, _ ->
+                isDialogShowing = false
+                completeProgressTracking(markAsCompleted = false, forceComplete = false)
+                stopMemorization()
+            }
+            .setNegativeButton("إلغاء") { dialog, _ ->
+                isDialogShowing = false
+                dialog.dismiss()
+            }
             .show()
     }
 
@@ -776,11 +940,17 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     override fun onDestroy() {
         if (isProgressTrackingEnabled && sessionId != null) {
-            completeProgressTracking(false)
+            completeProgressTracking(false, false)
         }
         stopMemorization()
         exoPlayer?.release()
         exoPlayer = null
+
+        isDialogShowing = false
+        userChoiceMade = false
+        userWantsAutoComplete = false
+        completionDialogShown = false
+
         lifecycleScope.cancel()
         super.onDestroy()
     }
@@ -801,18 +971,110 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 updatePositionIndicator(position)
-                if (isProgressTrackingEnabled) {
-                    versesCompleted = position + 1
-                    updateProgressDisplay()
-                }
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                super.onPageScrollStateChanged(state)
             }
         })
+    }
+    private fun onVerseCompleted(versePosition: Int) {
+        if (isProgressTrackingEnabled && userChoiceMade) {
+            val newCompletedCount = versePosition + 1
+            if (newCompletedCount != versesCompleted) {
+                versesCompleted = newCompletedCount
+                updateProgressDisplay()
+                saveProgressSilently()
+                checkForAutoCompletion()
+            }
+        }
+    }
+
+    private fun checkForAutoCompletion() {
+        if (!isProgressTrackingEnabled || !userChoiceMade) return
+
+        val targetOverlapStart = maxOf(sessionStartVerse, targetStartVerse)
+        val targetOverlapEnd = minOf(sessionEndVerse, targetEndVerse)
+        val sessionVerseNumber = sessionStartVerse + versesCompleted - 1
+
+        if (sessionVerseNumber >= targetOverlapEnd) {
+            val newCompletedInTarget = initialCompletedVerses + (targetOverlapEnd - targetOverlapStart + 1)
+
+            if (newCompletedInTarget >= totalVersesInTarget) {
+                if (!completionDialogShown) {
+                    completionDialogShown = true
+
+                    if (userWantsAutoComplete) {
+                        lifecycleScope.launch {
+                            completeProgressTracking(true, true)
+                            showCompletionToast("تهانينا! تم إكمال الهدف بنجاح!")
+                        }
+                    } else {
+                        lifecycleScope.launch {
+                            saveProgressSilently()
+                            showCompletionToast("تم حفظ جميع الآيات المطلوبة")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private fun showCompletionToast(message: String) {
+        if (!completionDialogShown) {
+            completionDialogShown = true
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(ContextCompat.getColor(this, R.color.green))
+                .show()
+        }
+    }
+    private fun checkForCompletion() {
+        if (isProgressTrackingEnabled && !hasShownCompletionDialog) {
+            val targetOverlapStart = maxOf(sessionStartVerse, targetStartVerse)
+            val targetOverlapEnd = minOf(sessionEndVerse, targetEndVerse)
+            val sessionVerseNumber = sessionStartVerse + versesCompleted - 1
+
+            if (sessionVerseNumber >= targetOverlapEnd) {
+                val newCompletedInTarget = initialCompletedVerses + (targetOverlapEnd - targetOverlapStart + 1)
+                if (newCompletedInTarget >= totalVersesInTarget) {
+                    hasShownCompletionDialog = true
+                    showAutoCompletionDialog()
+                }
+            }
+        }
+    }
+
+    private fun saveProgressSilently() {
+        if (versesCompleted > initialCompletedVerses) {
+            lifecycleScope.launch {
+                try {
+                    memorizationViewModel.updateVerseProgress(versesCompleted)
+                } catch (e: Exception) {
+                }
+            }
+        }
     }
 
     private fun updateProgressDisplay() {
         if (isProgressTrackingEnabled) {
-            val totalVerses = ayaList.size
-            binding.toolbar.toolbar.subtitle = "تتبع التقدم: $versesCompleted/$totalVerses آية مكتملة"
+            val targetOverlapStart = maxOf(sessionStartVerse, targetStartVerse)
+            val targetOverlapEnd = minOf(sessionEndVerse, targetEndVerse)
+            val overlapSize = targetOverlapEnd - targetOverlapStart + 1
+
+            val sessionPosition = versesCompleted
+            val sessionVerseNumber = sessionStartVerse + sessionPosition - 1
+
+            val targetProgress = when {
+                sessionVerseNumber < targetOverlapStart -> initialCompletedVerses
+                sessionVerseNumber > targetOverlapEnd -> initialCompletedVerses + overlapSize
+                else -> initialCompletedVerses + (sessionVerseNumber - targetOverlapStart + 1)
+            }
+
+            val totalProgress = minOf(targetProgress, totalVersesInTarget)
+            val percentageProgress = if (totalVersesInTarget > 0) {
+                (totalProgress * 100) / totalVersesInTarget
+            } else 0
+
+            binding.toolbar.toolbar.subtitle = "تتبع التقدم: $totalProgress/$totalVersesInTarget آية ($percentageProgress%)"
         }
     }
 
@@ -825,46 +1087,75 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 finish()
             }
         }
+
         binding.stopMemorization.setOnClickListener {
             if (isProgressTrackingEnabled && sessionId != null) {
-                showCompletionConfirmationDialog()
+                showManualCompletionDialog()
             } else {
                 stopMemorization()
             }
         }
+
         binding.pauseResumeButton.setOnClickListener { togglePauseResume() }
         binding.skipForwardButton.setOnClickListener { skipToNextVerse() }
     }
 
     private fun showCompletionConfirmationDialog() {
-        val totalVerses = ayaList.size
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.complete_session))
-            .setMessage("هل أكملت حفظ جميع الآيات ($totalVerses آية)؟\n\nسيتم تسجيل هذا كإنجاز مكتمل في تقدمك اليومي.")
-            .setPositiveButton(getString(R.string.completed_yes)) { _, _ ->
-                completeProgressTracking(true)
+            .setMessage(
+                """
+                تقدمك الحالي: $versesCompleted من $totalVersesInTarget آية
+                
+                اختر إحدى الخيارات:
+                • مكتمل: سجل الهدف كمكتمل بالكامل
+                • حفظ التقدم: احفظ التقدم الحالي فقط
+                • إلغاء: استمر في الجلسة
+            """.trimIndent()
+            )
+            .setPositiveButton("مكتمل") { _, _ ->
+                completeProgressTracking(markAsCompleted = true, forceComplete = true)
                 stopMemorization()
             }
-            .setNegativeButton(getString(R.string.completed_no)) { _, _ ->
-                completeProgressTracking(false)
+            .setNeutralButton("حفظ التقدم") { _, _ ->
+                completeProgressTracking(markAsCompleted = false, forceComplete = false)
                 stopMemorization()
+            }
+            .setNegativeButton("إلغاء") { dialog, _ ->
+                dialog.dismiss()
             }
             .show()
     }
 
-    private fun completeProgressTracking(markTargetCompleted: Boolean) {
+    private fun completeProgressTracking(markAsCompleted: Boolean, forceComplete: Boolean = false) {
         lifecycleScope.launch {
             try {
                 sessionId?.let { id ->
-                    val notes = if (markTargetCompleted) {
-                        "جلسة مكتملة - تم حفظ ${ayaList.size} آية"
-                    } else {
-                        "جلسة غير مكتملة - تم حفظ $versesCompleted من ${ayaList.size} آية"
+                    val targetOverlapStart = maxOf(sessionStartVerse, targetStartVerse)
+                    val targetOverlapEnd = minOf(sessionEndVerse, targetEndVerse)
+                    val sessionVerseNumber = sessionStartVerse + versesCompleted - 1
+
+                    val versesCompletedInTarget = when {
+                        versesCompleted == 0 -> 0
+                        sessionVerseNumber < targetOverlapStart -> 0
+                        sessionVerseNumber > targetOverlapEnd -> targetOverlapEnd - targetOverlapStart + 1
+                        else -> sessionVerseNumber - targetOverlapStart + 1
                     }
-                    memorizationViewModel.completeSession(versesCompleted, notes)
-                    if (markTargetCompleted) {
-                        memorizationViewModel.markTodayTargetCompleted()
+
+                    val totalCompletedInTarget = initialCompletedVerses + versesCompletedInTarget
+
+                    val notes = when {
+                        forceComplete -> "هدف مكتمل - تم وضع علامة اكتمال يدوياً"
+                        markAsCompleted -> "جلسة مكتملة - المجموع: $totalCompletedInTarget من $totalVersesInTarget آية"
+                        else -> "تقدم محفوظ - المجموع: $totalCompletedInTarget من $totalVersesInTarget آية"
                     }
+
+                    memorizationViewModel.completeSession(
+                        versesCompleted = versesCompletedInTarget,
+                        notes = notes,
+                        markAsCompleted = forceComplete
+                    )
+
                 }
                 isProgressTrackingEnabled = false
                 sessionId = null
@@ -874,16 +1165,28 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         }
     }
 
+    private fun checkAutoCompletion() {
+        if (isProgressTrackingEnabled && versesCompleted >= totalVersesInTarget) {
+            showAutoCompletionDialog()
+        }
+    }
+
     private fun showAutoCompletionDialog() {
+        if (isDialogShowing || hasShownCompletionDialog) return
+
+        isDialogShowing = true
         MaterialAlertDialogBuilder(this)
-            .setTitle("تم إكمال الحفظ!")
-            .setMessage("تهانينا! لقد أكملت جلسة الحفظ بنجاح.\n\nهل تريد تسجيل هذا كهدف مكتمل؟")
-            .setPositiveButton("نعم") { _, _ ->
-                completeProgressTracking(true)
+            .setTitle("تم إكمال الهدف!")
+            .setMessage("تهانينا! لقد أكملت هدف اليوم بنجاح.\n\nهل تريد تسجيل هذا الهدف كمكتمل؟")
+            .setPositiveButton("نعم، مكتمل") { _, _ ->
+                isDialogShowing = false
+                completeProgressTracking(markAsCompleted = true, forceComplete = true)
             }
-            .setNegativeButton("لا") { _, _ ->
-                completeProgressTracking(false)
+            .setNegativeButton("حفظ التقدم فقط") { _, _ ->
+                isDialogShowing = false
+                completeProgressTracking(markAsCompleted = false, forceComplete = false)
             }
+            .setCancelable(false)
             .show()
     }
 
@@ -891,6 +1194,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         exoPlayer?.let { player ->
             var waitCount = 0
             val maxWaitCount = 500
+
             while (player.playbackState != Player.STATE_READY &&
                 player.playbackState != Player.STATE_BUFFERING &&
                 waitCount < maxWaitCount &&
@@ -899,10 +1203,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 delay(100)
                 waitCount++
             }
+
             if (skipToNext) {
                 player.stop()
                 return
             }
+
             waitCount = 0
             while (player.playbackState != Player.STATE_ENDED &&
                 waitCount < maxWaitCount &&
@@ -915,7 +1221,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 delay(100)
                 waitCount++
             }
-            if (skipToNext || waitCount >= maxWaitCount) player.stop()
+
+            if (player.playbackState == Player.STATE_ENDED || skipToNext) {
+                val currentPosition = binding.viewPager.currentItem
+                onVerseCompleted(currentPosition) // Count completion at the END
+                player.stop()
+            }
         }
     }
 
@@ -1037,6 +1348,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 }
                 true
             }
+
             else -> false
         }
     }

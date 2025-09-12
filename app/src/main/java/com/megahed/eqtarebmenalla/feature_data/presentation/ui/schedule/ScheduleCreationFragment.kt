@@ -470,7 +470,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         val progress = (successCount * 100) / totalVerses
                         showDownloadProgress(progress, 100, "تم إعادة تحميل $successCount من $totalVerses آية")
 
-                        delay(500) // Add delay between retries
+                        delay(500)
 
                     } catch (e: Exception) {
 
@@ -980,10 +980,3 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         _binding = null
     }
 }
-
-data class TempSchedule(
-    val surahId: Int,
-    val surahName: String,
-    val startVerse: Int,
-    val endVerse: Int,
-)

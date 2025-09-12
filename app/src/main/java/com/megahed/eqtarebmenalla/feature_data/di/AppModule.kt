@@ -17,6 +17,7 @@ import com.megahed.eqtarebmenalla.db.MIGRATION_3_4
 import com.megahed.eqtarebmenalla.db.MIGRATION_4_5
 import com.megahed.eqtarebmenalla.db.MIGRATION_5_6
 import com.megahed.eqtarebmenalla.db.MIGRATION_6_7
+import com.megahed.eqtarebmenalla.db.MIGRATION_7_8
 import com.megahed.eqtarebmenalla.db.MyDatabase
 import com.megahed.eqtarebmenalla.db.dao.AchievementDao
 import com.megahed.eqtarebmenalla.db.dao.CachedRecitersDao
@@ -128,7 +129,7 @@ object AppModule {
             app,
             MyDatabase::class.java,
             MyDatabase.DATABASE_NAME)
-            .addMigrations( MIGRATION_3_4, MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7)
+            .addMigrations( MIGRATION_3_4, MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7, MIGRATION_7_8)
             .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)

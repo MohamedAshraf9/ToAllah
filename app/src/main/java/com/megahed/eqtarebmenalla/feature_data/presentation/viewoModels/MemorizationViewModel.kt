@@ -8,7 +8,9 @@ import com.megahed.eqtarebmenalla.db.model.DailyTarget
 import com.megahed.eqtarebmenalla.db.model.MemorizationSchedule
 import com.megahed.eqtarebmenalla.db.model.SessionType
 import com.megahed.eqtarebmenalla.db.model.UserStreak
+import com.megahed.eqtarebmenalla.db.model.getTotalVerses
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
+import com.megahed.eqtarebmenalla.feature_data.data.repository.DailyTargetProgress
 import com.megahed.eqtarebmenalla.feature_data.data.repository.MemorizationRepository
 import com.megahed.eqtarebmenalla.feature_data.data.repository.ScheduleProgress
 import com.megahed.eqtarebmenalla.feature_data.data.repository.WeeklyStats
@@ -43,6 +45,9 @@ class MemorizationViewModel @Inject constructor(
 
     private val _userStreak = MutableStateFlow<UserStreak?>(null)
     val userStreak: StateFlow<UserStreak?> = _userStreak.asStateFlow()
+
+    private val _todayTargetProgress = MutableStateFlow<DailyTargetProgress?>(null)
+    val todayTargetProgress: StateFlow<DailyTargetProgress?> = _todayTargetProgress.asStateFlow()
 
     init {
         loadCurrentSchedule()
@@ -95,6 +100,105 @@ class MemorizationViewModel @Inject constructor(
             )
         }
     }
+    fun updateVerseProgress(versesCompleted: Int) {
+        viewModelScope.launch {
+            try {
+                val todayTarget = _todayTarget.value
+                if (todayTarget != null) {
+                    memorizationRepository.updateVerseProgress(
+                        targetId = todayTarget.id,
+                        completedVerses = versesCompleted
+                    )
+
+                    loadTodayTargetProgress()
+                    refreshAllData()
+
+                    val totalVerses = todayTarget.getTotalVerses()
+                    if (versesCompleted >= totalVerses) {
+                        _uiState.value = _uiState.value.copy(
+                            showCelebration = true,
+                            message = "تهانينا! لقد أكملت هدف اليوم بنجاح!"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "فشل في حفظ التقدم: ${e.message}"
+                )
+            }
+        }
+    }
+    fun completeSession(versesCompleted: Int, notes: String?, markAsCompleted: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                val sessionId = _uiState.value.currentSessionId
+                if (sessionId != null) {
+                    memorizationRepository.completeSession(
+                        sessionId = sessionId,
+                        versesCompleted = versesCompleted,
+                        notes = notes
+                    )
+
+                    val todayTarget = _todayTarget.value
+                    if (todayTarget != null) {
+                        if (markAsCompleted) {
+                            memorizationRepository.markTargetCompleted(todayTarget.id)
+                        } else {
+                            val currentProgress = maxOf(todayTarget.completedVerses, versesCompleted)
+                            memorizationRepository.updateVerseProgress(todayTarget.id, currentProgress)
+                        }
+
+                        loadTodayTargetProgress()
+
+                        val totalVerses = todayTarget.getTotalVerses()
+                        val completionMessage = if (markAsCompleted || versesCompleted >= totalVerses) {
+                            "تهانينا! لقد أكملت هدف اليوم بنجاح!"
+                        } else {
+                            "تم حفظ تقدمك: ${versesCompleted} من $totalVerses آية"
+                        }
+
+                        _uiState.value = _uiState.value.copy(
+                            isSessionActive = false,
+                            currentSessionId = null,
+                            message = completionMessage,
+                            showCelebration = markAsCompleted || versesCompleted >= totalVerses
+                        )
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(error = "لا يوجد جلسات حفظ نشطة")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "فشل في إكمال الجلسة: ${e.message}")
+            }
+        }
+    }
+
+    fun loadTodayTargetProgress() {
+        viewModelScope.launch {
+            try {
+                val progress = memorizationRepository.getTodayTargetProgress()
+                _todayTargetProgress.value = progress
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+
+    private fun loadTodayTarget() {
+        viewModelScope.launch {
+            try {
+                memorizationRepository.getTodayTargetFlow().collect { target ->
+                    _todayTarget.value = target
+                    if (target != null) {
+                        loadTodayTargetProgress()
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "فشل في تحميل هدف اليوم: ${e.message}")
+            }
+        }
+    }
 
     private fun loadCurrentSchedule() {
         viewModelScope.launch {
@@ -104,18 +208,6 @@ class MemorizationViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = "فشل في تحميل الجدول: ${e.message}")
-            }
-        }
-    }
-
-    private fun loadTodayTarget() {
-        viewModelScope.launch {
-            try {
-                memorizationRepository.getTodayTargetFlow().collect { target ->
-                    _todayTarget.value = target
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = "فشل في تحميل هدف اليوم: ${e.message}")
             }
         }
     }
@@ -347,6 +439,7 @@ class MemorizationViewModel @Inject constructor(
         loadTodayTarget()
         loadUserStreak()
         loadScheduleProgress()
+        loadTodayTargetProgress()
     }
 
     suspend fun getWeeklyStats(): WeeklyStats {

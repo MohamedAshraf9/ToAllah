@@ -51,8 +51,11 @@ interface DailyTargetDao {
     @Update
     suspend fun updateTarget(target: DailyTarget)
 
-    @Query("UPDATE daily_targets SET isCompleted = 1, completedAt = :completedAt WHERE id = :targetId")
+    @Query("UPDATE daily_targets SET isCompleted = 1, completedAt = :completedAt, completedVerses = (endVerse - startVerse + 1) WHERE id = :targetId")
     suspend fun markTargetCompleted(targetId: Long, completedAt: Date)
+
+    @Query("UPDATE daily_targets SET completedVerses = :completedVerses, isCompleted = CASE WHEN :completedVerses >= (endVerse - startVerse + 1) THEN 1 ELSE 0 END, completedAt = CASE WHEN :completedVerses >= (endVerse - startVerse + 1) THEN :completedAt ELSE completedAt END WHERE id = :targetId")
+    suspend fun updateVerseProgress(targetId: Long, completedVerses: Int, completedAt: Date = Date())
 
     @Delete
     suspend fun deleteTarget(target: DailyTarget)
@@ -61,21 +64,24 @@ interface DailyTargetDao {
     suspend fun deleteTargetsForSchedule(scheduleId: Long)
 
     @Query("""
-    SELECT 
+        SELECT 
         COALESCE(SUM(endVerse - startVerse + 1), 0) as totalVerses
-    FROM daily_targets 
-    WHERE scheduleId = :scheduleId
-""")
+        FROM daily_targets 
+        WHERE scheduleId = :scheduleId
+    """)
     suspend fun getTotalVersesForSchedule(scheduleId: Long): Int
 
     @Query("""
-    SELECT 
-        COALESCE(SUM(endVerse - startVerse + 1), 0) as completedVerses
-    FROM daily_targets 
-    WHERE scheduleId = :scheduleId AND isCompleted = 1
-""")
+        SELECT 
+        COALESCE(SUM(completedVerses), 0) as completedVerses
+        FROM daily_targets 
+        WHERE scheduleId = :scheduleId
+    """)
     suspend fun getCompletedVersesForSchedule(scheduleId: Long): Int
-    
+
     @Query("SELECT * FROM daily_targets WHERE scheduleId = :scheduleId")
     suspend fun getTargetsForScheduleSync(scheduleId: Long): List<DailyTarget>
+
+    @Query("SELECT * FROM daily_targets WHERE scheduleId = :scheduleId AND completedVerses > 0 AND isCompleted = 0")
+    suspend fun getPartiallyCompletedTargets(scheduleId: Long): List<DailyTarget>
 }
