@@ -1,7 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Constants
@@ -38,7 +37,8 @@ class QuranListenerReaderViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getData(quranListenerReader: QuranListenerReader) {
+
+    private fun getData(quranListenerReader: QuranListenerReader) {
         val arr = quranListenerReader.suras.split(",")
         val ints = arr.map { it.toInt() }
 
@@ -142,8 +142,7 @@ class QuranListenerReaderViewModel @Inject constructor(
                 if (success) {
                     monitorDownloadCompletion(readerId, surahId)
                 }
-            } catch (e: Exception) {
-                Log.e("QuranListenerReaderViewModel", "Error downloading audio", e)
+            } catch (_: Exception) {
             }
         }
         return true
@@ -161,7 +160,7 @@ class QuranListenerReaderViewModel @Inject constructor(
                         songRepository.updateSoraSong(it)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }
@@ -186,7 +185,7 @@ class QuranListenerReaderViewModel @Inject constructor(
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -202,7 +201,7 @@ class QuranListenerReaderViewModel @Inject constructor(
                     getData(reader)
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -222,7 +221,7 @@ class QuranListenerReaderViewModel @Inject constructor(
                 surahIds.forEach { surahId ->
                     if (!offlineAudioManager.isSurahDownloaded(readerId, surahId)) {
                         val audioUrl = Constants.getSoraLink(reader.server, surahId)
-                        val surahName = Constants.SORA_OF_QURAN[surahId] ?: "Surah $surahId"
+                        val surahName = Constants.SORA_OF_QURAN[surahId]
 
                         val success = offlineAudioManager.downloadSurahAudio(
                             readerId = readerId,
@@ -241,7 +240,7 @@ class QuranListenerReaderViewModel @Inject constructor(
 
                 true
             } ?: false
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }

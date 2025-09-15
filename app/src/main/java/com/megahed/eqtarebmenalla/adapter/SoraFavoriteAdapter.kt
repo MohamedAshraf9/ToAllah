@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
 import com.megahed.eqtarebmenalla.databinding.SoraFavItemBinding
+import com.megahed.eqtarebmenalla.databinding.SoraListenerItemBinding
 import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import com.megahed.eqtarebmenalla.db.model.SoraSong
 import com.megahed.eqtarebmenalla.myListener.OnItemReaderClickListener
@@ -53,51 +55,150 @@ class SoraFavoriteAdapter(
 
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
         val soraFav = listData[position]
-        val sFav = soraFav.soraSongData.filter {
-            it.isVaForte
-        }
+        val sFav = soraFav.soraSongData.filter { it.isVaForte }
 
         if (sFav.isNotEmpty()) {
+            holder.cardContainer.visibility = View.VISIBLE
             holder.soraName.text = soraFav.quranListenerReader.name
 
-            val quranListenerReaderAdapter = QuranListenerReaderAdapter(
-                context,
-                object : OnItemWithFavClickListener<SoraSong> {
-                    override fun onItemClick(itemObject: SoraSong, view: View?, position: Int) {
-                        onMyItemClickListener.onItemClickReader(
-                            itemObject,
-                            view,
-                            soraFav.quranListenerReader.name
-                        )
-                    }
-
-                    override fun onItemFavClick(itemObject: SoraSong, view: View?) {
-                        onMyItemClickListener.onItemFavClick(itemObject, view)
-                    }
-
-                    override fun onItemLongClick(itemObject: SoraSong, view: View?, position: Int) {
-                        handleDownloadAction(itemObject, soraFav.quranListenerReader.id, soraFav.quranListenerReader.name, holder)
-                    }
-                },
-                offlineAudioManager,
-                soraFav.quranListenerReader.id,
-                lifecycleScope
-            )
+            val innerAdapter = InnerAdapter(sFav, soraFav, holder)
 
             val verticalLayoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             holder.recyclerView.layoutManager = verticalLayoutManager
             holder.recyclerView.setHasFixedSize(true)
-            holder.recyclerView.adapter = quranListenerReaderAdapter
-            quranListenerReaderAdapter.setData(sFav)
+            holder.recyclerView.adapter = innerAdapter
         } else {
             holder.cardContainer.visibility = View.GONE
+        }
+    }
+    inner class InnerAdapter(
+        private var items: List<SoraSong>,
+        private val soraFav: ReaderWithSora,
+        private val parentHolder: MyHolder
+    ) : RecyclerView.Adapter<InnerAdapter.InnerViewHolder>() {
+
+        inner class InnerViewHolder(binding: SoraListenerItemBinding) :
+            RecyclerView.ViewHolder(binding.root) {
+            val soraName = binding.soraName
+            val soraNumber = binding.soraNumber
+            val fav = binding.fav
+            val download = binding.download
+            val root = binding.root
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InnerViewHolder {
+            val binding =
+                SoraListenerItemBinding.inflate(LayoutInflater.from(context), parent, false)
+            return InnerViewHolder(binding)
+        }
+
+        override fun onBindViewHolder(holder: InnerViewHolder, position: Int) {
+            val item = items[position]
+
+            holder.soraName.text = Constants.SORA_OF_QURAN[item.SoraId]
+            holder.soraNumber.text = "${item.SoraId}"
+
+            if (item.isVaForte) {
+                holder.fav.setImageResource(R.drawable.ic_favorite_red_24)
+            } else {
+                holder.fav.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+            }
+            setupDownloadIcon(holder, item, soraFav.quranListenerReader.id)
+
+            holder.fav.setOnClickListener {
+                onMyItemClickListener.onItemFavClick(item, it)
+            }
+
+            holder.root.setOnClickListener {
+                onMyItemClickListener.onItemClickReader(item, it, soraFav.quranListenerReader.name)
+            }
+
+            holder.download.setOnClickListener {
+                handleDownloadAction(
+                    item,
+                    soraFav.quranListenerReader.id,
+                    soraFav.quranListenerReader.name,
+                    parentHolder
+                )
+            }
+            lifecycleScope.launch {
+                updateDownloadIcon(holder, item, soraFav.quranListenerReader.id)
+            }
+        }
+
+        fun updateItemDownloadStatus(soraId: Int) {
+            val position = items.indexOfFirst { it.SoraId == soraId }
+            if (position != -1) {
+                notifyItemChanged(position)
+            }
+        }
+
+        private suspend fun updateDownloadIcon(
+            holder: InnerViewHolder,
+            item: SoraSong,
+            readerId: String
+        ) {
+            try {
+                val isDownloaded = withContext(Dispatchers.IO) {
+                    offlineAudioManager.isSurahDownloaded(readerId, item.SoraId)
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (isDownloaded) {
+                        holder.download.setImageResource(R.drawable.ic_baseline_download_done_24)
+                        holder.download.setColorFilter(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.success_green
+                            )
+                        )
+                    } else {
+                        holder.download.setImageResource(R.drawable.ic_baseline_arrow_circle_down_24)
+                        holder.download.clearColorFilter()
+                    }
+                    holder.download.alpha = 1.0f
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    holder.download.setImageResource(R.drawable.ic_baseline_arrow_circle_down_24)
+                    holder.download.alpha = 1.0f
+                    holder.download.clearColorFilter()
+                }
+            }
+        }
+
+        override fun getItemCount(): Int = items.size
+
+    }
+
+
+    private fun setupDownloadIcon(holder: InnerAdapter.InnerViewHolder, item: SoraSong, readerId: String) {
+        lifecycleScope.launch {
+            try {
+                val isDownloaded = offlineAudioManager.isSurahDownloaded(readerId, item.SoraId)
+
+                if (isDownloaded) {
+                    holder.download.setImageResource(R.drawable.ic_baseline_download_done_24)
+                    holder.download.alpha = 1.0f
+                    holder.download.setColorFilter(ContextCompat.getColor(context, R.color.success_green))
+                } else {
+                    holder.download.setImageResource(R.drawable.ic_baseline_arrow_circle_down_24)
+                    holder.download.alpha = 1.0f
+                    holder.download.clearColorFilter()
+                }
+            } catch (e: Exception) {
+                holder.download.setImageResource(R.drawable.ic_baseline_arrow_circle_down_24)
+                holder.download.alpha = 1.0f
+                holder.download.clearColorFilter()
+            }
         }
     }
 
     override fun getItemCount(): Int {
         return listData.size
     }
+
     fun getAllFavSongs(): List<SoraSong> {
         return listData.flatMap { it.soraSongData.filter { sora -> sora.isVaForte } }
     }
@@ -175,7 +276,7 @@ class SoraFavoriteAdapter(
                 offlineAudioManager.deleteDownloadedAudio(readerId, soraSong.SoraId)
                 showSnackbar(holder.root, "تم حذف ${Constants.SORA_OF_QURAN[soraSong.SoraId]}")
 
-                refreshAdapterForReader(readerId, holder)
+                (holder.recyclerView.adapter as? InnerAdapter)?.updateItemDownloadStatus(soraSong.SoraId)
             } catch (e: Exception) {
                 showSnackbar(holder.root, "حدث خطأ في حذف الملف")
             }
@@ -190,27 +291,24 @@ class SoraFavoriteAdapter(
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 repeat(30) {
-                    delay(1000) // Wait 1 second
+                    delay(1000)
 
                     val isDownloaded = offlineAudioManager.isSurahDownloaded(readerId, soraSong.SoraId)
 
                     if (isDownloaded) {
                         withContext(Dispatchers.Main) {
                             showSnackbar(holder.root, "تم تحميل ${Constants.SORA_OF_QURAN[soraSong.SoraId]} بنجاح")
-                            refreshAdapterForReader(readerId, holder)
+                            (holder.recyclerView.adapter as? InnerAdapter)?.updateItemDownloadStatus(soraSong.SoraId)
                         }
                         return@launch
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }
 
-    private fun refreshAdapterForReader(readerId: String, holder: MyHolder) {
-        val adapter = holder.recyclerView.adapter as? QuranListenerReaderAdapter
-        adapter?.refreshAllDownloadStatuses()
-    }
+
 
     private fun showSnackbar(view: View, message: String) {
         Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()

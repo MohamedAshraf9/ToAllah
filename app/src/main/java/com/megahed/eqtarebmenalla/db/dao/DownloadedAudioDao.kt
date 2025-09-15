@@ -46,4 +46,7 @@ interface DownloadedAudioDao {
         downloadType: DownloadType,
     ): List<DownloadedAudio>
 
+    @Query("SELECT surahId FROM downloaded_audio WHERE readerId = :readerId AND isComplete = 1")
+    suspend fun getDownloadedSurahsByReader(readerId: String): List<Int>
+
 }
