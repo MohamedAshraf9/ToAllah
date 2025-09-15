@@ -142,14 +142,17 @@
                         android:layout_marginBottom="@dimen/_2sdp"
                         android:clipChildren="false"
                         android:clipToPadding="false"
-                        app:cardCornerRadius="@dimen/_8sdp"
-                        app:cardElevation="@dimen/_2sdp"
-                        app:cardUseCompatPadding="true">
+                        app:cardCornerRadius="@dimen/_16sdp"
+                        app:cardElevation="@dimen/_4sdp"
+                        app:cardUseCompatPadding="true"
+                        app:strokeColor="@color/memorization_border_color"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
+                            android:background="@drawable/memorization_card_gradient"
                             android:padding="@dimen/_5sdp">
 
                             <androidx.constraintlayout.widget.ConstraintLayout
