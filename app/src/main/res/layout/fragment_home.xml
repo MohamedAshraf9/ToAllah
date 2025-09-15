@@ -191,9 +191,7 @@
                                     app:layout_constraintStart_toStartOf="@+id/dayDetails"
                                     app:layout_constraintTop_toBottomOf="@+id/dayDetails" />
 
-
                             </androidx.constraintlayout.widget.ConstraintLayout>
-
 
                             <TableLayout
                                 android:layout_width="match_parent"
@@ -217,6 +215,7 @@
                                         app:tint="#E7B10A" />
 
                                     <TextView
+                                        android:id="@+id/prayer_column_header"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
@@ -226,6 +225,7 @@
                                         android:textStyle="bold" />
 
                                     <TextView
+                                        android:id="@+id/time_column_header"
                                         android:layout_width="wrap_content"
                                         android:layout_height="match_parent"
                                         android:layout_marginEnd="@dimen/_10sdp"
@@ -244,6 +244,7 @@
                                         android:contentDescription="@string/desc_cb_fajr" />
 
                                     <TextView
+                                        android:id="@+id/prayer_fajr"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_marginStart="@dimen/_1sdp"
@@ -260,7 +261,6 @@
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
-
                                 </TableRow>
 
                                 <TableRow>
@@ -272,6 +272,7 @@
                                         android:contentDescription="@string/desc_cb_sunrise" />
 
                                     <TextView
+                                        android:id="@+id/prayer_sunrise"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
@@ -300,6 +301,7 @@
                                         android:contentDescription="@string/desc_cb_dhuhr" />
 
                                     <TextView
+                                        android:id="@+id/prayer_dhuhr"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
@@ -316,7 +318,6 @@
                                         android:gravity="center"
                                         android:text="@string/loading"
                                         android:textStyle="bold" />
-
                                 </TableRow>
 
                                 <TableRow>
@@ -328,6 +329,7 @@
                                         android:contentDescription="@string/desc_cb_asr" />
 
                                     <TextView
+                                        android:id="@+id/prayer_asr"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
@@ -355,6 +357,7 @@
                                         android:contentDescription="@string/desc_cb_maghrib" />
 
                                     <TextView
+                                        android:id="@+id/prayer_maghrib"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
@@ -382,6 +385,7 @@
                                         android:contentDescription="@string/desc_cb_isha" />
 
                                     <TextView
+                                        android:id="@+id/prayer_isha"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:layout_margin="@dimen/_1sdp"
@@ -699,8 +703,8 @@
                                     android:layout_width="@dimen/_60sdp"
                                     android:layout_height="@dimen/_60sdp"
                                     android:layout_marginBottom="@dimen/_12sdp"
-                                    android:src="@drawable/ic_book_open"
                                     android:contentDescription="@string/desc_no_schedule_icon"
+                                    android:src="@drawable/ic_book_open"
                                     app:tint="@color/memorization_light" />
 
                                 <TextView
@@ -742,6 +746,7 @@
                                     android:layout_marginEnd="@dimen/_6sdp"
                                     android:layout_weight="1"
                                     android:backgroundTint="@color/memorization_primary"
+                                    android:contentDescription="@string/desc_btn_start_memorization"
                                     android:fontFamily="@font/arabic_font"
                                     android:text="@string/create_memorization_schedule"
                                     android:textAllCaps="false"
@@ -751,7 +756,6 @@
                                     app:cornerRadius="@dimen/_12sdp"
                                     app:icon="@drawable/ic_add_circle"
                                     app:iconGravity="textStart"
-                                    android:contentDescription="@string/desc_btn_start_memorization"
                                     app:iconPadding="@dimen/_6sdp"
                                     app:iconSize="@dimen/_20sdp" />
 
@@ -762,20 +766,20 @@
                                     android:layout_height="@dimen/_48sdp"
                                     android:layout_marginStart="@dimen/_6sdp"
                                     android:layout_weight="1"
+                                    android:contentDescription="@string/desc_btn_view_details"
                                     android:fontFamily="@font/arabic_font"
                                     android:text="@string/btn_view_details"
                                     android:textAllCaps="false"
                                     android:textColor="@color/memorization_primary"
                                     android:textSize="@dimen/_14ssp"
+                                    android:visibility="gone"
                                     app:cornerRadius="@dimen/_12sdp"
                                     app:icon="@drawable/ic_visibility"
                                     app:iconGravity="textStart"
                                     app:iconPadding="@dimen/_6sdp"
                                     app:iconSize="@dimen/_20sdp"
-                                    android:contentDescription="@string/desc_btn_view_details"
                                     app:strokeColor="@color/memorization_primary"
-                                    app:strokeWidth="1dp"
-                                    android:visibility="gone"/>
+                                    app:strokeWidth="1dp" />
 
                             </LinearLayout>
 
@@ -891,10 +895,10 @@
                                 android:layout_marginTop="@dimen/_8sdp"
                                 android:background="?attr/selectableItemBackground"
                                 android:clickable="true"
+                                android:contentDescription="@string/desc_expand_collapse_icon"
                                 android:focusable="true"
                                 android:gravity="center"
                                 android:orientation="horizontal"
-                                android:contentDescription="@string/desc_expand_collapse_icon"
                                 android:padding="@dimen/_8sdp">
 
                                 <TextView

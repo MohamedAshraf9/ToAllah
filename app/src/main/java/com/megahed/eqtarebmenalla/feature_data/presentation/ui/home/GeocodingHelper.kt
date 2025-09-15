@@ -22,8 +22,13 @@ object GeocodingHelper {
         if (!Geocoder.isPresent()) {
             return@withContext null
         }
-
-        val geocoder = Geocoder(context, Locale.getDefault())
+        val defaultLang = Locale.getDefault().language
+        val locale = when (defaultLang.lowercase()) {
+            "ar" -> Locale("ar")
+            "en" -> Locale.ENGLISH
+            else -> Locale("ar")
+        }
+        val geocoder = Geocoder(context, locale)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             suspendCancellableCoroutine { continuation ->

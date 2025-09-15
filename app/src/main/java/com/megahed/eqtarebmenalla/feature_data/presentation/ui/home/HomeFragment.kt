@@ -126,9 +126,11 @@ class HomeFragment : Fragment() {
         setupPrayerNotificationCheckboxes(sharedPreference.edit())
         setupClickListeners(drawerLayout, navView)
         setupMemorizationClickListeners()
+        updatePrayerNamesUI()
 
         return root
     }
+
     private fun initializeLocation() {
         if (sharedPreference.getBoolean(PREF_LOCATION_SAVED, false)) {
             loadSavedLocation()
@@ -149,8 +151,10 @@ class HomeFragment : Fragment() {
             mainViewModel.getAzanData(savedLatitude, savedLongitude)
         }
     }
+
     private fun startLocationFlow() {
-        val locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager =
+            requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             enableLocationServices()
         } else {
@@ -178,7 +182,8 @@ class HomeFragment : Fragment() {
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
                 try {
-                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
+                    val intentSenderRequest =
+                        IntentSenderRequest.Builder(exception.resolution).build()
                     startIntentSenderForResult(
                         intentSenderRequest.intentSender,
                         LOCATION_SERVICES_REQUEST_CODE,
@@ -226,15 +231,18 @@ class HomeFragment : Fragment() {
             ) == PackageManager.PERMISSION_GRANTED -> {
                 getCurrentLocation()
             }
+
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 getCurrentLocation()
             }
+
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 showLocationPermissionRationale()
             }
+
             else -> {
                 requestPermissions(
                     arrayOf(
@@ -246,6 +254,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
     private fun showLocationPermissionRationale() {
         AlertDialog.Builder(requireContext())
             .setTitle("إذن الموقع مطلوب")
@@ -414,7 +423,8 @@ class HomeFragment : Fragment() {
             }
 
             startLocationFlow()
-            Toast.makeText(requireContext(), "جاري تحديث الموقع والأوقات", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "جاري تحديث الموقع والأوقات", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -460,6 +470,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
     private fun updateTodayProgressText(target: DailyTarget) {
         val totalVerses = target.getTotalVerses()
         val completedText = "${target.completedVerses}/$totalVerses آيات"
@@ -471,11 +482,13 @@ class HomeFragment : Fragment() {
                     ContextCompat.getColor(requireContext(), R.color.green)
                 )
             }
+
             target.completedVerses > 0 -> {
                 binding.todayProgressText.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.colorPrimary)
                 )
             }
+
             else -> {
                 binding.todayProgressText.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.text_secondary)
@@ -539,7 +552,8 @@ class HomeFragment : Fragment() {
                 }
                 .show()
         } else {
-            Snackbar.make(binding.root, getString(R.string.no_progress_data), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, getString(R.string.no_progress_data), Snackbar.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -614,6 +628,7 @@ class HomeFragment : Fragment() {
                         ContextCompat.getColor(requireContext(), R.color.green)
                     )
                 }
+
                 targetProgress.completedVerses > 0 -> {
                     binding.todayCompletionIcon.visibility = View.VISIBLE
                     binding.todayCompletionIcon.setImageResource(R.drawable.ic_partial_progress)
@@ -621,6 +636,7 @@ class HomeFragment : Fragment() {
                         ContextCompat.getColor(requireContext(), R.color.colorPrimary)
                     )
                 }
+
                 else -> {
                     binding.todayCompletionIcon.visibility = View.GONE
                     binding.activeScheduleLayout.setBackgroundResource(R.drawable.today_target_background)
@@ -638,6 +654,7 @@ class HomeFragment : Fragment() {
         }
         updateMemorizationButtons(target, targetProgress)
     }
+
     @SuppressLint("SetTextI18n")
     private fun updateTodayTargetUILegacy(target: DailyTarget) {
         binding.activeScheduleLayout.visibility = View.VISIBLE
@@ -661,6 +678,7 @@ class HomeFragment : Fragment() {
                     ContextCompat.getColor(requireContext(), R.color.green)
                 )
             }
+
             target.completedVerses > 0 -> {
                 binding.todayCompletionIcon.visibility = View.VISIBLE
                 binding.todayCompletionIcon.setImageResource(R.drawable.ic_partial_progress)
@@ -668,6 +686,7 @@ class HomeFragment : Fragment() {
                     ContextCompat.getColor(requireContext(), R.color.colorPrimary)
                 )
             }
+
             else -> {
                 binding.todayCompletionIcon.visibility = View.GONE
                 binding.activeScheduleLayout.setBackgroundResource(R.drawable.today_target_background)
@@ -678,7 +697,10 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun updateMemorizationButtons(target: DailyTarget?, targetProgress: DailyTargetProgress?) {
+    private fun updateMemorizationButtons(
+        target: DailyTarget?,
+        targetProgress: DailyTargetProgress?,
+    ) {
         val primaryButton = binding.btnPrimaryAction
         val secondaryButton = binding.btnSecondaryAction
 
@@ -686,21 +708,26 @@ class HomeFragment : Fragment() {
             when {
                 target.isCompleted -> {
                     primaryButton.text = getString(R.string.completed)
-                    primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle)
+                    primaryButton.icon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle)
                     primaryButton.isEnabled = false
                     secondaryButton.text = getString(R.string.review)
                     secondaryButton.visibility = View.VISIBLE
                 }
+
                 targetProgress != null && targetProgress.completedVerses > 0 -> {
                     primaryButton.text = "متابعة الحفظ"
-                    primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
+                    primaryButton.icon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
                     primaryButton.isEnabled = true
                     secondaryButton.text = getString(R.string.view_schedule_details)
                     secondaryButton.visibility = View.VISIBLE
                 }
+
                 else -> {
                     primaryButton.text = getString(R.string.start_memorization)
-                    primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
+                    primaryButton.icon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_play_circle)
                     primaryButton.isEnabled = true
                     secondaryButton.text = getString(R.string.view_schedule_details)
                     secondaryButton.visibility = View.VISIBLE
@@ -708,7 +735,8 @@ class HomeFragment : Fragment() {
             }
         } else {
             primaryButton.text = getString(R.string.create_schedule)
-            primaryButton.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add_circle)
+            primaryButton.icon =
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_add_circle)
             primaryButton.isEnabled = true
             secondaryButton.visibility = View.GONE
         }
@@ -921,7 +949,10 @@ class HomeFragment : Fragment() {
                 putBoolean("isMemorizationMode", true)
                 putBoolean("autoFill", true)
             }
-            findNavController().navigate(R.id.action_navigation_home_to_listenerHelperFragment2, bundle)
+            findNavController().navigate(
+                R.id.action_navigation_home_to_listenerHelperFragment2,
+                bundle
+            )
         } else {
             findNavController().navigate(R.id.action_navigation_home_to_scheduleCreationFragment)
         }
@@ -1041,6 +1072,73 @@ class HomeFragment : Fragment() {
         val numberFormat = NumberFormat.getInstance(Locale.getDefault())
         numberFormat.isGroupingUsed = false
         return "${numberFormat.format(day)} $monthName ${numberFormat.format(year)}"
+    }
+
+    private val prayerNames = mapOf(
+        "fajr" to ("الفجر" to "Fajr"),
+        "sunrise" to ("الشروق" to "Sunrise"),
+        "dhuhr" to ("الظهر" to "Dhuhr"),
+        "asr" to ("العصر" to "Asr"),
+        "maghrib" to ("المغرب" to "Maghrib"),
+        "isha" to ("العشاء" to "Isha"),
+        "prayer" to ("الصلاة" to "Prayer"),
+        "time" to ("الوقت" to "Time"),
+        "update" to ("تحديث" to "Update"),
+        "loading" to ("جاري التحميل..." to "Loading...")
+    )
+
+    private fun getLocalizedPrayerNames(): Map<String, String> {
+        val lang = when (Locale.getDefault().language) {
+            "en" -> "en"
+            "ar" -> "ar"
+            else -> "ar"
+        }
+        return prayerNames.mapValues { (_, v) -> if (lang == "ar") v.first else v.second }
+    }
+
+    private fun stripArabicDiacritics(s: String): String =
+        s.replace(Regex("[\\u064B-\\u0652\\u0670]"), "").trim()
+
+    private fun apiNameToCanonicalKey(apiName: String): String? {
+        val n = apiName.trim().lowercase(Locale.getDefault())
+
+        val revAr = prayerNames.entries.associate { it.value.first.lowercase() to it.key }
+        val revEn = prayerNames.entries.associate { it.value.second.lowercase() to it.key }
+
+        return revAr[n] ?: revEn[n]
+        ?: prayerNames.keys.find { it == n }
+        ?: revAr[stripArabicDiacritics(n)]
+    }
+
+    private fun getLocalizedDisplayName(apiName: String): String {
+        val canonical = apiNameToCanonicalKey(apiName)
+        val names = getLocalizedPrayerNames()
+        return if (canonical != null) names[canonical] ?: apiName else apiName
+    }
+
+    private fun setNextPrayerName(apiName: String) {
+        binding.salahName.text = getLocalizedDisplayName(apiName)
+    }
+    private fun updatePrayerNamesUI() {
+        val names = getLocalizedPrayerNames()
+
+        binding.prayerColumnHeader.text = names["prayer"]
+        binding.timeColumnHeader.text = names["time"]
+        binding.update.text = names["update"]
+
+        binding.prayerFajr.text = names["fajr"]
+        binding.prayerSunrise.text = names["sunrise"]
+        binding.prayerDhuhr.text = names["dhuhr"]
+        binding.prayerAsr.text = names["asr"]
+        binding.prayerMaghrib.text = names["maghrib"]
+        binding.prayerIsha.text = names["isha"]
+
+        binding.fajrTime.text = names["loading"]
+        binding.sunriseTime.text = names["loading"]
+        binding.dhuhrTime.text = names["loading"]
+        binding.asrTime.text = names["loading"]
+        binding.maghribTime.text = names["loading"]
+        binding.ishaTime.text = names["loading"]
     }
 
     fun formatSalahTimeForLocale(time: String): String {
@@ -1200,7 +1298,8 @@ class HomeFragment : Fragment() {
         prayerTime: String,
         timeRemaining: Long,
     ) {
-        binding.salahName.text = prayerName
+//        binding.salahName.text = prayerName
+        setNextPrayerName(prayerName)
         binding.prayerTime.text = formatSalahTimeForLocale(prayerTime)
 
         countDownTimer = object : CountDownTimer(timeRemaining, 1000) {
