@@ -304,6 +304,10 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
+        if (!isAdded || view == null) {
+            return
+        }
+
         binding.currentLocation.text = "جاري تحديد الموقع..."
 
         val locationRequest = LocationRequest.Builder(
@@ -318,6 +322,12 @@ class HomeFragment : Fragment() {
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
+
+                if (!isAdded || view == null) {
+                    mFusedLocationClient.removeLocationUpdates(this)
+                    return
+                }
+
                 locationResult.lastLocation?.let { location ->
                     handleLocationSuccess(location)
                 }
@@ -327,6 +337,11 @@ class HomeFragment : Fragment() {
 
             override fun onLocationAvailability(availability: LocationAvailability) {
                 super.onLocationAvailability(availability)
+
+                if (!isAdded || view == null) {
+                    return
+                }
+
                 if (!availability.isLocationAvailable) {
                     binding.currentLocation.text = "الموقع غير متاح"
                     tryLastKnownLocation()
@@ -341,17 +356,27 @@ class HomeFragment : Fragment() {
         )
 
         Handler(Looper.getMainLooper()).postDelayed({
-            mFusedLocationClient.removeLocationUpdates(locationCallback)
-            binding.currentLocation.text = "فشل في الحصول على الموقع"
-            tryLastKnownLocation()
+            if (isAdded && view != null) {
+                mFusedLocationClient.removeLocationUpdates(locationCallback)
+                binding.currentLocation.text = "فشل في الحصول على الموقع"
+                tryLastKnownLocation()
+            }
         }, 30000)
         tryLastKnownLocation()
     }
 
     @SuppressLint("MissingPermission")
     private fun tryLastKnownLocation() {
+        if (!isAdded) {
+            return
+        }
+
         mFusedLocationClient.lastLocation
             .addOnSuccessListener { location ->
+                if (!isAdded || view == null) {
+                    return@addOnSuccessListener
+                }
+
                 location?.let {
                     val locationAge = System.currentTimeMillis() - it.time
                     if (locationAge < 5 * 60 * 1000) {
@@ -361,23 +386,32 @@ class HomeFragment : Fragment() {
                 }
             }
             .addOnFailureListener { e ->
-                notifyLocationFlowComplete()
+                if (isAdded && view != null) {
+                    notifyLocationFlowComplete()
+                }
             }
     }
 
 
     private fun handleLocationSuccess(location: Location) {
+        if (!isAdded) {
+            return
+        }
+
         sharedPreference.edit {
             putFloat(PREF_LATITUDE, location.latitude.toFloat())
             putFloat(PREF_LONGITUDE, location.longitude.toFloat())
             putBoolean(PREF_LOCATION_SAVED, true)
         }
+
         if (MethodHelper.isOnline(requireContext())) {
             getLocationName(location)
             mainViewModel.getAzanData(location.latitude, location.longitude)
         } else {
-            binding.currentLocation.text = "تم حفظ الموقع - يتطلب إنترنت للعنوان"
-            showSnackbar("تم حفظ الموقع ولكن يلزم اتصال بالإنترنت لعرض اسم المدينة")
+            if (view != null) {
+                binding.currentLocation.text = "تم حفظ الموقع - يتطلب إنترنت للعنوان"
+                showSnackbar("تم حفظ الموقع ولكن يلزم اتصال بالإنترنت لعرض اسم المدينة")
+            }
         }
         setPrayerTimesUpdateWorker(location)
     }
@@ -393,7 +427,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun getLocationName(location: Location) {
-        viewLifecycleOwner.lifecycleScope.launch {
+        if (!isAdded || view == null) {
+            return
+        }
+
+        lifecycleScope.launch {
             try {
                 val locationName = GeocodingHelper.getAddressFromLocation(
                     requireContext(),
@@ -402,15 +440,20 @@ class HomeFragment : Fragment() {
                 )
 
                 val displayName = locationName ?: "موقع غير معروف"
-                binding.currentLocation.text = displayName
 
-                sharedPreference.edit {
-                    putString(PREF_LOCATION_NAME, displayName)
+                if (isAdded && view != null) {
+                    binding.currentLocation.text = displayName
+
+                    sharedPreference.edit {
+                        putString(PREF_LOCATION_NAME, displayName)
+                    }
                 }
 
             } catch (_: Exception) {
-                binding.currentLocation.text = "خطأ في تحديد العنوان"
-                showSnackbar("حدث خطأ أثناء محاولة الحصول على اسم الموقع")
+                if (isAdded && view != null) {
+                    binding.currentLocation.text = "خطأ في تحديد العنوان"
+                    showSnackbar("حدث خطأ أثناء محاولة الحصول على اسم الموقع")
+                }
             }
         }
     }
