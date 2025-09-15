@@ -7,18 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.*
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
+import androidx.activity.result.IntentSenderRequest
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -30,7 +28,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.tasks.Task
 import com.google.android.material.navigation.NavigationView
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.MethodHelper
@@ -61,14 +58,17 @@ import com.megahed.eqtarebmenalla.feature_data.states.MemorizationUiState
 import kotlinx.coroutines.flow.collectLatest
 import java.text.NumberFormat
 import androidx.core.view.isGone
+import com.megahed.eqtarebmenalla.MainActivity
 import com.megahed.eqtarebmenalla.db.model.getTotalVerses
 import com.megahed.eqtarebmenalla.feature_data.data.repository.DailyTargetProgress
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     companion object {
-        private const val LOCATION_REQUEST_CODE = 1
+        private const val LOCATION_SERVICES_REQUEST_CODE = 1001
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1002
         private const val PREF_LATITUDE = "saved_latitude"
         private const val PREF_LONGITUDE = "saved_longitude"
         private const val PREF_LOCATION_NAME = "saved_location_name"
@@ -78,8 +78,7 @@ class HomeFragment : Fragment() {
     private var prayerTimeAlarm: PrayerTime = PrayerTime()
     private lateinit var sharedPreference: SharedPreferences
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationRequest: LocationRequest
-    private lateinit var mLocationCallback: LocationCallback
+    private var isUpdatingLocation = false
     private val mainViewModel: IslamicViewModel by activityViewModels()
 
     private val memorizationViewModel: MemorizationViewModel by viewModels()
@@ -87,20 +86,16 @@ class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
 
     private var countDownTimer: CountDownTimer? = null
-    private var timeStarted: Long = 0
-    private var timeElapsed: Long = 0
-    private var isUpdatingLocation = false
-    private var isLocationUpdateRequested = false
-
     private val handler = Handler(Looper.getMainLooper())
     private var elapsedTimeRunnable: Runnable? = null
+
+    private var locationFlowCompleted = false
 
     override fun onStart() {
         super.onStart()
         memorizationViewModel.refreshAllData()
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
     @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -115,32 +110,318 @@ class HomeFragment : Fragment() {
         val navView: NavigationView = binding.navView
 
         sharedPreference = requireActivity().getSharedPreferences("adhen", Context.MODE_PRIVATE)
-        val editor = sharedPreference.edit()
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        setupLocationRequest()
 
         if (!sharedPreference.getBoolean("firstTime", false)) {
-            editor.putBoolean("firstTime", true)
-            editor.apply()
+            sharedPreference.edit { putBoolean("firstTime", true) }
         }
 
         binding.dayDetails.text = DateFormat.getDateInstance(DateFormat.FULL).format(Date())
 
-        loadSavedLocationOrRequest()
+        initializeLocation()
+        setupUpdateLocationButton()
 
         setupViewModelObservers(prayerTimeViewModel)
-
         setupMemorizationObservers()
-
-        setupPrayerNotificationCheckboxes(editor)
-
+        setupPrayerNotificationCheckboxes(sharedPreference.edit())
         setupClickListeners(drawerLayout, navView)
-
         setupMemorizationClickListeners()
 
         return root
     }
+    private fun initializeLocation() {
+        if (sharedPreference.getBoolean(PREF_LOCATION_SAVED, false)) {
+            loadSavedLocation()
+            notifyLocationFlowComplete()
+        } else {
+            startLocationFlow()
+        }
+    }
+
+    private fun loadSavedLocation() {
+        val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
+        val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
+        val savedLocationName = sharedPreference.getString(PREF_LOCATION_NAME, "موقع غير معروف")
+
+        binding.currentLocation.text = savedLocationName
+
+        if (MethodHelper.isOnline(requireContext())) {
+            mainViewModel.getAzanData(savedLatitude, savedLongitude)
+        }
+    }
+    private fun startLocationFlow() {
+        val locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            enableLocationServices()
+        } else {
+            checkLocationPermission()
+        }
+    }
+
+    private fun enableLocationServices() {
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            10000
+        ).build()
+
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .setAlwaysShow(true)
+
+        val client = LocationServices.getSettingsClient(requireActivity())
+        val task = client.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            checkLocationPermission()
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
+                    startIntentSenderForResult(
+                        intentSenderRequest.intentSender,
+                        LOCATION_SERVICES_REQUEST_CODE,
+                        null,
+                        0,
+                        0,
+                        0,
+                        null
+                    )
+                } catch (_: IntentSender.SendIntentException) {
+                    binding.currentLocation.text = "خطأ في تفعيل خدمات الموقع"
+                    showSnackbar("حدث خطأ أثناء محاولة تفعيل خدمات الموقع")
+                    notifyLocationFlowComplete()
+                }
+            } else {
+                binding.currentLocation.text = "خدمات الموقع غير متاحة"
+                showSnackbar("لا يمكن تفعيل خدمات الموقع على هذا الجهاز")
+                notifyLocationFlowComplete()
+            }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            LOCATION_SERVICES_REQUEST_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    checkLocationPermission()
+                } else {
+                    binding.currentLocation.text = "خدمات الموقع مطلوبة"
+                    showSnackbar("يجب تفعيل خدمات الموقع للحصول على أوقات الصلاة الدقيقة")
+                    notifyLocationFlowComplete()
+                }
+            }
+        }
+    }
+
+    private fun checkLocationPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                getCurrentLocation()
+            }
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                getCurrentLocation()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                showLocationPermissionRationale()
+            }
+            else -> {
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+    private fun showLocationPermissionRationale() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("إذن الموقع مطلوب")
+            .setMessage("يحتاج التطبيق إلى إذن الموقع لتحديد موقعك وأوقات الصلاة بدقة.")
+            .setPositiveButton("موافق") { _, _ ->
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            }
+            .setNegativeButton("إلغاء") { dialog, _ ->
+                dialog.dismiss()
+                binding.currentLocation.text = "إذن الموقع مرفوض"
+            }
+            .show()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                val fineLocationGranted = grantResults.isNotEmpty() &&
+                        grantResults[permissions.indexOfFirst { it == Manifest.permission.ACCESS_FINE_LOCATION }] == PackageManager.PERMISSION_GRANTED
+
+                val coarseLocationGranted = grantResults.isNotEmpty() &&
+                        grantResults[permissions.indexOfFirst { it == Manifest.permission.ACCESS_COARSE_LOCATION }] == PackageManager.PERMISSION_GRANTED
+
+                if (fineLocationGranted || coarseLocationGranted) {
+                    getCurrentLocation()
+                } else {
+                    binding.currentLocation.text = "إذن الموقع مرفوض"
+                    showSnackbar("يجب منح إذن الموقع للحصول على أوقات الصلاة الدقيقة")
+                    notifyLocationFlowComplete()
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getCurrentLocation() {
+        binding.currentLocation.text = "جاري تحديد الموقع..."
+
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            10000
+        )
+            .setWaitForAccurateLocation(true)
+            .setMinUpdateIntervalMillis(5000)
+            .setMaxUpdateDelayMillis(10000)
+            .build()
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                locationResult.lastLocation?.let { location ->
+                    handleLocationSuccess(location)
+                }
+                mFusedLocationClient.removeLocationUpdates(this)
+                notifyLocationFlowComplete()
+            }
+
+            override fun onLocationAvailability(availability: LocationAvailability) {
+                super.onLocationAvailability(availability)
+                if (!availability.isLocationAvailable) {
+                    binding.currentLocation.text = "الموقع غير متاح"
+                    tryLastKnownLocation()
+                }
+            }
+        }
+
+        mFusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            mFusedLocationClient.removeLocationUpdates(locationCallback)
+            binding.currentLocation.text = "فشل في الحصول على الموقع"
+            tryLastKnownLocation()
+        }, 30000)
+        tryLastKnownLocation()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun tryLastKnownLocation() {
+        mFusedLocationClient.lastLocation
+            .addOnSuccessListener { location ->
+                location?.let {
+                    val locationAge = System.currentTimeMillis() - it.time
+                    if (locationAge < 5 * 60 * 1000) {
+                        handleLocationSuccess(it)
+                        notifyLocationFlowComplete()
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                notifyLocationFlowComplete()
+            }
+    }
+
+
+    private fun handleLocationSuccess(location: Location) {
+        sharedPreference.edit {
+            putFloat(PREF_LATITUDE, location.latitude.toFloat())
+            putFloat(PREF_LONGITUDE, location.longitude.toFloat())
+            putBoolean(PREF_LOCATION_SAVED, true)
+        }
+        if (MethodHelper.isOnline(requireContext())) {
+            getLocationName(location)
+            mainViewModel.getAzanData(location.latitude, location.longitude)
+        } else {
+            binding.currentLocation.text = "تم حفظ الموقع - يتطلب إنترنت للعنوان"
+            showSnackbar("تم حفظ الموقع ولكن يلزم اتصال بالإنترنت لعرض اسم المدينة")
+        }
+        setPrayerTimesUpdateWorker(location)
+    }
+
+    private fun notifyLocationFlowComplete() {
+        if (!locationFlowCompleted) {
+            locationFlowCompleted = true
+            try {
+                (requireActivity() as MainActivity).requestAppPermissions()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    private fun getLocationName(location: Location) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val locationName = GeocodingHelper.getAddressFromLocation(
+                    requireContext(),
+                    location.latitude,
+                    location.longitude
+                )
+
+                val displayName = locationName ?: "موقع غير معروف"
+                binding.currentLocation.text = displayName
+
+                sharedPreference.edit {
+                    putString(PREF_LOCATION_NAME, displayName)
+                }
+
+            } catch (_: Exception) {
+                binding.currentLocation.text = "خطأ في تحديد العنوان"
+                showSnackbar("حدث خطأ أثناء محاولة الحصول على اسم الموقع")
+            }
+        }
+    }
+
+    private fun setupUpdateLocationButton() {
+        binding.update.setOnClickListener {
+            if (!MethodHelper.isOnline(requireContext())) {
+                showNoInternetDialog()
+                return@setOnClickListener
+            }
+
+            startLocationFlow()
+            Toast.makeText(requireContext(), "جاري تحديث الموقع والأوقات", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
 
     private fun setupMemorizationObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -434,6 +715,7 @@ class HomeFragment : Fragment() {
     }
 
 
+    @SuppressLint("SetTextI18n")
     private fun updateStreakUI(streak: UserStreak?) {
         if (streak != null && streak.currentStreak > 0) {
             binding.streakContainer.visibility = View.VISIBLE
@@ -457,6 +739,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun handleMemorizationUIState(state: MemorizationUiState) {
         if (state.isLoading) {
 
@@ -665,98 +948,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setupLocationRequest() {
-        locationRequest = LocationRequest
-            .Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 30000)
-            .setWaitForAccurateLocation(false)
-            .setMinUpdateIntervalMillis(30000)
-            .setMaxUpdateDelayMillis(60000)
-            .build()
-
-        mLocationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    Log.d(
-                        "HomeFragment",
-                        "Location received: ${location.latitude}, ${location.longitude}"
-                    )
-                    handleLocationUpdate(location)
-                    stopLocationUpdates()
-                    break
-                }
-            }
-        }
-    }
-
-    private fun stopLocationUpdates() {
-        if (::mLocationCallback.isInitialized) {
-            mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-            isUpdatingLocation = false
-            isLocationUpdateRequested = false
-            Log.d("HomeFragment", "Location updates stopped")
-        }
-    }
-
-    private fun loadSavedLocationOrRequest() {
-        if (!isLocationUpdateRequested && sharedPreference.getBoolean(PREF_LOCATION_SAVED, false)) {
-            val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
-            val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
-            val savedLocationName =
-                sharedPreference.getString(PREF_LOCATION_NAME, "Unknown Location")
-
-            binding.currentLocation.text = savedLocationName
-
-            if (MethodHelper.isOnline(requireContext())) {
-                mainViewModel.getAzanData(savedLatitude, savedLongitude)
-            }
-
-            Log.d("HomeFragment", "Using saved location: $savedLatitude, $savedLongitude")
-        } else {
-            requestLocationUpdate()
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun requestLocationUpdate() {
-        isUpdatingLocation = true
-        isLocationUpdateRequested = true
-        binding.currentLocation.text = "Updating location..."
-        statusLocationCheck()
-    }
-
-    private fun handleLocationUpdate(location: Location) {
-        val editor = sharedPreference.edit()
-
-        editor.putFloat(PREF_LATITUDE, location.latitude.toFloat())
-        editor.putFloat(PREF_LONGITUDE, location.longitude.toFloat())
-        editor.putBoolean(PREF_LOCATION_SAVED, true)
-
-        getCountryFromLocation(location) { locationName ->
-
-            editor.putString(PREF_LOCATION_NAME, locationName)
-            editor.apply()
-
-            binding.currentLocation.text = locationName
-            Log.d("HomeFragment", "Location name saved: $locationName")
-        }
-
-        setPrayerTimesUpdateWorker(location)
-
-        if (MethodHelper.isOnline(requireContext())) {
-            mainViewModel.getAzanData(location.latitude, location.longitude)
-        } else {
-            if (isLocationUpdateRequested) {
-                showNoInternetWarning()
-            }
-        }
-
-        isUpdatingLocation = false
-        isLocationUpdateRequested = false
-        Log.d(
-            "HomeFragment",
-            "Location updated and saved: ${location.latitude}, ${location.longitude}"
-        )
-    }
 
     private fun setupViewModelObservers(prayerTimeViewModel: PrayerTimeViewModel) {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -870,7 +1061,7 @@ class HomeFragment : Fragment() {
             val minuteStr = String.format(Locale.getDefault(), "%02d", minute)
 
             "$hourStr:$minuteStr"
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             time
         }
     }
@@ -946,6 +1137,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun showCountdownToNextDayFajr(prayerTime: PrayerTime) {
         binding.salahName.text = getString(R.string.fajr)
 
@@ -986,7 +1178,6 @@ class HomeFragment : Fragment() {
         try {
             val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
             val fajrDate = sdf.parse(fajrTime) ?: return 0L
-            val currentCalendar = Calendar.getInstance()
             val nextDayCalendar = Calendar.getInstance()
             nextDayCalendar.add(Calendar.DAY_OF_MONTH, 1)
 
@@ -999,7 +1190,7 @@ class HomeFragment : Fragment() {
             nextDayCalendar.set(Calendar.MILLISECOND, 0)
 
             return nextDayCalendar.timeInMillis
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return 0L
         }
     }
@@ -1025,19 +1216,6 @@ class HomeFragment : Fragment() {
             }
         }
         countDownTimer?.start()
-    }
-
-    private fun startElapsedTimeCounter() {
-        elapsedTimeRunnable = object : Runnable {
-            @SuppressLint("SetTextI18n")
-            override fun run() {
-                timeElapsed =
-                    CommonUtils.getTimeLong(CommonUtils.getCurrentTime(), true) - timeStarted
-                binding.prayerCountdown.text = "+ ${CommonUtils.updateCountDownText(timeElapsed)}"
-                handler.postDelayed(this, 1000)
-            }
-        }
-        elapsedTimeRunnable?.let { handler.post(it) }
     }
 
     private fun stopAllTimers() {
@@ -1153,16 +1331,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupClickListeners(drawerLayout: DrawerLayout, navView: NavigationView) {
-        binding.update.setOnClickListener {
-            if (!MethodHelper.isOnline(requireContext())) {
-                showNoInternetDialog()
-                return@setOnClickListener
-            }
-
-            stopLocationUpdates()
-            requestLocationUpdate()
-            Toast.makeText(requireContext(), "جارى تحديث أوقات الصلاة", Toast.LENGTH_SHORT).show()
-        }
 
         binding.qibla.setOnClickListener {
             val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
@@ -1261,60 +1429,6 @@ class HomeFragment : Fragment() {
         startActivity(intent)
     }
 
-    @SuppressLint("MissingPermission")
-    private fun checkLocationPermission() {
-        val perms = arrayOf(
-            // Only request coarse location for approximate location
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-        if (MethodHelper.hasPermissions(requireContext(), perms)) {
-            startGetLocation()
-        } else {
-            requestPermissionLauncher.launch(perms)
-        }
-    }
-
-    @SuppressLint("MissingPermission", "SetTextI18n")
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = permissions.entries.all { it.value }
-        if (granted) {
-            startGetLocation()
-        } else {
-            binding.currentLocation.text = "Location permission denied"
-            isUpdatingLocation = false
-            isLocationUpdateRequested = false
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun startGetLocation() {
-        Log.d("HomeFragment", "Starting location updates...")
-        mFusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            mLocationCallback,
-            Looper.getMainLooper()
-        )
-
-        mFusedLocationClient.lastLocation
-            .addOnSuccessListener(requireActivity()) { location ->
-                location?.let {
-                    Log.d(
-                        "HomeFragment",
-                        "Got last known location: ${it.latitude}, ${it.longitude}"
-                    )
-                    val locationTime = System.currentTimeMillis() - it.time
-                    if (locationTime < 300000 && isUpdatingLocation) {
-                        handleLocationUpdate(it)
-                        stopLocationUpdates()
-                    }
-                }
-            }
-            .addOnFailureListener(requireActivity()) { e ->
-                Log.w("HomeFragment", "getLastLocation:exception " + e.message)
-            }
-    }
 
     @SuppressLint("SimpleDateFormat")
     fun notifyAzan(
@@ -1387,60 +1501,10 @@ class HomeFragment : Fragment() {
         pendingIntent.cancel()
     }
 
-    private fun statusLocationCheck() {
-        val manager =
-            requireActivity().getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
-        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            turnGPSOn()
-        } else {
-            checkLocationPermission()
-        }
-    }
-
-    private fun turnGPSOn() {
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-
-        val client: SettingsClient = LocationServices.getSettingsClient(requireActivity())
-        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-
-        task.addOnCompleteListener {
-            checkLocationPermission()
-        }
-
-        task.addOnSuccessListener {
-            checkLocationPermission()
-        }
-
-        task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                try {
-                    exception.startResolutionForResult(requireActivity(), LOCATION_REQUEST_CODE)
-                } catch (_: IntentSender.SendIntentException) {
-                }
-            }
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun getCountryFromLocation(
-        location: Location,
-        onLocationNameReceived: (String) -> Unit,
-    ) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val locationName = GeocodingHelper.getAddressFromLocation(
-                requireContext(),
-                location.latitude,
-                location.longitude
-            )
-            onLocationNameReceived(locationName ?: "Unknown Location")
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         stopAllTimers()
-        stopLocationUpdates()
     }
 
     private fun showNoInternetDialog() {
@@ -1454,36 +1518,7 @@ class HomeFragment : Fragment() {
                 try {
                     val intent = Intent(android.provider.Settings.ACTION_SETTINGS)
                     startActivity(intent)
-                } catch (e: Exception) {
-                    Log.e("HomeFragment", "Could not open settings: ${e.message}")
-                }
-                dialog.dismiss()
-            }
-            .setCancelable(true)
-            .show()
-    }
-
-    private fun showNoInternetWarning() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("تحديث الموقع")
-            .setMessage("تم تحديث موقعك، ولكن يلزم اتصال بالإنترنت لعرض أحدث مواقيت الصلاة. يُرجى الاتصال بالإنترنت للحصول على مواقيت الصلاة المُحدَّثة.")
-            .setPositiveButton("حسسناً") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setNegativeButton("حاول مجدداً") { dialog, _ ->
-                if (MethodHelper.isOnline(requireContext())) {
-                    val savedLatitude = sharedPreference.getFloat(PREF_LATITUDE, 0f).toDouble()
-                    val savedLongitude = sharedPreference.getFloat(PREF_LONGITUDE, 0f).toDouble()
-                    if (savedLatitude != 0.0 && savedLongitude != 0.0) {
-                        mainViewModel.getAzanData(savedLatitude, savedLongitude)
-                        Toast.makeText(
-                            requireContext(),
-                            "جاري تحديث أوقات الصلاة ...",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } else {
-                    showNoInternetDialog()
+                } catch (_: Exception) {
                 }
                 dialog.dismiss()
             }

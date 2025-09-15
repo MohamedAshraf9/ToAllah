@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity() {
 
         setupUI()
         setupNavigation()
-        requestPermissions()
     }
 
     private fun setupUI() {
@@ -47,7 +46,6 @@ class MainActivity : AppCompatActivity() {
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
-
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.nav_view)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -63,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
     }
 
-    private fun requestPermissions() {
+    fun requestAppPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestNotificationPermissions()
         }
