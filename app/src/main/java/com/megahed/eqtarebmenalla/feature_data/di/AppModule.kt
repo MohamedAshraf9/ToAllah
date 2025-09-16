@@ -310,7 +310,7 @@ object AppModule {
         offlineSettingsDao: OfflineSettingsDao,
         quranListenerReaderRepository: QuranListenerReaderRepository
     ): OfflineAudioManager {
-        return OfflineAudioManager(context, downloadedAudioDao, offlineSettingsDao, quranListenerReaderRepository)
+        return OfflineAudioManager(context, downloadedAudioDao, offlineSettingsDao)
     }
 
 

@@ -54,6 +54,7 @@ class MemorizationViewModel @Inject constructor(
         loadTodayTarget()
         loadUserStreak()
     }
+
     suspend fun getScheduleProgress(scheduleId: Long): ScheduleProgress {
         return memorizationRepository.getScheduleProgress(scheduleId)
     }
@@ -74,16 +75,45 @@ class MemorizationViewModel @Inject constructor(
 
     fun updateScheduleWithTargets(
         schedule: MemorizationSchedule,
-        newTargets: List<DailyTarget>
+        newTargets: List<DailyTarget>,
     ) = viewModelScope.launch {
         try {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             memorizationRepository.updateSchedule(schedule)
 
+            val oldTargets = memorizationRepository.getDailyTargetsByScheduleId(schedule.id)
+
+            val mergedTargets = newTargets.map { newTarget ->
+                val matchingOld = oldTargets.find { old ->
+
+                    old.targetDate == newTarget.targetDate && old.surahId == newTarget.surahId
+                }
+
+                if (matchingOld != null) {
+                    val newTotal = newTarget.getTotalVerses()
+                    val completed = matchingOld.completedVerses
+
+                    if (completed >= newTotal) {
+                        newTarget.copy(
+                            scheduleId = schedule.id,
+                            completedVerses = newTotal,
+                            isCompleted = true
+                        )
+                    } else {
+                        newTarget.copy(
+                            scheduleId = schedule.id,
+                            completedVerses = completed
+                        )
+                    }
+                } else {
+                    newTarget.copy(scheduleId = schedule.id)
+                }
+
+            }
+
             memorizationRepository.deleteDailyTargetsForSchedule(schedule.id)
-            val targetsWithScheduleId = newTargets.map { it.copy(scheduleId = schedule.id) }
-            memorizationRepository.insertDailyTargets(targetsWithScheduleId)
+            memorizationRepository.insertDailyTargets(mergedTargets)
 
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
@@ -100,6 +130,7 @@ class MemorizationViewModel @Inject constructor(
             )
         }
     }
+
     fun updateVerseProgress(versesCompleted: Int) {
         viewModelScope.launch {
             try {
@@ -128,6 +159,7 @@ class MemorizationViewModel @Inject constructor(
             }
         }
     }
+
     fun completeSession(versesCompleted: Int, notes: String?, markAsCompleted: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -144,18 +176,23 @@ class MemorizationViewModel @Inject constructor(
                         if (markAsCompleted) {
                             memorizationRepository.markTargetCompleted(todayTarget.id)
                         } else {
-                            val currentProgress = maxOf(todayTarget.completedVerses, versesCompleted)
-                            memorizationRepository.updateVerseProgress(todayTarget.id, currentProgress)
+                            val currentProgress =
+                                maxOf(todayTarget.completedVerses, versesCompleted)
+                            memorizationRepository.updateVerseProgress(
+                                todayTarget.id,
+                                currentProgress
+                            )
                         }
 
                         loadTodayTargetProgress()
 
                         val totalVerses = todayTarget.getTotalVerses()
-                        val completionMessage = if (markAsCompleted || versesCompleted >= totalVerses) {
-                            "تهانينا! لقد أكملت هدف اليوم بنجاح!"
-                        } else {
-                            "تم حفظ تقدمك: ${versesCompleted} من $totalVerses آية"
-                        }
+                        val completionMessage =
+                            if (markAsCompleted || versesCompleted >= totalVerses) {
+                                "تهانينا! لقد أكملت هدف اليوم بنجاح!"
+                            } else {
+                                "تم حفظ تقدمك: ${versesCompleted} من $totalVerses آية"
+                            }
 
                         _uiState.value = _uiState.value.copy(
                             isSessionActive = false,
@@ -314,14 +351,21 @@ class MemorizationViewModel @Inject constructor(
     private suspend fun constructAudioUrlForReader(readerId: String, surahId: Int): String {
         return try {
             val normalizedReaderId = normalizeToAsciiDigits(readerId)
-            val reader = quranListenerReaderRepository.getQuranListenerReaderById(normalizedReaderId)
+            val reader =
+                quranListenerReaderRepository.getQuranListenerReaderById(normalizedReaderId)
             reader?.let { quranReader ->
                 Constants.getSoraLink(quranReader.server, surahId)
             } ?: throw Exception("Reader not found")
         } catch (e: Exception) {
             Log.e("MemorizationViewModel", "Failed to construct URL", e)
             val normalizedReaderId = normalizeToAsciiDigits(readerId)
-            "https://www.mp3quran.net/api/reader/$normalizedReaderId/${String.format(Locale.US, "%03d", surahId)}.mp3"
+            "https://www.mp3quran.net/api/reader/$normalizedReaderId/${
+                String.format(
+                    Locale.US,
+                    "%03d",
+                    surahId
+                )
+            }.mp3"
         }
     }
 
