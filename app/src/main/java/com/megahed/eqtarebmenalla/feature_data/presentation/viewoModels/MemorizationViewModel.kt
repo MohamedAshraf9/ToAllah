@@ -54,6 +54,9 @@ class MemorizationViewModel @Inject constructor(
         loadTodayTarget()
         loadUserStreak()
     }
+    fun getCurrentProgress(): Int? {
+        return todayTarget.value?.completedVerses
+    }
 
     suspend fun getScheduleProgress(scheduleId: Long): ScheduleProgress {
         return memorizationRepository.getScheduleProgress(scheduleId)
