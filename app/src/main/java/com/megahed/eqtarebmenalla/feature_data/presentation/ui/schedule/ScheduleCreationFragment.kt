@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.schedule
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.SharedPreferences
@@ -15,6 +16,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.edit
@@ -38,13 +40,16 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzView
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
 import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.toString
 
 @AndroidEntryPoint
@@ -57,6 +62,9 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     private var scheduleId: Long = -1L
     private lateinit var sharedPreferences: SharedPreferences
     private val hefzViewModel: HefzViewModel by activityViewModels()
+
+    private var isDownloadInProgress = false
+    private var downloadJob: Job? = null
 
     private var selectedSurahId: Int = -1
     private var selectedSurahName: String = ""
@@ -89,6 +97,21 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        requireActivity().onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (!handleBackPress()) {
+                        isEnabled = false
+                        requireActivity().onBackPressed()
+                    }
+                }
+            })
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -109,7 +132,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         setupObservers()
         loadMemorizationReaders()
         setupButtonForCreateMode()
-        sharedPreferences = requireActivity().getSharedPreferences("offline_prefs", Context.MODE_PRIVATE)
+        sharedPreferences =
+            requireActivity().getSharedPreferences("offline_prefs", Context.MODE_PRIVATE)
         scheduleId = arguments?.getLong("scheduleId", -1L) ?: -1L
 
         if (scheduleId != -1L) {
@@ -165,81 +189,85 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     }
 
     private fun createSchedule() {
-        try {
-            val title = binding.etScheduleTitle.text.toString()
-            val description = binding.etScheduleDescription.text.toString()
+        if (isDownloadInProgress) {
+            showDownloadWarningDialog()
+        } else {
+            try {
+                val title = binding.etScheduleTitle.text.toString()
+                val description = binding.etScheduleDescription.text.toString()
 
-            val startCalendar = Calendar.getInstance().apply {
-                time = calendar.time
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val startDate = startCalendar.time
-
-            val startVerse = binding.etStartVerse.text.toString().toInt()
-            val endVerse = binding.etEndVerse.text.toString().toInt()
-            val dailyVerses = binding.etDailyVerses.text.toString().toInt()
-
-            val totalVerses = endVerse - startVerse + 1
-            val daysNeeded = (totalVerses + dailyVerses - 1) / dailyVerses
-            val endCalendar = Calendar.getInstance().apply {
-                time = startDate
-                add(Calendar.DAY_OF_YEAR, daysNeeded)
-            }
-            val endDate = endCalendar.time
-
-            val dailyTargets = mutableListOf<DailyTarget>()
-            var currentVerse = startVerse
-            val currentDate = Calendar.getInstance().apply { time = startDate }
-
-            while (currentVerse <= endVerse) {
-                val targetEndVerse = minOf(currentVerse + dailyVerses - 1, endVerse)
-
-                val normalizedDate = Calendar.getInstance().apply {
-                    time = currentDate.time
+                val startCalendar = Calendar.getInstance().apply {
+                    time = calendar.time
                     set(Calendar.HOUR_OF_DAY, 0)
                     set(Calendar.MINUTE, 0)
                     set(Calendar.SECOND, 0)
                     set(Calendar.MILLISECOND, 0)
-                }.time
+                }
+                val startDate = startCalendar.time
 
-                dailyTargets.add(
-                    DailyTarget(
-                        scheduleId = existingSchedule?.id ?: 0,
-                        targetDate = normalizedDate,
-                        surahId = selectedSurahId,
-                        surahName = selectedSurahName,
-                        startVerse = currentVerse,
-                        endVerse = targetEndVerse,
-                        estimatedDurationMinutes = (targetEndVerse - currentVerse + 1) * 5
+                val startVerse = binding.etStartVerse.text.toString().toInt()
+                val endVerse = binding.etEndVerse.text.toString().toInt()
+                val dailyVerses = binding.etDailyVerses.text.toString().toInt()
+
+                val totalVerses = endVerse - startVerse + 1
+                val daysNeeded = (totalVerses + dailyVerses - 1) / dailyVerses
+                val endCalendar = Calendar.getInstance().apply {
+                    time = startDate
+                    add(Calendar.DAY_OF_YEAR, daysNeeded)
+                }
+                val endDate = endCalendar.time
+
+                val dailyTargets = mutableListOf<DailyTarget>()
+                var currentVerse = startVerse
+                val currentDate = Calendar.getInstance().apply { time = startDate }
+
+                while (currentVerse <= endVerse) {
+                    val targetEndVerse = minOf(currentVerse + dailyVerses - 1, endVerse)
+
+                    val normalizedDate = Calendar.getInstance().apply {
+                        time = currentDate.time
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.time
+
+                    dailyTargets.add(
+                        DailyTarget(
+                            scheduleId = existingSchedule?.id ?: 0,
+                            targetDate = normalizedDate,
+                            surahId = selectedSurahId,
+                            surahName = selectedSurahName,
+                            startVerse = currentVerse,
+                            endVerse = targetEndVerse,
+                            estimatedDurationMinutes = (targetEndVerse - currentVerse + 1) * 5
+                        )
                     )
-                )
 
-                currentVerse = targetEndVerse + 1
-                currentDate.add(Calendar.DAY_OF_YEAR, 1)
+                    currentVerse = targetEndVerse + 1
+                    currentDate.add(Calendar.DAY_OF_YEAR, 1)
+                }
+
+                if (existingSchedule != null) {
+                    val updatedSchedule = existingSchedule!!.copy(
+                        title = title,
+                        description = description,
+                        startDate = startDate,
+                        endDate = endDate,
+                        updatedAt = Date()
+                    )
+                    viewModel.updateScheduleWithTargets(updatedSchedule, dailyTargets)
+                } else {
+                    viewModel.createSchedule(title, description, startDate, endDate, dailyTargets)
+                }
+
+            } catch (e: Exception) {
+                Snackbar.make(
+                    binding.root,
+                    "خطأ في ${if (existingSchedule != null) "تحديث" else "إنشاء"} الجدول: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
-
-            if (existingSchedule != null) {
-                val updatedSchedule = existingSchedule!!.copy(
-                    title = title,
-                    description = description,
-                    startDate = startDate,
-                    endDate = endDate,
-                    updatedAt = Date()
-                )
-                viewModel.updateScheduleWithTargets(updatedSchedule, dailyTargets)
-            } else {
-                viewModel.createSchedule(title, description, startDate, endDate, dailyTargets)
-            }
-
-        } catch (e: Exception) {
-            Snackbar.make(
-                binding.root,
-                "خطأ في ${if (existingSchedule != null) "تحديث" else "إنشاء"} الجدول: ${e.message}",
-                Snackbar.LENGTH_LONG
-            ).show()
         }
     }
 
@@ -320,10 +348,14 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             }
         }
     }
+
     private fun downloadScheduleForOffline() {
         selectedOfflineReader?.let { reader ->
-            lifecycleScope.launch {
+            downloadJob?.cancel()
+
+            downloadJob = lifecycleScope.launch {
                 try {
+                    isDownloadInProgress = true
                     showDownloadProgress(0, 100, "جاري البدء في التحميل...")
 
                     val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 1
@@ -340,6 +372,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     val failedVerses = mutableListOf<Int>()
 
                     for (verseNumber in startVerse..endVerse) {
+                        ensureActive()
+
                         try {
                             if (!isNetworkAvailable()) {
                                 throw java.net.UnknownHostException("انقطع الاتصال بالإنترنت")
@@ -362,7 +396,11 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             if (success) {
                                 downloadedCount++
                                 val progress = (downloadedCount * 100) / totalVerses
-                                showDownloadProgress(progress, 100, "تم تحميل $downloadedCount من $totalVerses")
+                                showDownloadProgress(
+                                    progress,
+                                    100,
+                                    "تم تحميل $downloadedCount من $totalVerses"
+                                )
                             } else {
                                 failedVerses.add(verseNumber)
                             }
@@ -370,67 +408,92 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             delay(300)
 
                         } catch (e: Exception) {
+                            if (e is CancellationException) throw e
                             failedVerses.add(verseNumber)
                         }
                     }
 
                     hideDownloadProgress()
 
-                    if (failedVerses.isEmpty()) {
-                        Snackbar.make(
-                            binding.root,
-                            "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)",
-                            Snackbar.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Snackbar.make(
-                            binding.root,
-                            "تم تحميل $downloadedCount من $totalVerses آية. فشل في تحميل ${failedVerses.size} آية",
-                            Snackbar.LENGTH_LONG
-                        ).setAction("إعادة المحاولة") {
-                            retryFailedDownloads(startVerse, endVerse, reader)
-                        }.show()
+                    if (_binding != null) {
+                        if (failedVerses.isEmpty()) {
+                            Snackbar.make(
+                                binding.root,
+                                "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Snackbar.make(
+                                binding.root,
+                                "تم تحميل $downloadedCount من $totalVerses آية. فشل في تحميل ${failedVerses.size} آية",
+                                Snackbar.LENGTH_LONG
+                            ).setAction("إعادة المحاولة") {
+                                retryFailedDownloads(startVerse, endVerse, reader)
+                            }.show()
+                        }
                     }
 
+                } catch (e: CancellationException) {
+                    hideDownloadProgress()
                 } catch (e: Exception) {
                     hideDownloadProgress()
-                    Snackbar.make(
-                        binding.root,
-                        "خطأ في تحميل الآيات: ${e.message}",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    if (_binding != null) {
+                        Snackbar.make(
+                            binding.root,
+                            "خطأ في تحميل الآيات: ${e.message}",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }
     }
+
     private fun retryFailedDownloads(startVerse: Int, endVerse: Int, reader: RecitersVerse) {
-        lifecycleScope.launch {
+        downloadJob?.cancel()
+
+        downloadJob = lifecycleScope.launch {
             try {
+                isDownloadInProgress = true
+
                 if (!isNetworkAvailable()) {
-                    Snackbar.make(
-                        binding.root,
-                        "لا يوجد اتصال بالإنترنت. يرجى التحقق من الاتصال وإعادة المحاولة",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    if (_binding != null) {
+                        Snackbar.make(
+                            binding.root,
+                            "لا يوجد اتصال بالإنترنت. يرجى التحقق من الاتصال وإعادة المحاولة",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
                     return@launch
                 }
 
                 showDownloadProgress(0, 100, "جاري البحث عن الآيات غير المحملة...")
 
                 val readerId = normalizeToAsciiDigits(reader.id.toString())
-                val missingVerses = offlineAudioManager.getMissingVerses(readerId, selectedSurahId, startVerse, endVerse)
+                val missingVerses = offlineAudioManager.getMissingVerses(
+                    readerId,
+                    selectedSurahId,
+                    startVerse,
+                    endVerse
+                )
 
                 if (missingVerses.isEmpty()) {
                     hideDownloadProgress()
-                    Snackbar.make(
-                        binding.root,
-                        "جميع الآيات محملة بالفعل",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
+                    if (_binding != null) {
+                        Snackbar.make(
+                            binding.root,
+                            "جميع الآيات محملة بالفعل",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
                     return@launch
                 }
 
-                showDownloadProgress(0, missingVerses.size, "جاري إعادة تحميل ${missingVerses.size} آية...")
+                showDownloadProgress(
+                    0,
+                    missingVerses.size,
+                    "جاري إعادة تحميل ${missingVerses.size} آية..."
+                )
 
                 val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
                     reader.audio_url_bit_rate_64.trim().ifEmpty {
@@ -442,6 +505,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 val totalVerses = missingVerses.size
 
                 for (verseNumber in missingVerses) {
+                    ensureActive()
+
                     try {
                         val surahFormatted = String.format(Locale.US, "%03d", selectedSurahId)
                         val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
@@ -462,43 +527,86 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         }
 
                         val progress = (successCount * 100) / totalVerses
-                        showDownloadProgress(progress, 100, "تم إعادة تحميل $successCount من $totalVerses آية")
+                        showDownloadProgress(
+                            progress,
+                            100,
+                            "تم إعادة تحميل $successCount من $totalVerses آية"
+                        )
 
                         delay(500)
 
                     } catch (e: Exception) {
-
+                        if (e is CancellationException) throw e
                     }
                 }
 
                 hideDownloadProgress()
 
-                if (successCount == totalVerses) {
+                if (_binding != null) {
+                    if (successCount == totalVerses) {
+                        Snackbar.make(
+                            binding.root,
+                            "تم تحميل جميع الآيات الناقصة بنجاح",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Snackbar.make(
+                            binding.root,
+                            "تم تحميل $successCount من $totalVerses آية ناقصة",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+            } catch (e: CancellationException) {
+                hideDownloadProgress()
+            } catch (e: Exception) {
+                hideDownloadProgress()
+                if (_binding != null) {
                     Snackbar.make(
                         binding.root,
-                        "تم تحميل جميع الآيات الناقصة بنجاح",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        "تم تحميل $successCount من $totalVerses آية ناقصة",
+                        "خطأ في إعادة المحاولة: ${e.message}",
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
-
-            } catch (e: Exception) {
-                hideDownloadProgress()
-                Snackbar.make(
-                    binding.root,
-                    "خطأ في إعادة المحاولة: ${e.message}",
-                    Snackbar.LENGTH_LONG
-                ).show()
             }
         }
     }
 
+    private fun handleBackPress(): Boolean {
+        return if (isDownloadInProgress) {
+            showDownloadWarningDialog()
+            true
+        } else {
+            false
+        }
+    }
+
+    private fun showDownloadWarningDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("تحميل قيد التقدم")
+            .setMessage("يتم حالياً تحميل الآيات الصوتية. إذا خرجت الآن، سيتم إيقاف التحميل وستحتاج لإعادة بدء العملية.\n\nهل تريد:")
+            .setPositiveButton("الاستمرار في التحميل") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton("إيقاف التحميل والخروج") { dialog, _ ->
+                downloadJob?.cancel()
+                isDownloadInProgress = false
+                hideDownloadProgress()
+                findNavController().popBackStack()
+                dialog.dismiss()
+            }
+            .setNeutralButton("تصغير التطبيق") { dialog, _ ->
+                requireActivity().moveTaskToBack(true)
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
     private fun showDownloadProgress(current: Int, total: Int, customMessage: String? = null) {
+        if (_binding == null) return
+
         binding.downloadProgressLayout.visibility = View.VISIBLE
         binding.btnDownloadSchedule.isEnabled = false
 
@@ -847,8 +955,11 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     }
 
     private fun hideDownloadProgress() {
-        binding.downloadProgressLayout.visibility = View.GONE
-        binding.btnDownloadSchedule.isEnabled = true
+        if (_binding != null) {
+            binding.downloadProgressLayout.visibility = View.GONE
+            binding.btnDownloadSchedule.isEnabled = true
+        }
+        isDownloadInProgress = false
     }
 
     private fun updateVerseCount() {
@@ -902,6 +1013,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             binding.previewCard.visibility = View.GONE
         }
     }
+
     private fun validateInputs(): Boolean {
         var isValid = true
 
@@ -961,8 +1073,12 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             android.R.id.home -> {
-                findNavController().popBackStack()
-                true
+                if (handleBackPress()) {
+                    true
+                } else {
+                    findNavController().popBackStack()
+                    true
+                }
             }
 
             else -> false
@@ -970,6 +1086,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     }
 
     override fun onDestroyView() {
+        downloadJob?.cancel()
         super.onDestroyView()
         _binding = null
     }
