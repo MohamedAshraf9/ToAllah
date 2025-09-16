@@ -290,14 +290,8 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
                 binding.etStartVerse.setText(firstTarget.startVerse.toString())
                 binding.etEndVerse.setText(lastTarget.endVerse.toString())
-
-                val avgDailyVerses = if (targets.size > 1) {
-                    val totalVerses = lastTarget.endVerse - firstTarget.startVerse + 1
-                    totalVerses / targets.size
-                } else {
-                    firstTarget.endVerse - firstTarget.startVerse + 1
-                }
-                binding.etDailyVerses.setText(avgDailyVerses.toString())
+                val oldTarget = (firstTarget.endVerse - firstTarget.startVerse + 1).toString()
+                binding.etDailyVerses.setText(oldTarget)
 
                 updateVerseCount()
                 calculateEstimatedCompletion()
