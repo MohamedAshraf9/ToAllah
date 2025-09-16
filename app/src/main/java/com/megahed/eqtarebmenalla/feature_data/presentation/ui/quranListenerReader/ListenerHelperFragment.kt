@@ -9,7 +9,6 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
@@ -231,6 +230,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
         }
     }
+
     private fun disableFieldsForOffline() {
         binding.listSouraName.isEnabled = false
         binding.nbAya.isEnabled = false
@@ -252,7 +252,8 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 soraNumbers.add(i)
             }
 
-            val verseAdapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+            val verseAdapter =
+                ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
             verseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.nbAya.setAdapter(verseAdapter)
             binding.nbEyaEnd.setAdapter(verseAdapter)
@@ -371,9 +372,12 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             hefzViewModel.state.collect { ayaHefzState ->
                 if (isNetworkAvailable()) {
                     val filter = ayaHefzState.recitersVerse.filter {
-                        (it.audio_url_bit_rate_32_.trim().isNotEmpty() && it.audio_url_bit_rate_32_.trim() != "0") ||
-                                (it.audio_url_bit_rate_64.trim().isNotEmpty() && it.audio_url_bit_rate_64.trim() != "0") ||
-                                (it.audio_url_bit_rate_128.trim().isNotEmpty() && it.audio_url_bit_rate_128.trim() != "0")
+                        (it.audio_url_bit_rate_32_.trim()
+                            .isNotEmpty() && it.audio_url_bit_rate_32_.trim() != "0") ||
+                                (it.audio_url_bit_rate_64.trim()
+                                    .isNotEmpty() && it.audio_url_bit_rate_64.trim() != "0") ||
+                                (it.audio_url_bit_rate_128.trim()
+                                    .isNotEmpty() && it.audio_url_bit_rate_128.trim() != "0")
                     }
                     readers.clear()
                     readers.addAll(filter)
@@ -381,34 +385,48 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     enableAllFields(true)
                 } else {
                     readers.clear()
-                    val selectedReaderId = offlinePreferences.getString("selected_offline_reader_id", null)
-                    val selectedReaderName = offlinePreferences.getString("selected_offline_reader_name", null)
+                    val selectedReaderId =
+                        offlinePreferences.getString("selected_offline_reader_id", null)
+                    val selectedReaderName =
+                        offlinePreferences.getString("selected_offline_reader_name", null)
 
                     if (selectedReaderId != null && selectedReaderName != null) {
                         val offlineReciter = RecitersVerse(
                             id = selectedReaderId,
                             name = selectedReaderName,
-                            audio_url_bit_rate_128 = offlinePreferences.getString("selected_offline_reader_url_128", "") ?: "",
-                            audio_url_bit_rate_64 = offlinePreferences.getString("selected_offline_reader_url_64", "") ?: "",
-                            audio_url_bit_rate_32_ = offlinePreferences.getString("selected_offline_reader_url_32", "") ?: "",
+                            audio_url_bit_rate_128 = offlinePreferences.getString(
+                                "selected_offline_reader_url_128",
+                                ""
+                            ) ?: "",
+                            audio_url_bit_rate_64 = offlinePreferences.getString(
+                                "selected_offline_reader_url_64",
+                                ""
+                            ) ?: "",
+                            audio_url_bit_rate_32_ = offlinePreferences.getString(
+                                "selected_offline_reader_url_32",
+                                ""
+                            ) ?: "",
                             musshaf_type = "",
                             rewaya = ""
                         )
                         readers.add(offlineReciter)
-
                         reader = offlineReciter
 
-                        val todayTarget = memorizationViewModel.todayTarget.value
-                        if (todayTarget != null) {
-                            autoFillWithTodayTargetOffline(todayTarget)
+                        if (isAdded && view != null) {
+                            val todayTarget = memorizationViewModel.todayTarget.value
+                            if (todayTarget != null) {
+                                autoFillWithTodayTargetOffline(todayTarget)
+                            }
                         }
-                    }
 
-                    enableAllFields(false)
+
+                        enableAllFields(false)
+                    }
                 }
 
                 if (readers.isNotEmpty()) {
-                    val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
+                    val adapter =
+                        ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     binding.listOfRewat.setAdapter(adapter)
 
@@ -439,7 +457,8 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     binding.memorizationScheduleCard.visibility = View.GONE
                     binding.btnMemorizationTracker.visibility = View.GONE
                     binding.btnCreateSchedule.text = getString(R.string.create_schedule)
-                    binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add)
+                    binding.btnCreateSchedule.icon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_add)
                     binding.btnCreateSchedule.setOnClickListener {
                         requireView().findNavController()
                             .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
@@ -462,6 +481,10 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 if (target != null && memorizationViewModel.todayTargetProgress.value == null) {
                     updateTodayProgress(target)
                     updateScheduleCardWithTarget(target)
+                    if(!isNetworkAvailable()){
+                        autoFillWithTodayTargetOffline(target)
+                    }
+
                 } else if (target == null) {
                     binding.todayProgress.text = "0/0"
                     binding.scheduleTitle.text = "لا يوجد هدف لليوم"
@@ -479,7 +502,8 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             memorizationViewModel.uiState.collectLatest { state ->
                 if (state.verseProgress != null) {
                     val verseProgress = state.verseProgress
-                    val verseDetails = "${verseProgress.completedVerses}/${verseProgress.totalVerses}"
+                    val verseDetails =
+                        "${verseProgress.completedVerses}/${verseProgress.totalVerses}"
                     val percentageText = "${verseProgress.progressPercentage}%"
                     binding.totalProgress.text = percentageText
                     binding.totalProgressOfSchedule.text = verseDetails
@@ -502,6 +526,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
         }
 
     }
+
     private fun updateTodayProgressWithPartial(targetProgress: DailyTargetProgress) {
         val completedText = "${targetProgress.completedVerses}/${targetProgress.totalVerses}"
         binding.todayProgress.text = completedText
@@ -512,11 +537,13 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     ContextCompat.getColor(requireContext(), R.color.green)
                 )
             }
+
             targetProgress.completedVerses > 0 -> {
                 binding.todayProgress.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.colorPrimary)
                 )
             }
+
             else -> {
                 binding.todayProgress.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.text_secondary)
@@ -524,6 +551,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             }
         }
     }
+
     @SuppressLint("SetTextI18n")
     private fun updateScheduleCardWithProgress(targetProgress: DailyTargetProgress) {
         val target = targetProgress.target
@@ -540,14 +568,16 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
     private fun updateCreateScheduleButton(schedule: MemorizationSchedule, isCompleted: Boolean) {
         if (isCompleted) {
             binding.btnCreateSchedule.text = getString(R.string.create_schedule)
-            binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_add)
+            binding.btnCreateSchedule.icon =
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_add)
             binding.btnCreateSchedule.setOnClickListener {
                 requireView().findNavController()
                     .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
             }
         } else {
             binding.btnCreateSchedule.text = "تعديل الجدول"
-            binding.btnCreateSchedule.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit)
+            binding.btnCreateSchedule.icon =
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit)
             binding.btnCreateSchedule.setOnClickListener {
                 val action = ListenerHelperFragmentDirections
                     .actionListenerHelperFragmentToScheduleCreationFragment(schedule.id)
@@ -555,6 +585,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             }
         }
     }
+
     private fun enableAllFields(enable: Boolean) {
         binding.listOfRewat.isEnabled = enable
         binding.listSouraName.isEnabled = enable
@@ -586,7 +617,8 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 soraNumbers.add(i)
             }
 
-            val verseAdapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+            val verseAdapter =
+                ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
             verseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.nbAya.setAdapter(verseAdapter)
             binding.nbEyaEnd.setAdapter(verseAdapter)
@@ -607,14 +639,16 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
 
             binding.start.isEnabled = true
 
-            val remainingVerses = endAya - startAya + 1
-            val modeMessage = if (target.completedVerses > 0) {
-                "تم ملء البيانات للآيات المتبقية: $remainingVerses آية (وضع غير متصل)"
-            } else {
-                "تم ملء البيانات تلقائياً من جدول اليوم (وضع غير متصل)"
-            }
+            if (isAdded && view != null) {
+                val remainingVerses = endAya - startAya + 1
+                val modeMessage = if (target.completedVerses > 0) {
+                    "تم ملء البيانات للآيات المتبقية: $remainingVerses آية (وضع غير متصل)"
+                } else {
+                    "تم ملء البيانات تلقائياً من جدول اليوم (وضع غير متصل)"
+                }
 
-            Snackbar.make(binding.root, modeMessage, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, modeMessage, Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -627,6 +661,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             }
             .show()
     }
+
     private suspend fun checkIfScheduleCompleted(schedule: MemorizationSchedule): Boolean {
         return try {
             val progress = memorizationViewModel.getScheduleProgress(schedule.id)
@@ -747,11 +782,13 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     ContextCompat.getColor(requireContext(), R.color.green)
                 )
             }
+
             target.completedVerses > 0 -> {
                 binding.todayProgress.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.colorPrimary)
                 )
             }
+
             else -> {
                 binding.todayProgress.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.text_secondary)
@@ -785,6 +822,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             else -> false
         }
     }
+
     private fun isFragmentInitializing(): Boolean {
         return !this::binding.isInitialized || binding.listOfRewat.adapter == null
     }
@@ -805,6 +843,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             enableAllFields(isNetworkAvailable())
         }
     }
+
     private fun restoreOfflineReciter() {
         val selectedReaderId = offlinePreferences.getString("selected_offline_reader_id", null)
         val selectedReaderName = offlinePreferences.getString("selected_offline_reader_name", null)
@@ -813,9 +852,18 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             val offlineReciter = RecitersVerse(
                 id = selectedReaderId,
                 name = selectedReaderName,
-                audio_url_bit_rate_128 = offlinePreferences.getString("selected_offline_reader_url_128", "") ?: "",
-                audio_url_bit_rate_64 = offlinePreferences.getString("selected_offline_reader_url_64", "") ?: "",
-                audio_url_bit_rate_32_ = offlinePreferences.getString("selected_offline_reader_url_32", "") ?: "",
+                audio_url_bit_rate_128 = offlinePreferences.getString(
+                    "selected_offline_reader_url_128",
+                    ""
+                ) ?: "",
+                audio_url_bit_rate_64 = offlinePreferences.getString(
+                    "selected_offline_reader_url_64",
+                    ""
+                ) ?: "",
+                audio_url_bit_rate_32_ = offlinePreferences.getString(
+                    "selected_offline_reader_url_32",
+                    ""
+                ) ?: "",
                 musshaf_type = "",
                 rewaya = ""
             )
@@ -846,6 +894,12 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
         clearFormData()
         if (!isNetworkAvailable()) {
             restoreOfflineReciter()
+            if (isAdded && view != null) {
+                val todayTarget = memorizationViewModel.todayTarget.value
+                if (todayTarget != null) {
+                    autoFillWithTodayTargetOffline(todayTarget)
+                }
+            }
         }
     }
 
