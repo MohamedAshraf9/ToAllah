@@ -1,6 +1,8 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListenerReader
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +13,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -27,6 +28,11 @@ import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.navigation.findNavController
+import com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song
+import com.megahed.eqtarebmenalla.offline.OfflineUtils.isNetworkAvailable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class SoraFavoriteFragment : Fragment(), MenuProvider {
@@ -43,13 +49,14 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         super.onCreate(savedInstanceState)
 
         mainViewModel = ViewModelProvider(this).get(MainSongsViewModel::class.java)
-        quranListenerReaderViewModel = ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
+        quranListenerReaderViewModel =
+            ViewModelProvider(this).get(QuranListenerReaderViewModel::class.java)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentSoraFavoriteBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -81,29 +88,61 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         soraFavoriteAdapter = SoraFavoriteAdapter(
             requireContext(),
             object : OnItemReaderClickListener<SoraSong> {
-                override fun onItemClickReader(itemObject: SoraSong, view: View?, readerName: String) {
-                    val song = createSongForPlayback(itemObject, readerName.trim())
+                override fun onItemClickReader(
+                    itemObject: SoraSong,
+                    view: View?,
+                    readerName: String,
+                ) {
+                    lifecycleScope.launch {
+                        try {
+                            val isDownloaded = offlineAudioManager.isSurahDownloaded(
+                                itemObject.readerId,
+                                itemObject.SoraId
+                            )
+                            if (!isNetworkAvailable(requireContext()) && !isDownloaded) {
+                                showOfflineAlert()
+                                return@launch
+                            } else {
+                                val allFavoriteSongs = withContext(Dispatchers.IO) {
+                                    getAllFavoriteSongsFromAllReaders()
+                                }
+                                FirebaseMusicSource._audiosLiveData.value = allFavoriteSongs
 
-                    FirebaseMusicSource._audiosLiveData.value =
-                        soraFavoriteAdapter.getAllFavSongs().map { it.toSong(readerName) }
+                                val songToPlay = allFavoriteSongs.find { song ->
+                                    song.title == com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN[itemObject.SoraId] &&
+                                            song.subtitle.contains(readerName.trim())
+                                } ?: run {
+                                    createSongForPlayback(itemObject, readerName.trim())
+                                }
 
-                    mainViewModel.playOrToggleSong(song, true)
+                                mainViewModel.playOrToggleSong(songToPlay, true)
 
-                    val action: NavDirections =
-                        SoraFavoriteFragmentDirections.actionSoraFavoriteFragmentToSongFragment()
-                    Navigation.findNavController(requireView()).navigate(action)
+                                val action: NavDirections =
+                                    SoraFavoriteFragmentDirections.actionSoraFavoriteFragmentToSongFragment()
+                                withContext(Dispatchers.Main) {
+                                    requireView().findNavController().navigate(action)
+                                }
+                            }
+                        } catch (_: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Snackbar.make(
+                                    binding.root,
+                                    "حدث خطأ في تشغيل السورة",
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
                 }
 
 
-                override fun onItemClick(itemObject: SoraSong, view: View?, position: Int) {
-                }
+                override fun onItemClick(itemObject: SoraSong, view: View?, position: Int) {}
 
                 override fun onItemFavClick(itemObject: SoraSong, view: View?) {
                     toggleFavoriteStatus(itemObject)
                 }
 
-                override fun onItemLongClick(itemObject: SoraSong, view: View?, position: Int) {
-                }
+                override fun onItemLongClick(itemObject: SoraSong, view: View?, position: Int) {}
             },
             offlineAudioManager,
             lifecycleScope
@@ -112,16 +151,83 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
         binding.recyclerView.adapter = soraFavoriteAdapter
     }
 
+    private suspend fun getAllFavoriteSongsFromAllReaders(): List<Song> {
+        return withContext(Dispatchers.IO) {
+            val allFavorites =
+                mutableListOf<Song>()
+
+            val currentFavList = soraFavoriteAdapter.getAllFavSongs()
+
+            val readerGroups = currentFavList.groupBy { it.readerId }
+
+            readerGroups.forEach { (readerId, soraSongs) ->
+
+                val reader = quranListenerReaderViewModel.getQuranListenerReaderById(readerId)
+                val readerName = reader?.name ?: "قارئ"
+
+                soraSongs.forEach { soraSong ->
+                    val songEntity = createSongEntityWithCorrectUrl(soraSong, readerName)
+                    allFavorites.add(songEntity)
+                }
+            }
+
+            allFavorites
+        }
+    }
+
+    private suspend fun createSongEntityWithCorrectUrl(
+        soraSong: SoraSong,
+        readerName: String,
+    ): Song {
+        return withContext(Dispatchers.IO) {
+            val isDownloaded =
+                offlineAudioManager.isSurahDownloaded(soraSong.readerId, soraSong.SoraId)
+
+            val finalSoraSong = if (isDownloaded) {
+                val offlineUrl =
+                    offlineAudioManager.getOfflineAudioUrl(soraSong.readerId, soraSong.SoraId)
+                if (offlineUrl != null) {
+                    soraSong.copy(url = offlineUrl)
+                } else {
+                    soraSong
+                }
+            } else {
+                soraSong
+            }
+
+            val song = finalSoraSong.toSong(readerName)
+
+            val uniqueMediaId = if (isDownloaded) {
+                "${soraSong.readerId}_${soraSong.SoraId}_offline"
+            } else {
+                "${soraSong.readerId}_${soraSong.SoraId}_online"
+            }
+
+            song.copy(
+                mediaId = uniqueMediaId,
+                songUrl = finalSoraSong.url
+            )
+        }
+    }
+
+    private suspend fun createSongForPlayback(
+        soraSong: SoraSong,
+        readerName: String,
+    ): Song {
+        return createSongEntityWithCorrectUrl(soraSong, readerName)
+    }
+
     private fun setupObservers() {
         lifecycleScope.launchWhenStarted {
             quranListenerReaderViewModel.getAllFavSorasOfReader().collect { readerList ->
                 updateUI(readerList.isNotEmpty())
-                soraFavoriteAdapter.setData(readerList)
+                soraFavoriteAdapter.updateData(readerList)
             }
         }
 
         lifecycleScope.launch {
             quranListenerReaderViewModel.downloadProgress.collect { progressMap ->
+
             }
         }
     }
@@ -138,19 +244,6 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
             binding.lottieView.visibility = View.VISIBLE
             binding.loadingText.visibility = View.VISIBLE
         }
-    }
-
-    private fun createSongForPlayback(soraSong: SoraSong, readerName: String): com.megahed.eqtarebmenalla.feature_data.data.local.entity.Song {
-        lifecycleScope.launch {
-            val isDownloaded = offlineAudioManager.isSurahDownloaded(soraSong.readerId, soraSong.SoraId)
-            if (isDownloaded) {
-                val offlineUrl = offlineAudioManager.getOfflineAudioUrl(soraSong.readerId, soraSong.SoraId)
-                if (offlineUrl != null) {
-                    soraSong.url = offlineUrl
-                }
-            }
-        }
-        return soraSong.toSong(readerName)
     }
 
     private fun toggleFavoriteStatus(soraSong: SoraSong) {
@@ -172,16 +265,19 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             android.R.id.home -> {
-                Navigation.findNavController(requireView()).popBackStack()
+                requireView().findNavController().popBackStack()
             }
+
             R.id.action_download_all_favorites -> {
                 showDownloadAllFavoritesDialog()
                 true
             }
+
             R.id.action_clear_all_favorites -> {
                 showClearAllFavoritesDialog()
                 true
             }
+
             else -> false
         }
     }
@@ -229,7 +325,7 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
                                     val success = quranListenerReaderViewModel.downloadAudio(
                                         readerId = readerWithSora.quranListenerReader.id,
                                         surahId = soraSong.SoraId,
-                                        surahName = com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN[soraSong.SoraId] ?: "سورة ${soraSong.SoraId}",
+                                        surahName = com.megahed.eqtarebmenalla.common.Constants.SORA_OF_QURAN[soraSong.SoraId],
                                         readerName = readerWithSora.quranListenerReader.name,
                                         audioUrl = soraSong.url
                                     )
@@ -249,10 +345,13 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
                     val message = when {
                         totalDownloaded > 0 && totalFailed == 0 ->
                             "تم بدء تحميل $totalDownloaded سورة"
+
                         totalDownloaded > 0 && totalFailed > 0 ->
                             "تم بدء تحميل $totalDownloaded سورة، فشل في $totalFailed"
+
                         totalFailed > 0 ->
                             "فشل في تحميل $totalFailed سورة"
+
                         else ->
                             "جميع السور محملة مسبقاً"
                     }
@@ -261,9 +360,30 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
                     return@collect
                 }
             } catch (e: Exception) {
-                Snackbar.make(binding.root, "حدث خطأ في تحميل المفضلات", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, "حدث خطأ في تحميل المفضلات", Snackbar.LENGTH_LONG)
+                    .show()
             }
         }
+    }
+
+    private fun showOfflineAlert() {
+        if (!isAdded) return
+
+        MaterialAlertDialogBuilder(requireContext()).apply {
+            setTitle("الاتصال بالإنترنت")
+            setMessage("عذرًا، السورة غير متاحة للإستماع بدون اتصال بالإنترنت. يرجى الاتصال بالإنترنت أو اختيار سورة أخرى تم تحميلها مسبقاً.")
+            setPositiveButton("إعدادات الاتصال") { _, _ ->
+                openNetworkSettings()
+            }
+            setNegativeButton("البقاء دون اتصال") { dialog, _ ->
+                dialog.dismiss()
+            }
+        }.show()
+    }
+
+    private fun openNetworkSettings() {
+        val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+        startActivity(intent)
     }
 
     private fun clearAllFavorites() {
@@ -279,7 +399,11 @@ class SoraFavoriteFragment : Fragment(), MenuProvider {
                         }
                     }
 
-                    Snackbar.make(binding.root, "تم حذف جميع السور من المفضلة", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        binding.root,
+                        "تم حذف جميع السور من المفضلة",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                     return@collect
                 }
             } catch (e: Exception) {

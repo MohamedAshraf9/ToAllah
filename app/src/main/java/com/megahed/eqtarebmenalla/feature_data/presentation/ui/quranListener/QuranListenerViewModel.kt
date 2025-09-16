@@ -3,10 +3,7 @@ package com.megahed.eqtarebmenalla.feature_data.presentation.ui.quranListener
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.megahed.eqtarebmenalla.common.Resource
-import com.megahed.eqtarebmenalla.db.model.DownloadedAudio
-import com.megahed.eqtarebmenalla.db.model.OfflineSettings
 import com.megahed.eqtarebmenalla.db.model.QuranListenerReader
-import com.megahed.eqtarebmenalla.db.model.ReaderWithSora
 import com.megahed.eqtarebmenalla.db.repository.QuranListenerReaderRepository
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.dto.toQuranListenerReader
 import com.megahed.eqtarebmenalla.feature_data.domain.use_cases.QuranListenerUsesCase
@@ -66,21 +63,5 @@ class QuranListenerViewModel @Inject constructor(
 
     fun getAllQuranListenerReader(): Flow<List<QuranListenerReader>>{
         return quranListenerReaderRepository.getAllQuranListenerReader()
-    }
-
-    fun getAllFavSorasOfReader(): Flow<List<ReaderWithSora>> {
-        return quranListenerReaderRepository.getAllFavSorasOfReader()
-    }
-
-    suspend fun getOfflineSettings(): OfflineSettings {
-        return offlineAudioManager.getOfflineSettings()
-    }
-
-    suspend fun isAudioDownloaded(readerId: String, surahId: Int): Boolean {
-        return offlineAudioManager.isAudioDownloaded(readerId, surahId)
-    }
-
-    suspend fun getDownloadedAudioByReader(readerId: String): List<DownloadedAudio> {
-        return offlineAudioManager.getDownloadedAudioByReader(readerId)
     }
 }
