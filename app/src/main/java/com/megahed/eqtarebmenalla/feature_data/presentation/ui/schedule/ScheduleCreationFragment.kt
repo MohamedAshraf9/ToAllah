@@ -66,6 +66,9 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     private var isDownloadInProgress = false
     private var downloadJob: Job? = null
 
+    private var currentDownloadSession: DownloadSession? = null
+    private val downloadedVersesInSession = mutableSetOf<Int>()
+
     private var selectedSurahId: Int = -1
     private var selectedSurahName: String = ""
     private var selectedSurahVerseCount: Int = 0
@@ -99,7 +102,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         requireActivity().onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {
@@ -351,16 +354,69 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
     private fun downloadScheduleForOffline() {
         selectedOfflineReader?.let { reader ->
+            val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 1
+            val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 1
+            val readerId = normalizeToAsciiDigits(reader.id.toString())
+
+
+            if (currentDownloadSession == null ||
+                currentDownloadSession?.readerId != readerId ||
+                currentDownloadSession?.surahId != selectedSurahId ||
+                currentDownloadSession?.startVerse != startVerse ||
+                currentDownloadSession?.endVerse != endVerse) {
+
+                currentDownloadSession = DownloadSession(readerId, selectedSurahId, startVerse, endVerse)
+                downloadedVersesInSession.clear()
+            }
+
             downloadJob?.cancel()
 
             downloadJob = lifecycleScope.launch {
                 try {
                     isDownloadInProgress = true
-                    showDownloadProgress(0, 100, "جاري البدء في التحميل...")
 
-                    val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 1
-                    val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 1
+                    val alreadyDownloadedVerses = mutableSetOf<Int>()
+                    val versesToDownload = mutableListOf<Int>()
+
+                    showDownloadProgress(0, 100, "جاري فحص الملفات المحملة...")
+
+                    for (verseNumber in startVerse..endVerse) {
+                        ensureActive()
+
+                        val isAlreadyDownloaded = offlineAudioManager.isVerseAudioDownloaded(
+                            readerId, selectedSurahId, verseNumber
+                        ) || downloadedVersesInSession.contains(verseNumber)
+
+                        if (isAlreadyDownloaded) {
+                            alreadyDownloadedVerses.add(verseNumber)
+                        } else {
+                            versesToDownload.add(verseNumber)
+                        }
+                    }
+
                     val totalVerses = endVerse - startVerse + 1
+                    val alreadyDownloadedCount = alreadyDownloadedVerses.size
+                    val remainingCount = versesToDownload.size
+
+                    if (versesToDownload.isEmpty()) {
+                        hideDownloadProgress()
+                        if (_binding != null) {
+                            Snackbar.make(
+                                binding.root,
+                                "جميع الآيات محملة بالفعل ($totalVerses آية)",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                        return@launch
+                    }
+
+                    showDownloadProgress(
+                        alreadyDownloadedCount,
+                        totalVerses,
+                        "تم تحميل $alreadyDownloadedCount من $totalVerses آية مسبقاً. جاري تحميل الباقي..."
+                    )
+
+                    delay(1000)
 
                     val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
                         reader.audio_url_bit_rate_64.trim().ifEmpty {
@@ -368,10 +424,10 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                         }
                     }.trimEnd('/')
 
-                    var downloadedCount = 0
+                    var newlyDownloadedCount = 0
                     val failedVerses = mutableListOf<Int>()
 
-                    for (verseNumber in startVerse..endVerse) {
+                    for (verseNumber in versesToDownload) {
                         ensureActive()
 
                         try {
@@ -385,7 +441,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             val verseName = "${selectedSurahName}_آية_${verseNumber}"
 
                             val success = offlineAudioManager.downloadVerseAudio(
-                                readerId = normalizeToAsciiDigits(reader.id.toString()),
+                                readerId = readerId,
                                 surahId = selectedSurahId,
                                 verseId = verseNumber,
                                 verseName = verseName,
@@ -394,12 +450,14 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             )
 
                             if (success) {
-                                downloadedCount++
-                                val progress = (downloadedCount * 100) / totalVerses
+                                newlyDownloadedCount++
+                                downloadedVersesInSession.add(verseNumber)
+                                val totalDownloaded = alreadyDownloadedCount + newlyDownloadedCount
+                                val progress = (totalDownloaded * 100) / totalVerses
                                 showDownloadProgress(
-                                    progress,
-                                    100,
-                                    "تم تحميل $downloadedCount من $totalVerses"
+                                    totalDownloaded,
+                                    totalVerses,
+                                    "تم تحميل $totalDownloaded من $totalVerses آية ($newlyDownloadedCount جديدة)"
                                 )
                             } else {
                                 failedVerses.add(verseNumber)
@@ -416,16 +474,19 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     hideDownloadProgress()
 
                     if (_binding != null) {
+                        val totalSuccessful = alreadyDownloadedCount + newlyDownloadedCount
                         if (failedVerses.isEmpty()) {
                             Snackbar.make(
                                 binding.root,
-                                "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)",
+                                "تم تحميل جميع الآيات بنجاح ($totalSuccessful من $totalVerses آية)",
                                 Snackbar.LENGTH_SHORT
                             ).show()
+                            currentDownloadSession = null
+                            downloadedVersesInSession.clear()
                         } else {
                             Snackbar.make(
                                 binding.root,
-                                "تم تحميل $downloadedCount من $totalVerses آية. فشل في تحميل ${failedVerses.size} آية",
+                                "تم تحميل $totalSuccessful من $totalVerses آية. فشل في تحميل ${failedVerses.size} آية",
                                 Snackbar.LENGTH_LONG
                             ).setAction("إعادة المحاولة") {
                                 retryFailedDownloads(startVerse, endVerse, reader)
@@ -448,7 +509,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             }
         }
     }
-
     private fun retryFailedDownloads(startVerse: Int, endVerse: Int, reader: RecitersVerse) {
         downloadJob?.cancel()
 
@@ -469,13 +529,15 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
                 showDownloadProgress(0, 100, "جاري البحث عن الآيات غير المحملة...")
 
-                val readerId = normalizeToAsciiDigits(reader.id.toString())
-                val missingVerses = offlineAudioManager.getMissingVerses(
-                    readerId,
-                    selectedSurahId,
-                    startVerse,
-                    endVerse
-                )
+                val readerId = normalizeToAsciiDigits(reader.id)
+                val missingVerses = mutableListOf<Int>()
+                for (verseNumber in startVerse..endVerse) {
+                    ensureActive()
+                    if (!offlineAudioManager.isVerseAudioDownloaded(readerId, selectedSurahId, verseNumber) &&
+                        !downloadedVersesInSession.contains(verseNumber)) {
+                        missingVerses.add(verseNumber)
+                    }
+                }
 
                 if (missingVerses.isEmpty()) {
                     hideDownloadProgress()
@@ -489,11 +551,10 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                     return@launch
                 }
 
-                showDownloadProgress(
-                    0,
-                    missingVerses.size,
-                    "جاري إعادة تحميل ${missingVerses.size} آية..."
-                )
+                val totalVerses = endVerse - startVerse + 1
+                val alreadyDownloaded = totalVerses - missingVerses.size
+
+                showDownloadProgress(0, missingVerses.size, "جاري إعادة تحميل ${missingVerses.size} آية...")
 
                 val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
                     reader.audio_url_bit_rate_64.trim().ifEmpty {
@@ -502,7 +563,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 }.trimEnd('/')
 
                 var successCount = 0
-                val totalVerses = missingVerses.size
 
                 for (verseNumber in missingVerses) {
                     ensureActive()
@@ -524,14 +584,12 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
 
                         if (success) {
                             successCount++
+                            downloadedVersesInSession.add(verseNumber)
                         }
 
-                        val progress = (successCount * 100) / totalVerses
-                        showDownloadProgress(
-                            progress,
-                            100,
-                            "تم إعادة تحميل $successCount من $totalVerses آية"
-                        )
+                        val totalDownloaded = alreadyDownloaded + successCount
+                        val progress = (successCount * 100) / missingVerses.size
+                        showDownloadProgress(progress, 100, "جاري تحميل $successCount متبقي من ${missingVerses.size} آية")
 
                         delay(500)
 
@@ -543,16 +601,20 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 hideDownloadProgress()
 
                 if (_binding != null) {
-                    if (successCount == totalVerses) {
+                    val totalDownloaded = alreadyDownloaded + successCount
+                    if (successCount == missingVerses.size) {
                         Snackbar.make(
                             binding.root,
-                            "تم تحميل جميع الآيات الناقصة بنجاح",
+                            "تم تحميل جميع الآيات الناقصة بنجاح ($totalDownloaded من $totalVerses)",
                             Snackbar.LENGTH_SHORT
                         ).show()
+                        // Clear session on successful completion
+                        currentDownloadSession = null
+                        downloadedVersesInSession.clear()
                     } else {
                         Snackbar.make(
                             binding.root,
-                            "تم تحميل $successCount من $totalVerses آية ناقصة",
+                            "تم تحميل $totalDownloaded من $totalVerses آية",
                             Snackbar.LENGTH_LONG
                         ).show()
                     }
@@ -645,71 +707,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         }
     }
 
-    private fun downloadFullScheduleRange() {
-        selectedOfflineReader?.let { reader ->
-            lifecycleScope.launch {
-                try {
-                    val startVerse = binding.etStartVerse.text.toString().toIntOrNull() ?: 1
-                    val endVerse = binding.etEndVerse.text.toString().toIntOrNull() ?: 1
-                    val totalVerses = endVerse - startVerse + 1
-
-                    val baseUrl = reader.audio_url_bit_rate_128.trim().ifEmpty {
-                        reader.audio_url_bit_rate_64.trim().ifEmpty {
-                            reader.audio_url_bit_rate_32_.trim()
-                        }
-                    }.trimEnd('/')
-
-                    var downloadedCount = 0
-
-                    for (verseNumber in startVerse..endVerse) {
-                        val surahFormatted = String.format(Locale.US, "%03d", selectedSurahId)
-                        val verseFormatted = String.format(Locale.US, "%03d", verseNumber)
-                        val verseUrl = "$baseUrl/${surahFormatted}${verseFormatted}.mp3"
-                        val verseName = "${selectedSurahName}_آية_${verseNumber}"
-
-
-                        val success = offlineAudioManager.downloadAudio(
-                            readerId = normalizeToAsciiDigits(reader.id.toString()),
-                            surahId = selectedSurahId,
-                            surahName = verseName,
-                            readerName = reader.name,
-                            audioUrl = verseUrl
-                        )
-
-                        if (success) {
-                            downloadedCount++
-                            val progress = (downloadedCount * 100) / totalVerses
-                            showDownloadProgress(progress, 100)
-                            delay(500)
-                        }
-                    }
-
-                    hideDownloadProgress()
-                    if (downloadedCount == totalVerses) {
-                        Snackbar.make(
-                            binding.root,
-                            "تم تحميل جميع الآيات بنجاح ($downloadedCount آية)",
-                            Snackbar.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Snackbar.make(
-                            binding.root,
-                            "تم تحميل $downloadedCount من $totalVerses آية",
-                            Snackbar.LENGTH_LONG
-                        ).show()
-                    }
-
-                } catch (e: Exception) {
-                    hideDownloadProgress()
-                    Snackbar.make(
-                        binding.root,
-                        "خطأ في تحميل الآيات: ${e.message}",
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
-            }
-        }
-    }
 
     private fun normalizeToAsciiDigits(input: String): String {
         return input.replace(Regex("[٠-٩]")) { matchResult ->
@@ -805,46 +802,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         return true
     }
 
-    private fun getReaderAudioUrl(reader: RecitersVerse): String {
-        val rawBase = when {
-            reader.audio_url_bit_rate_32_.trim()
-                .isNotEmpty() && reader.audio_url_bit_rate_32_.trim() != "0" ->
-                reader.audio_url_bit_rate_32_
 
-            reader.audio_url_bit_rate_64.trim()
-                .isNotEmpty() && reader.audio_url_bit_rate_64.trim() != "0" ->
-                reader.audio_url_bit_rate_64
-
-            else -> reader.audio_url_bit_rate_128
-        }.trim()
-
-        val base = rawBase
-            .replaceFirst(Regex("^http://", RegexOption.IGNORE_CASE), "https://")
-            .removeSuffix("/")
-
-        val three = String.format("%03d", selectedSurahId)
-        return "$base/$three.mp3"
-    }
-
-    private fun monitorDownloadProgress(readerId: String, surahId: Int) {
-        lifecycleScope.launch {
-            offlineAudioManager.downloadProgress.collect { progressMap ->
-                val downloadId = "${readerId}_${surahId}"
-                val progress = progressMap[downloadId]
-
-                if (progress != null) {
-                    showDownloadProgress(progress, 100)
-                } else {
-                    val isDownloaded = offlineAudioManager.isAudioDownloaded(readerId, surahId)
-                    if (isDownloaded) {
-                        hideDownloadProgress()
-                        Snackbar.make(binding.root, "تم التحميل بنجاح", Snackbar.LENGTH_SHORT)
-                            .show()
-                    }
-                }
-            }
-        }
-    }
 
     private fun setupSurahSpinner() {
         val surahNames = Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key }
@@ -908,7 +866,12 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
         }
 
         binding.btnCancel.setOnClickListener {
-            findNavController().popBackStack()
+            if(isDownloadInProgress){
+                showDownloadWarningDialog()
+            }else{
+                findNavController().popBackStack()
+
+            }
         }
 
         binding.btnCreateSchedule.setOnClickListener {
@@ -1086,7 +1049,12 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     }
 
     override fun onDestroyView() {
-        downloadJob?.cancel()
+
+        if (!isDownloadInProgress) {
+            downloadJob?.cancel()
+            currentDownloadSession = null
+            downloadedVersesInSession.clear()
+        }
         super.onDestroyView()
         _binding = null
     }
