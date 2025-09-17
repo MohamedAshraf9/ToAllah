@@ -989,13 +989,22 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
     private fun onVerseCompleted(versePosition: Int) {
         if (isProgressTrackingEnabled && userChoiceMade) {
-            versesCompleted = versePosition + 1
-            val newAccumulatedProgress = initialCompletedVerses + versesCompleted
-            if (newAccumulatedProgress <= totalVersesInTarget) {
-                accumulatedVersesCompleted = newAccumulatedProgress
-                updateProgressDisplay()
-                saveProgressSilently()
-                checkForAutoCompletion()
+           
+            val currentVerseNumber = sessionStartVerse + versePosition
+
+            val resumeFromVerseNumber = targetStartVerse + initialCompletedVerses
+
+            if (currentVerseNumber >= resumeFromVerseNumber) {
+                val progressBeyondResumePoint = currentVerseNumber - resumeFromVerseNumber + 1
+                val newAccumulatedProgress = initialCompletedVerses + progressBeyondResumePoint
+
+                if (newAccumulatedProgress <= totalVersesInTarget) {
+                    accumulatedVersesCompleted = newAccumulatedProgress
+                    versesCompleted = progressBeyondResumePoint
+                    updateProgressDisplay()
+                    saveProgressSilently()
+                    checkForAutoCompletion()
+                }
             }
         }
     }
