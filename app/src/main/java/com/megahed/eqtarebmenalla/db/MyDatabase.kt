@@ -167,51 +167,174 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         )
     }
 }
+
+
+
 val MIGRATION_7_8 = object : Migration(7, 8) {
-    @SuppressLint("Range")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        // Always create the table with IF NOT EXISTS to handle missing table scenarios
-        database.execSQL("""
-            CREATE TABLE IF NOT EXISTS `daily_targets` (
-                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                `scheduleId` INTEGER NOT NULL,
-                `targetDate` INTEGER NOT NULL,
-                `surahId` INTEGER NOT NULL,
-                `surahName` TEXT NOT NULL,
-                `startVerse` INTEGER NOT NULL,
-                `endVerse` INTEGER NOT NULL,
-                `estimatedDurationMinutes` INTEGER NOT NULL DEFAULT 30,
-                `isCompleted` INTEGER NOT NULL DEFAULT 0,
-                `completedAt` INTEGER,
-                `completedVerses` INTEGER NOT NULL DEFAULT 0,
-                FOREIGN KEY(`scheduleId`) REFERENCES `memorization_schedules`(`id`) ON DELETE CASCADE
+    override fun migrate(db: SupportSQLiteDatabase) {
+
+        fun createTableIfNotExists(sql: String) {
+            db.execSQL(sql.trimIndent())
+        }
+
+        fun createIndexIfNotExists(sql: String) {
+            db.execSQL(sql)
+        }
+
+        fun columnExists(table: String, col: String): Boolean =
+            db.query("PRAGMA table_info($table)").use { c ->
+                val idx = c.getColumnIndex("name")
+                while (c.moveToNext()) if (c.getString(idx) == col) return true
+                false
+            }
+
+        fun tableExists(name: String): Boolean =
+            db.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", arrayOf(name))
+                .use { it.moveToFirst() }
+
+        // 1) memorization_schedules (REQUIRED by several FKs)
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS memorization_schedules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                startDate INTEGER NOT NULL,
+                endDate INTEGER NOT NULL,
+                isActive INTEGER NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL
             )
-        """.trimIndent())
+        """)
 
-        // Create indices if they don't exist
-        database.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_targets_scheduleId` ON `daily_targets` (`scheduleId`)")
-        database.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_targets_targetDate` ON `daily_targets` (`targetDate`)")
-
-        // For existing tables, we need to check if completedVerses column exists and add it if not
-        val cursor = database.query("PRAGMA table_info(daily_targets)")
-        var hasCompletedVerses = false
-        while (cursor.moveToNext()) {
-            val columnName = cursor.getString(cursor.getColumnIndex("name"))
-            if (columnName == "completedVerses") {
-                hasCompletedVerses = true
-                break
-            }
+        // 2) daily_targets (depends on memorization_schedules)
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS daily_targets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                scheduleId INTEGER NOT NULL,
+                targetDate INTEGER NOT NULL,
+                surahId INTEGER NOT NULL,
+                surahName TEXT NOT NULL,
+                startVerse INTEGER NOT NULL,
+                endVerse INTEGER NOT NULL,
+                estimatedDurationMinutes INTEGER NOT NULL DEFAULT 30,
+                isCompleted INTEGER NOT NULL DEFAULT 0,
+                completedAt INTEGER,
+                completedVerses INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY(scheduleId) REFERENCES memorization_schedules(id) ON DELETE CASCADE
+            )
+        """)
+        createIndexIfNotExists("CREATE INDEX IF NOT EXISTS index_daily_targets_scheduleId ON daily_targets(scheduleId)")
+        createIndexIfNotExists("CREATE INDEX IF NOT EXISTS index_daily_targets_targetDate  ON daily_targets(targetDate)")
+        // If an older table existed without the new column, add it safely.
+        if (!columnExists("daily_targets", "completedVerses")) {
+            db.execSQL("ALTER TABLE daily_targets ADD COLUMN completedVerses INTEGER NOT NULL DEFAULT 0")
         }
-        cursor.close()
-
-        // If the table existed but doesn't have completedVerses column, add it
-        if (!hasCompletedVerses) {
-            try {
-                database.execSQL("ALTER TABLE daily_targets ADD COLUMN completedVerses INTEGER NOT NULL DEFAULT 0")
-            } catch (e: Exception) {
-                // Column might already exist or table structure is different
-                android.util.Log.w("Migration", "Could not add completedVerses column: ${e.message}")
-            }
+        if (!columnExists("daily_targets", "estimatedDurationMinutes")) {
+            db.execSQL("ALTER TABLE daily_targets ADD COLUMN estimatedDurationMinutes INTEGER NOT NULL DEFAULT 30")
         }
+        if (!columnExists("daily_targets", "isCompleted")) {
+            db.execSQL("ALTER TABLE daily_targets ADD COLUMN isCompleted INTEGER NOT NULL DEFAULT 0")
+        }
+        if (!columnExists("daily_targets", "completedAt")) {
+            db.execSQL("ALTER TABLE daily_targets ADD COLUMN completedAt INTEGER")
+        }
+
+        // 3) memorization_sessions (depends on daily_targets)
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS memorization_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                dailyTargetId INTEGER NOT NULL,
+                startTime INTEGER NOT NULL,
+                endTime INTEGER,
+                actualDurationMinutes INTEGER NOT NULL DEFAULT 0,
+                versesCompleted INTEGER NOT NULL DEFAULT 0,
+                sessionType TEXT NOT NULL DEFAULT 'LISTENING',
+                notes TEXT,
+                FOREIGN KEY(dailyTargetId) REFERENCES daily_targets(id) ON DELETE CASCADE
+            )
+        """)
+        createIndexIfNotExists("CREATE INDEX IF NOT EXISTS index_memorization_sessions_dailyTargetId ON memorization_sessions(dailyTargetId)")
+
+        // 4) user_streaks
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS user_streaks (
+                id INTEGER PRIMARY KEY NOT NULL,
+                currentStreak INTEGER NOT NULL DEFAULT 0,
+                longestStreak INTEGER NOT NULL DEFAULT 0,
+                lastCompletionDate INTEGER,
+                totalDaysCompleted INTEGER NOT NULL DEFAULT 0,
+                totalVersesMemorized INTEGER NOT NULL DEFAULT 0,
+                updatedAt INTEGER NOT NULL
+            )
+        """)
+        // Seed a row if empty (optional but handy since PK is fixed = 1)
+        if (tableExists("user_streaks")) {
+            db.execSQL("""
+                INSERT OR IGNORE INTO user_streaks
+                (id, currentStreak, longestStreak, lastCompletionDate, totalDaysCompleted, totalVersesMemorized, updatedAt)
+                VALUES (1, 0, 0, NULL, 0, 0, CAST(strftime('%s','now')*1000 AS INTEGER))
+            """.trimIndent())
+        }
+
+        // 5) achievements
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS achievements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                type TEXT NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                iconResource TEXT,
+                unlockedAt INTEGER NOT NULL,
+                value INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+
+        // 6) (already handled earlier versions, but harmless if missing on some devices)
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS downloaded_audio (
+                id TEXT NOT NULL PRIMARY KEY,
+                readerId TEXT NOT NULL,
+                surahId INTEGER NOT NULL,
+                verseId INTEGER,
+                surahName TEXT NOT NULL,
+                readerName TEXT NOT NULL,
+                localFilePath TEXT NOT NULL,
+                originalUrl TEXT NOT NULL,
+                downloadDate INTEGER NOT NULL,
+                fileSize INTEGER NOT NULL,
+                isComplete INTEGER NOT NULL DEFAULT 0,
+                downloadType TEXT NOT NULL DEFAULT 'FULL_SURAH'
+            )
+        """)
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS offline_settings (
+                id INTEGER NOT NULL PRIMARY KEY,
+                isOfflineMemorizationEnabled INTEGER NOT NULL DEFAULT 0,
+                selectedOfflineReaderId TEXT,
+                selectedOfflineReaderName TEXT,
+                totalDownloadedSize INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+        // Ensure singleton row exists (id=1)
+        if (tableExists("offline_settings")) {
+            db.execSQL("""
+                INSERT OR IGNORE INTO offline_settings
+                (id, isOfflineMemorizationEnabled, selectedOfflineReaderId, selectedOfflineReaderName, totalDownloadedSize)
+                VALUES (1, 0, NULL, NULL, 0)
+            """.trimIndent())
+        }
+
+        // 7) cached_reciters (v6→7 had it; keep idempotent)
+        createTableIfNotExists("""
+            CREATE TABLE IF NOT EXISTS cached_reciters (
+                id INTEGER NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                audio_url_bit_rate_32_ TEXT NOT NULL,
+                audio_url_bit_rate_64 TEXT NOT NULL,
+                audio_url_bit_rate_128 TEXT NOT NULL,
+                cachedAt INTEGER NOT NULL
+            )
+        """)
     }
 }
+
