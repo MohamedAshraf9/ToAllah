@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.*
@@ -30,6 +31,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import androidx.navigation.findNavController
 
 @AndroidEntryPoint
 class SongFragment : Fragment(), MenuProvider {
@@ -161,6 +163,7 @@ class SongFragment : Fragment(), MenuProvider {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     private fun subscribeToObservers() {
         mainViewModel.mediaItems.observe(viewLifecycleOwner) {
             it?.let { result ->
@@ -196,8 +199,20 @@ class SongFragment : Fragment(), MenuProvider {
 
         songViewModel.curSongDuration.observe(viewLifecycleOwner) {
             binding.seekBar.max = it.toInt()
-            val dateFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
-            binding.tvSongDuration.text = dateFormat.format(it)
+            val durationMs = it // milliseconds
+
+            val seconds = (durationMs / 1000) % 60
+            val minutes = (durationMs / (1000 * 60)) % 60
+            val hours = (durationMs / (1000 * 60 * 60))
+
+            val formatted = if (hours > 0) {
+                String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            } else {
+                String.format("%02d:%02d", minutes, seconds)
+            }
+
+            binding.tvSongDuration.text = formatted
+
         }
     }
 
@@ -227,9 +242,20 @@ class SongFragment : Fragment(), MenuProvider {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     private fun setCurPlayerTimeToTextView(ms: Long) {
-        val dateFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
-        binding.tvCurTime.text = dateFormat.format(ms)
+        val seconds = (ms / 1000) % 60
+        val minutes = (ms / (1000 * 60)) % 60
+        val hours = (ms / (1000 * 60 * 60))
+
+        // لو مش عايز تعرض الساعات لو صفر
+        val time = if (hours > 0) {
+            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format("%02d:%02d", minutes, seconds)
+        }
+
+        binding.tvCurTime.text = time
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -238,7 +264,7 @@ class SongFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             android.R.id.home -> {
-                Navigation.findNavController(requireView()).popBackStack()
+                requireView().findNavController().popBackStack()
             }
             else -> false
         }

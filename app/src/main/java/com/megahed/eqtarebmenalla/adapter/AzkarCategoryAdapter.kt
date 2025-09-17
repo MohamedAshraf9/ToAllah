@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.megahed.eqtarebmenalla.common.CommonUtils.normalizeArabic
 import com.megahed.eqtarebmenalla.databinding.AzkarCategoryItemBinding
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
@@ -49,7 +50,7 @@ class AzkarCategoryAdapter(
 
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
         val zakarCat = filteredList[position]
-        holder.zakarCatName.text = zakarCat.catName
+        holder.zakarCatName.text = zakarCat.catName.normalizeArabic()
 
         holder.itemView.setOnClickListener {
             onMyItemClickListener.onItemClick(filteredList[position], it, position)

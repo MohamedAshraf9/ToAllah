@@ -92,4 +92,17 @@ object CommonUtils {
         return categories[calendar[Calendar.MONTH]] + " " + calendar[Calendar.YEAR]
     }
 
+
+    fun String.normalizeArabic(): String {
+        return this.replace("أ", "ا")
+            .replace("إ", "ا")
+            .replace("آ", "ا")
+            .replace("ى", "ي")
+            .replace("ة", "ه")
+            .replace("ؤ", "و")
+            .replace("ئ", "ي")
+            .replace("ٱ", "ا")
+    }
+
+
 }

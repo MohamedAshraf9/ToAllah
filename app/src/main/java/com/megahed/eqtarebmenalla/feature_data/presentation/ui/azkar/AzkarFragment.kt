@@ -16,6 +16,7 @@ import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.findNavController
+import com.megahed.eqtarebmenalla.common.CommonUtils.normalizeArabic
 
 @AndroidEntryPoint
 class AzkarFragment : Fragment() {
@@ -83,7 +84,7 @@ class AzkarFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                azkarCategoryAdapter.filter(newText.orEmpty())
+                azkarCategoryAdapter.filter(newText.orEmpty().normalizeArabic())
                 return true
             }
         })
