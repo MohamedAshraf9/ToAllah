@@ -1,6 +1,7 @@
 package com.megahed.eqtarebmenalla
 
 import android.Manifest
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.megahed.eqtarebmenalla.common.CommonUtils.showMessage
 import com.megahed.eqtarebmenalla.databinding.ActivityMainBinding
@@ -20,6 +22,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var preferences: SharedPreferences
+    private lateinit var themeChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -31,10 +35,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        ThemeHelper.applyTheme(preferences)
         super.onCreate(savedInstanceState)
 
         setupUI()
         setupNavigation()
+        setupThemeListener()
     }
 
     private fun setupUI() {
@@ -57,8 +64,18 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavigation() {
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
-
         navView.setupWithNavController(navController)
+    }
+
+    private fun setupThemeListener() {
+        themeChangeListener = ThemeHelper.setupThemeChangeListener(this) { isDarkMode ->
+            recreate()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        preferences.unregisterOnSharedPreferenceChangeListener(themeChangeListener)
     }
 
     fun requestAppPermissions() {

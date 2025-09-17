@@ -41,32 +41,31 @@
         <activity
             android:name=".feature_data.presentation.ui.hefz.HefzRepeatActivity"
             android:exported="false"
+            android:configChanges="uiMode|orientation|screenSize|screenLayout"
             android:launchMode="singleTop"/>
         <activity
             android:name=".feature_data.presentation.ui.settings.SettingsActivity"
-            android:configChanges="orientation|screenSize|screenLayout"
+            android:configChanges="uiMode|orientation|screenSize|screenLayout"
             android:exported="false"
             android:label="@string/title_activity_settings" />
         <activity
             android:name=".feature_data.presentation.ui.SplashScreenActivity"
-            android:configChanges="orientation|screenSize|screenLayout"
+            android:configChanges="uiMode|orientation|screenSize|screenLayout"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|screenLayout"
+            android:configChanges="uiMode|orientation|screenSize|screenLayout"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:exported="false">
-
         </activity>
         <activity
             android:name=".feature_data.presentation.ui.tafsir.TafsirActivity"
-            android:configChanges="orientation|screenSize|screenLayout"
+            android:configChanges="uiMode|orientation|screenSize|screenLayout"
             android:exported="false" />
 
         <service
