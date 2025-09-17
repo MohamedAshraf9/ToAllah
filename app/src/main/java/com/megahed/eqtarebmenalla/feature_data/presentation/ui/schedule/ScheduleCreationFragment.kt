@@ -736,7 +736,15 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 )
                 offlineAudioManager.updateOfflineSettings(updatedSettings)
 
+                val readerKey = "surah_${selectedSurahId}_readers"
+                val existingReaders = sharedPreferences.getStringSet(readerKey, mutableSetOf()) ?: mutableSetOf()
+
+                val readerInfo = "${normalizeToAsciiDigits(reader.id)}|${reader.name}|${reader.audio_url_bit_rate_128}|${reader.audio_url_bit_rate_64}|${reader.audio_url_bit_rate_32_}"
+
+                existingReaders.add(readerInfo)
+
                 sharedPreferences.edit {
+                    putStringSet(readerKey, existingReaders)
                     putString("selected_offline_reader_id", normalizeToAsciiDigits(reader.id))
                     putString("selected_offline_reader_name", reader.name)
                     putString("selected_offline_reader_url_128", reader.audio_url_bit_rate_128)

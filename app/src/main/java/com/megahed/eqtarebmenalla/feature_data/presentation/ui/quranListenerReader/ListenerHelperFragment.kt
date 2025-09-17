@@ -109,12 +109,9 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
     private fun setupListeners() {
         binding.listOfRewat.onItemClickListener =
             OnItemClickListener { parent, view, position, id ->
-                binding.listSouraName.setText("")
-                binding.nbAya.setText("")
-                binding.nbEyaEnd.setText("")
-                binding.start.isEnabled = false
                 reader = parent.getItemAtPosition(position) as RecitersVerse
-                binding.soraStartSpinner.isEnabled = true
+
+                binding.start.isEnabled = reader != null && startAya > 0 && endAya > 0 && startAya <= endAya
             }
 
         binding.listSouraName.onItemClickListener =
@@ -126,60 +123,38 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 val surahNames = Constants.SORA_OF_QURAN_WITH_NB_EYA.map { it.key }
                 val selectedSurahName = surahNames[position]
                 soraId = position + 1
+                this.selectedSurahName = selectedSurahName
 
                 setupVerseSelection(selectedSurahName)
-            }
-        binding.btnMemorizationTracker.setOnClickListener {
-            if (reader == null) {
-                Snackbar.make(
-                    binding.root,
-                    getString(R.string.select_reader_first_tracker),
-                    Snackbar.LENGTH_LONG
-                ).show()
-                return@setOnClickListener
-            }
-
-            val todayTarget = memorizationViewModel.todayTarget.value
-            if (todayTarget != null) {
-                autoFillWithTodayTarget(todayTarget)
 
                 if (!isNetworkAvailable()) {
-                    disableFieldsForOffline()
+                    val surahReaders = getOfflineReadersForSurah(soraId)
+                    readers.clear()
+                    readers.addAll(surahReaders)
+
+                    if (surahReaders.isNotEmpty()) {
+                        setupOfflineReaderAdapter()
+                        val currentReader = reader
+                        if (currentReader != null && surahReaders.any { it.id == currentReader.id }) {
+                            val readerIndex = readers.indexOfFirst { it.id == currentReader.id }
+                            if (readerIndex >= 0) {
+                                binding.listOfRewat.setText(readers[readerIndex].name, false)
+                            }
+                        } else {
+                            reader = surahReaders[0]
+                            binding.listOfRewat.setText(surahReaders[0].name, false)
+                        }
+                    } else {
+                        binding.listOfRewat.setAdapter(null)
+                        reader = null
+                        Snackbar.make(
+                            binding.root,
+                            "لا يوجد قراء محملين لهذه السورة",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-
-                Snackbar.make(
-                    binding.root,
-                    getString(R.string.filled_with_today_target),
-                    Snackbar.LENGTH_SHORT
-                ).show()
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    getString(R.string.no_today_target),
-                    Snackbar.LENGTH_LONG
-                ).show()
             }
-        }
-
-        binding.nbAya.onItemClickListener = OnItemClickListener { parent, view, position, id ->
-            startAya = parent.getItemAtPosition(position) as Int
-            binding.soraStartEndText.isEnabled = true
-        }
-
-        binding.nbEyaEnd.onItemClickListener = OnItemClickListener { parent, view, position, id ->
-            endAya = parent.getItemAtPosition(position) as Int
-            binding.start.isEnabled = true
-        }
-
-        binding.stop.setOnClickListener {
-            binding.start.visibility = View.VISIBLE
-            binding.stop.visibility = View.GONE
-        }
-
-        binding.btnCreateSchedule.setOnClickListener {
-            requireView().findNavController()
-                .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
-        }
 
         binding.btnMemorizationTracker.setOnClickListener {
             if (!isNetworkAvailable()) {
@@ -221,6 +196,27 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             }
         }
 
+        binding.nbAya.onItemClickListener = OnItemClickListener { parent, view, position, id ->
+            startAya = parent.getItemAtPosition(position) as Int
+            binding.soraStartEndText.isEnabled = true
+            binding.start.isEnabled = reader != null && startAya > 0 && endAya > 0 && startAya <= endAya
+        }
+
+        binding.nbEyaEnd.onItemClickListener = OnItemClickListener { parent, view, position, id ->
+            endAya = parent.getItemAtPosition(position) as Int
+            binding.start.isEnabled = reader != null && startAya > 0 && endAya > 0 && startAya <= endAya
+        }
+
+        binding.stop.setOnClickListener {
+            binding.start.visibility = View.VISIBLE
+            binding.stop.visibility = View.GONE
+        }
+
+        binding.btnCreateSchedule.setOnClickListener {
+            requireView().findNavController()
+                .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
+        }
+
         binding.start.setOnClickListener {
             handleStartMemorization()
         }
@@ -230,11 +226,48 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 .navigate(R.id.action_listenerHelperFragment_to_scheduleCreationFragment)
         }
     }
+    private fun setupOfflineReaderAdapter() {
+        val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.listOfRewat.setAdapter(adapter)
+    }
+
+    private fun loadFallbackOfflineReader() {
+        val selectedReaderId = offlinePreferences.getString("selected_offline_reader_id", null)
+        val selectedReaderName = offlinePreferences.getString("selected_offline_reader_name", null)
+
+        if (selectedReaderId != null && selectedReaderName != null) {
+            val offlineReciter = RecitersVerse(
+                id = selectedReaderId,
+                name = selectedReaderName,
+                audio_url_bit_rate_128 = offlinePreferences.getString("selected_offline_reader_url_128", "") ?: "",
+                audio_url_bit_rate_64 = offlinePreferences.getString("selected_offline_reader_url_64", "") ?: "",
+                audio_url_bit_rate_32_ = offlinePreferences.getString("selected_offline_reader_url_32", "") ?: "",
+                musshaf_type = "",
+                rewaya = ""
+            )
+            readers.clear()
+            readers.add(offlineReciter)
+            reader = offlineReciter
+            setupOfflineReaderAdapter()
+            binding.listOfRewat.setText(offlineReciter.name, false)
+        }
+    }
 
     private fun disableFieldsForOffline() {
         binding.listSouraName.isEnabled = false
-        binding.nbAya.isEnabled = false
-        binding.nbEyaEnd.isEnabled = false
+
+        binding.listOfRewat.isEnabled = true
+        binding.nbAya.isEnabled = true
+        binding.nbEyaEnd.isEnabled = true
+        binding.soraStartSpinner.isEnabled = true
+        binding.soraStartEditText.isEnabled = true
+        binding.soraStartEndText.isEnabled = true
+
+        binding.listSouraName.alpha = 0.6f
+        binding.listOfRewat.alpha = 1.0f
+        binding.nbAya.alpha = 1.0f
+        binding.nbEyaEnd.alpha = 1.0f
     }
 
     private fun autoFillWithTodayTarget(target: DailyTarget) {
@@ -383,62 +416,34 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                     readers.addAll(filter)
 
                     enableAllFields(true)
+
+                    if (readers.isNotEmpty()) {
+                        val adapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        binding.listOfRewat.setAdapter(adapter)
+                    }
                 } else {
-                    readers.clear()
-                    val selectedReaderId =
-                        offlinePreferences.getString("selected_offline_reader_id", null)
-                    val selectedReaderName =
-                        offlinePreferences.getString("selected_offline_reader_name", null)
+                    val todayTarget = memorizationViewModel.todayTarget.value
+                    if (todayTarget != null && soraId == 0) {
+                        // Auto-fill with today's target data first
+                        autoFillWithTodayTargetOffline(todayTarget)
+                    } else if (soraId > 0) {
+                        val surahReaders = getOfflineReadersForSurah(soraId)
+                        readers.clear()
+                        readers.addAll(surahReaders)
 
-                    if (selectedReaderId != null && selectedReaderName != null) {
-                        val offlineReciter = RecitersVerse(
-                            id = selectedReaderId,
-                            name = selectedReaderName,
-                            audio_url_bit_rate_128 = offlinePreferences.getString(
-                                "selected_offline_reader_url_128",
-                                ""
-                            ) ?: "",
-                            audio_url_bit_rate_64 = offlinePreferences.getString(
-                                "selected_offline_reader_url_64",
-                                ""
-                            ) ?: "",
-                            audio_url_bit_rate_32_ = offlinePreferences.getString(
-                                "selected_offline_reader_url_32",
-                                ""
-                            ) ?: "",
-                            musshaf_type = "",
-                            rewaya = ""
-                        )
-                        readers.add(offlineReciter)
-                        reader = offlineReciter
-
-                        if (isAdded && view != null) {
-                            val todayTarget = memorizationViewModel.todayTarget.value
-                            if (todayTarget != null) {
-                                autoFillWithTodayTargetOffline(todayTarget)
+                        if (surahReaders.isNotEmpty()) {
+                            setupOfflineReaderAdapter()
+                            if (reader == null) {
+                                reader = surahReaders[0]
+                                binding.listOfRewat.setText(surahReaders[0].name, false)
                             }
                         }
-
-
-                        enableAllFields(false)
+                    } else {
+                        loadFallbackOfflineReader()
                     }
-                }
 
-                if (readers.isNotEmpty()) {
-                    val adapter =
-                        ArrayAdapter(requireContext(), R.layout.list_item_spinner, readers)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    binding.listOfRewat.setAdapter(adapter)
-
-                    if (!isNetworkAvailable() && readers.isNotEmpty()) {
-                        binding.listOfRewat.setText(readers[0].name, false)
-                    }
-                } else if (!isNetworkAvailable()) {
-                    Snackbar.make(
-                        binding.root,
-                        "لا يوجد قراء متاحين بدون إتصال في الوقت الحالي.",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
+                    enableFieldsForOffline()
                 }
             }
         }
@@ -481,7 +486,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 if (target != null && memorizationViewModel.todayTargetProgress.value == null) {
                     updateTodayProgress(target)
                     updateScheduleCardWithTarget(target)
-                    if(!isNetworkAvailable()){
+                    if (!isNetworkAvailable()) {
                         autoFillWithTodayTargetOffline(target)
                     }
 
@@ -526,7 +531,29 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
         }
 
     }
+    private fun getOfflineReadersForSurah(surahId: Int): List<RecitersVerse> {
+        val readerKey = "surah_${surahId}_readers"
+        val readerInfoSet = offlinePreferences.getStringSet(readerKey, emptySet()) ?: emptySet()
 
+        return readerInfoSet.mapNotNull { readerInfo ->
+            try {
+                val parts = readerInfo.split("|")
+                if (parts.size == 5) {
+                    RecitersVerse(
+                        id = parts[0],
+                        name = parts[1],
+                        audio_url_bit_rate_128 = parts[2],
+                        audio_url_bit_rate_64 = parts[3],
+                        audio_url_bit_rate_32_ = parts[4],
+                        musshaf_type = "",
+                        rewaya = ""
+                    )
+                } else null
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
     private fun updateTodayProgressWithPartial(targetProgress: DailyTargetProgress) {
         val completedText = "${targetProgress.completedVerses}/${targetProgress.totalVerses}"
         binding.todayProgress.text = completedText
@@ -587,19 +614,38 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
     }
 
     private fun enableAllFields(enable: Boolean) {
-        binding.listOfRewat.isEnabled = enable
-        binding.listSouraName.isEnabled = enable
-        binding.nbAya.isEnabled = enable
-        binding.nbEyaEnd.isEnabled = enable
-        binding.soraStartSpinner.isEnabled = enable
-        binding.soraStartEditText.isEnabled = enable
-        binding.soraStartEndText.isEnabled = enable
+        if (enable) {
+            binding.listOfRewat.isEnabled = true
+            binding.listSouraName.isEnabled = true
+            binding.nbAya.isEnabled = true
+            binding.nbEyaEnd.isEnabled = true
+            binding.soraStartSpinner.isEnabled = true
+            binding.soraStartEditText.isEnabled = true
+            binding.soraStartEndText.isEnabled = true
 
-        val alpha = if (enable) 1.0f else 0.6f
-        binding.listOfRewat.alpha = alpha
-        binding.listSouraName.alpha = alpha
-        binding.nbAya.alpha = alpha
-        binding.nbEyaEnd.alpha = alpha
+            val alpha = 1.0f
+            binding.listOfRewat.alpha = alpha
+            binding.listSouraName.alpha = alpha
+            binding.nbAya.alpha = alpha
+            binding.nbEyaEnd.alpha = alpha
+        } else {
+            enableFieldsForOffline()
+        }
+    }
+
+    private fun enableFieldsForOffline() {
+        binding.listOfRewat.isEnabled = true
+        binding.nbAya.isEnabled = true
+        binding.nbEyaEnd.isEnabled = true
+        binding.soraStartSpinner.isEnabled = true
+        binding.soraStartEditText.isEnabled = true
+        binding.soraStartEndText.isEnabled = true
+
+        binding.listSouraName.isEnabled = false
+        binding.listOfRewat.alpha = 1.0f
+        binding.nbAya.alpha = 1.0f
+        binding.nbEyaEnd.alpha = 1.0f
+        binding.listSouraName.alpha = 0.6f
     }
 
     private fun autoFillWithTodayTargetOffline(target: DailyTarget) {
@@ -617,8 +663,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 soraNumbers.add(i)
             }
 
-            val verseAdapter =
-                ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
+            val verseAdapter = ArrayAdapter(requireContext(), R.layout.list_item_spinner, soraNumbers)
             verseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.nbAya.setAdapter(verseAdapter)
             binding.nbEyaEnd.setAdapter(verseAdapter)
@@ -637,7 +682,19 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             startAya = actualStartVerse
             endAya = target.endVerse
 
-            binding.start.isEnabled = true
+            val surahReaders = getOfflineReadersForSurah(soraId)
+            readers.clear()
+            readers.addAll(surahReaders)
+
+            if (surahReaders.isNotEmpty()) {
+                setupOfflineReaderAdapter()
+                reader = surahReaders[0]
+                binding.listOfRewat.setText(surahReaders[0].name, false)
+                binding.start.isEnabled = true
+            } else {
+                // No readers for this surah, try fallback
+                loadFallbackOfflineReader()
+            }
 
             if (isAdded && view != null) {
                 val remainingVerses = endAya - startAya + 1
@@ -651,7 +708,17 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
             }
         }
     }
-
+    private fun ensureReadersAreVisible() {
+        if (!isNetworkAvailable() && readers.isNotEmpty() && binding.listOfRewat.adapter == null) {
+            setupOfflineReaderAdapter()
+            if (reader != null) {
+                val readerIndex = readers.indexOfFirst { it.id == reader!!.id }
+                if (readerIndex >= 0) {
+                    binding.listOfRewat.setText(readers[readerIndex].name, false)
+                }
+            }
+        }
+    }
     private fun showNoOfflineReciterDialog() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("لا يوجد قارئ بدون اتصال")
@@ -901,6 +968,7 @@ class ListenerHelperFragment : Fragment(), MenuProvider {
                 }
             }
         }
+        ensureReadersAreVisible()
     }
 
     override fun onStart() {
