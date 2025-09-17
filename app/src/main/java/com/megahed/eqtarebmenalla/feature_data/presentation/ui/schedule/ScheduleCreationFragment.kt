@@ -26,7 +26,9 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
@@ -40,10 +42,13 @@ import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.HefzView
 import com.megahed.eqtarebmenalla.feature_data.presentation.viewoModels.MemorizationViewModel
 import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -62,6 +67,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     private var scheduleId: Long = -1L
     private lateinit var sharedPreferences: SharedPreferences
     private val hefzViewModel: HefzViewModel by activityViewModels()
+    private var isDownloadWarningShown = false
 
     private var isDownloadInProgress = false
     private var downloadJob: Job? = null
@@ -192,7 +198,7 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
     }
 
     private fun createSchedule() {
-        if (isDownloadInProgress) {
+        if (isDownloadInProgress && !isDownloadWarningShown) {
             showDownloadWarningDialog()
         } else {
             try {
@@ -608,7 +614,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                             "تم تحميل جميع الآيات الناقصة بنجاح ($totalDownloaded من $totalVerses)",
                             Snackbar.LENGTH_SHORT
                         ).show()
-                        // Clear session on successful completion
                         currentDownloadSession = null
                         downloadedVersesInSession.clear()
                     } else {
@@ -643,7 +648,6 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
             false
         }
     }
-
     private fun showDownloadWarningDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("تحميل قيد التقدم")
@@ -652,10 +656,46 @@ class ScheduleCreationFragment : Fragment(), MenuProvider {
                 dialog.dismiss()
             }
             .setNegativeButton("إيقاف التحميل والخروج") { dialog, _ ->
-                downloadJob?.cancel()
-                isDownloadInProgress = false
-                hideDownloadProgress()
-                findNavController().popBackStack()
+                if (validateInputs()) {
+                    isDownloadWarningShown = true
+
+                    val job = lifecycleScope.launch {
+                        createSchedule()
+
+                        var operationCompleted = false
+
+                        viewModel.uiState
+                            .takeWhile { uiState ->
+                                val isComplete = !uiState.isLoading && (uiState.message != null || uiState.error != null)
+                                if (isComplete) {
+                                    operationCompleted = true
+                                }
+                                !operationCompleted
+                            }
+                            .collect { }
+
+                        if (isAdded && view != null && findNavController().currentDestination != null) {
+                            downloadJob?.cancel()
+                            isDownloadInProgress = false
+                            hideDownloadProgress()
+
+                            withContext(Dispatchers.Main) {
+                                try {
+                                    findNavController().popBackStack()
+                                } catch (e: Exception) {
+                                }
+                            }
+                        }
+                    }
+
+                    // Cancel the job if fragment is destroyed
+                    viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+                        override fun onDestroy(owner: LifecycleOwner) {
+                            job.cancel()
+                            owner.lifecycle.removeObserver(this)
+                        }
+                    })
+                }
                 dialog.dismiss()
             }
             .setNeutralButton("تصغير التطبيق") { dialog, _ ->
