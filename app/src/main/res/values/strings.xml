@@ -160,6 +160,418 @@
     <string name="resume">استكمال</string>
     <string name="stopped">تم الإيقاف</string>
     <string name="position_format">%1$d / %2$d</string>
+    <string name="create_new_schedule">إنشاء جدول حفظ جديد</string>
+    <string name="schedule_data">معلومات الجدول</string>
+    <string name="schedule_name">اسم الجدول</string>
+    <string name="schedule_description">وصف الجدول (اختياري)</string>
+    <!-- ... other existing strings ... -->
 
+    <string name="schedule_creation_title">إنشاء جدول حفظ جديد</string>
 
+    <string name="select_memorization_range">اختيار نطاق الحفظ</string>
+    <string name="select_surah">اختر السورة</string>
+    <string name="first_verse">الآية الأولى</string>
+    <string name="last_verse">الآية الأخيرة</string>
+    <string name="total_verses_undefined">إجمالي الآيات: غير محدد</string>
+    <string name="schedule_settings_title">إعدادات الجدول</string>
+
+    <string name="total_verses_count">إجمالي الآيات: %1$d</string>
+
+    <string name="daily_verses_hint">آيات يومية</string>
+    <string name="start_date_hint">تاريخ البدء</string>
+    <string name="estimated_completion_undefined">التاريخ المتوقع للإنهاء: غير محدد</string>
+    <string name="preview_schedule_title">معاينة الجدول</string>
+
+    <string name="estimated_completion_date">التاريخ المتوقع للإنهاء: %1$s</string>
+
+    <string name="preview_content_placeholder">سيتم عرض معاينة الجدول هنا...</string>
+    <string name="cancel_button_text">إلغاء</string>
+    <string name="create_schedule_button_text">إنشاء الجدول</string>
+
+    <string name="active_memorization_schedule">جدول الحفظ النشط</string>
+    <string name="example_schedule_title">سورة البقرة - الآيات 1-20</string>
+    <string name="today_progress_label">آيات اليوم</string>
+    <string name="current_streak_label">أيام متتالية</string>
+    <string name="total_progress_percentage_label">نسبة الحفظ</string>
+    <string name="total_verses_count_label">عدد الآيات</string>
+    <string name="create_schedule_button">إنشاء جدول حفظ</string>
+    <string name="track_memorization_button">متابعة الحفظ</string>
+    <string name="repeating_settings">إعدادات التكرار</string>
+    <string name="end">انهاء</string>
+    <string name="memorization_title">رحلة حفظ القرآن</string>
+    <string name="memorization_subtitle">ابدأ رحلتك المباركة</string>
+    <string name="memorization_streak">7 أيام</string>
+    <string name="today_goal_label">هدف اليوم</string>
+    <string name="today_progress_value">0/10 آيات</string>
+    <string name="total_progress_label">إجمالي التقدم</string>
+    <string name="total_progress_value">0%</string>
+    <string name="current_streak_value">0 أيام</string>
+    <string name="active_schedule_goal">هدف اليوم</string>
+    <string name="active_schedule_title">سورة البقرة - الآيات 1-10</string>
+    <string name="estimated_time">الوقت المقدر: 30 دقيقة</string>
+    <string name="no_schedule_title">ابدأ رحلة حفظ القرآن</string>
+    <string name="no_schedule_subtitle">قم بإنشاء جدول حفظ مخصص لك\nوتابع تقدمك يومياً</string>
+    <string name="btn_start_memorization">بدء الحفظ</string>
+    <string name="btn_view_details">عرض التفاصيل</string>
+    <string name="this_week_label">هذا الأسبوع</string>
+    <string name="total_sessions_label">إجمالي الجلسات</string>
+    <string name="best_streak_label">أفضل سلسلة</string>
+    <string name="expand_stats">عرض الإحصائيات</string>
+    <string name="progress_tracking_title">تتبع تقدم الحفظ</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    <string name="start_tracking_session">بدء تتبع جلسة الحفظ</string>
+    <string name="congratulations_title">🎉 تهانينا!</string>
+    <string name="congratulations_message">لقد أكملت هدفك اليومي بنجاح!\nاستمر في العمل الرائع!</string>
+    <string name="thanks">شكراً</string>
+    <string name="end_session">إنهاء الجلسة</string>
+    <string name="exit_session_message">لديك جلسة تتبع نشطة. هل تريد:\n- حفظ التقدم والخروج\n- الخروج بدون حفظ</string>
+    <string name="save_and_exit">حفظ والخروج</string>
+    <string name="exit_without_saving">خروج بدون حفظ</string>
+    <string name="complete_session">إتمام الجلسة</string>
+    <string name="completed_yes">نعم، أكملت الحفظ</string>
+    <string name="completed_no">لا، لم أكمل بعد</string>
+    <string name="auto_completion_title">تم إكمال الحفظ!</string>
+    <string name="auto_completion_message">تهانينا! لقد أكملت جلسة الحفظ بنجاح.\n\nهل تريد تسجيل هذا كهدف مكتمل؟</string>
+    <string name="celebration_message">لقد أكملت هدفك اليومي في حفظ القرآن!\nبارك الله فيك واستمر في هذا الطريق المبارك.</string>
+    <string name="alhamdulillah">الحمد لله</string>
+    <string name="no_active_schedule">لا يوجد جدول نشط حالياً</string>
+    <string name="progress_summary">ملخص التقدم</string>
+    <string name="view_details">عرض التفاصيل</string>
+    <string name="no_progress_data">لا توجد بيانات تقدم متاحة</string>
+    <string name="start_memorization">بدء الحفظ</string>
+    <string name="view_schedule_details">عرض التفاصيل</string>
+    <string name="completed">مكتمل</string>
+    <string name="review">مراجعة</string>
+    <string name="create_schedule">إنشاء جدول</string>
+    <string name="hide_stats">إخفاء الإحصائيات</string>
+    <string name="show_stats">عرض الإحصائيات</string>
+    <string name="edit_schedule">تعديل الجدول</string>
+    <string name="confirm_completion">تأكيد إكمال الهدف</string>
+    <string name="filled_with_today_target">تم تعبئة النموذج بإعدادات الحفظ اليومي</string>
+    <string name="no_today_target">لا يوجد هدف حفظ لليوم. يرجى التحقق من إعدادات الجدول.</string>
+    <string name="select_reader_first">يجب اختيار قارئ أولاً</string>
+    <string name="create_memorization_schedule">إنشاء جدول حفظ</string>
+    <string name="total_verses">إجمالي الآيات: %1$d</string>
+    <string name="schedule_preview">اسم الجدول: %1$s\nالسورة: %2$s\nمن الآية: %3$d إلى الآية: %4$d\nآيات يومية: %5$d\nالمدة المتوقعة: %6$d يوم</string>
+    <string name="error_schedule_title_required">يجب إدخال اسم الجدول</string>
+    <string name="error_select_surah">يجب اختيار سورة</string>
+    <string name="error_invalid_verse_range">نطاق الآيات غير صحيح</string>
+    <string name="error_start_date_required">يجب اختيار تاريخ البدء</string>
+    <string name="stop">إيقاف نهائي</string>
+    <string name="next_verse">الآية التالية</string>
+    <string name="offline_memorization_title">الحفظ بدون إنترنت</string>
+    <string name="offline_memorization_description">قم بتحميل محتوى جدول الحفظ لتتمكن من مواصلة رحلتك في حفظ القرآن الكريم دون الحاجة إلى إنترنت</string>
+    <string name="select_offline_reciter">أختر قارئك المفضل للحفظ بدون إنترنت</string>
+    <string name="select_reciter_to_see_download_info">أختر قارئاً لتتمكن من رؤية معلومات التحميل</string>
+    <string name="offline_mode">وضع أوفلاين</string>
+    <string name="error_select_offline_reciter">يرجى اختيار القارئ للوضع الأوفلاين</string>
+
+    <string name="download_content">تحميل المحتوى</string>
+    <string name="download_complete">تم التحميل</string>
+    <string name="download_started">بدأ التحميل</string>
+    <string name="download_failed">فشل التحميل: %s</string>
+    <string name="content_already_downloaded">تم تحميل المحتوى مسبقاً</string>
+    <string name="content_needs_download">يجب تحميل محتوى %s</string>
+    <string name="need_internet_for_download">يجب الاتصال بالإنترنت للتحميل</string>
+
+    <string name="offline_content_available">المحتوى متاح أوفلاين</string>
+    <string name="offline_content_missing_range">المحتوى غير متاح للنطاق المحدد</string>
+    <string name="offline_content_missing_aya">الآية %d غير متاحة أوفلاين</string>
+    <string name="reciter_not_available_offline">القارئ غير متاح أوفلاين</string>
+    <string name="surah_not_downloaded_offline">السورة غير محملة أوفلاين</string>
+    <string name="playing_offline_content">تشغيل المحتوى الأوفلاين</string>
+
+    <string name="offline_mode_available_message">يتوفر لديك %d قارئ للاستماع أوفلاين</string>
+    <string name="use_offline">استخدم أوفلاين</string>
+    <string name="connect_internet_continue">يرجى الاتصال بالإنترنت للمتابعة</string>
+
+    <string name="no_offline_content_title">لا يوجد محتوى أوفلاين</string>
+    <string name="no_offline_content_message">لا يوجد لديك أي محتوى محمل للاستماع أوفلاين. يرجى تحميل المحتوى أولاً أو الاتصال بالإنترنت.</string>
+
+    <string name="incomplete_offline_content_title">المحتوى غير مكتمل</string>
+    <string name="incomplete_offline_content_message">المحتوى الأوفلاين للآيات %d-%d غير مكتمل</string>
+    <string name="select_different_range">اختر نطاق مختلف</string>
+
+    <string name="network_required_title">يحتاج اتصال إنترنت</string>
+    <string name="network_required_message">الآية %d غير متاحة أوفلاين وتحتاج اتصال إنترنت</string>
+    <string name="skip_aya">تخطي الآية</string>
+    <string name="pause_session">إيقاف الجلسة</string>
+
+    <string name="offline_mode_tracking_note">سيتم تسجيل التقدم في الوضع الأوفلاين</string>
+    <string name="offline_completion_note">تم إكمال الجلسة في الوضع الأوفلاين</string>
+    <string name="offline_completion_success">تمت الجلسة بنجاح في الوضع الأوفلاين</string>
+    <string name="offline_mode_info">أنت تستخدم الوضع الأوفلاين. المحتوى محمل مسبقاً.</string>
+    >
+    <string name="surah_not_available_title">السورة غير متوفرة</string>
+    <string name="surah_not_available_message">السورة %1$s غير متوفرة حالياً. هل ترغب بتحميلها الآن؟</string>
+    <string name="download_now">تحميل الآن</string>
+    <string name="select_different">اختيار سورة أخرى</string>
+
+    <string name="no_internet_connection">لا يوجد اتصال بالإنترنت</string>
+    <string name="download_started_try_again">تم بدء التحميل، يرجى المحاولة مرة أخرى لاحقاً</string>
+    <string name="offline_unavailable_title">المحتوى غير متوفر بدون إنترنت</string>
+    <string name="offline_unavailable_message">هذه السورة غير محملة للاستماع بدون إنترنت. هل ترغب في
+        تحميلها الآن أم الاتصال بالإنترنت للمتابعة؟
+    </string>
+    <string name="offline_mode_title">وضع عدم الاتصال</string>
+    <string name="offline_mode_message">أنت في وضع عدم الاتصال. يمكنك الاستماع فقط للمحتوى المحمل مسبقاً أو الانتقال للوضع المتصل.</string>
+    <string name="offline_mode_active">وضع عدم الاتصال نشط</string>
+    <string name="online_mode_active">الوضع المتصل نشط</string>
+    <string name="go_online">الانتقال للوضع المتصل</string>
+    <string name="setup_offline">إعداد الوضع غير المتصل</string>
+
+    <string name="select_offline_reader">اختر القارئ للوضع غير المتصل</string>
+    <string name="select_reader_first_tracker">يرجى اختيار القارئ أولاً لتتبع التقدم</string>
+    <string name="select_offline_reader_first">يرجى اختيار قارئ للوضع غير المتصل أولاً</string>
+    <string name="error_select_offline_reader">يرجى اختيار قارئ للوضع غير المتصل</string>
+
+    <string name="download_for_offline">تحميل للوضع غير المتصل</string>
+    <string name="downloading_progress">جاري التحميل: %1$d/%2$d</string>
+    <string name="preparing_download">جاري تحضير التحميل...</string>
+    <string name="download_completed">اكتمل التحميل</string>
+    <string name="download_error">خطأ في التحميل</string>
+    <string name="download_missing">تحميل المحتوى المفقود</string>
+
+    <string name="missing_verses_title">آيات مفقودة</string>
+    <string name="missing_verses_message">بعض الآيات المطلوبة غير متوفرة للوضع غير المتصل. هل تريد تحميلها أو الانتقال للوضع المتصل؟</string>
+
+    <string name="please_connect_internet">يرجى الاتصال بالإنترنت</string>
+    <string name="complete_schedule_info_first">من فضلك قم بملئ معلومات جدول الحفظ أولاً</string>
+    <string name="estimated_completion">تاريخ الانتهاء المتوقع: %1$s</string>
+    <string name="update_schedule_button_text">تحديث الجدول</string>
+    <string name="toolbar_hefz_repeat">شريط الأدوات لشاشة تكرار الحفظ</string>
+    <string name="verse_position_indicator">مؤشر موضع الآية (مثال: ١ من ١)</string>
+    <string name="verses_pager">اسحب لليمين أو اليسار للتنقل بين الآيات</string>
+    <string name="memorization_controls">أزرار التحكم في الحفظ</string>
+    <string name="stop_memorization_button">إيقاف الحفظ</string>
+    <string name="pause_resume_button">إيقاف مؤقت أو استئناف الحفظ</string>
+    <string name="skip_forward_button">الانتقال إلى الآية التالية</string>
+    <string name="cancel_memorization_button">إلغاء جلسة الحفظ</string>
+    <string name="tafsir_screen_scroll">شاشة قابلة للتمرير تحتوي على آية قرآنية وتفسيرها</string>
+    <string name="quran_verse_text">نص الآية القرآنية</string>
+    <string name="tafsir_explanation_text">النص التفسيري للآية</string>
+    <string name="tafsir_muyassar_label">التفسير الميسر</string>
+    <string name="tafsir_source_text">مصدر التفسير: التفسير الميسر</string>
+    <string name="advice_card">بطاقة تحتوي على عنوان ونص توجيهي وصورة</string>
+    <string name="advice_title">العنوان: أخي المسلم</string>
+    <string name="advice_message">النص التوجيهي</string>
+    <string name="advice_image_alert">صورة توضيحية للتنبيه</string>
+    <string name="more_card">بطاقة تحتوي على قسم المزيد</string>
+    <string name="more_title">عنوان القسم: المزيد</string>
+    <string name="progress_section">قسم يعرض تقدم المشروع</string>
+    <string name="project_title_desc">اسم المشروع</string>
+    <string name="progress_bar_desc">شريط يوضح نسبة التقدم في المشروع</string>
+    <string name="progress_percent_desc">النسبة المئوية لإكمال المشروع</string>
+    <string name="card_ayah_desc">بطاقة تحتوي على آية وخيارات للتفاعل</string>
+    <string name="ayah_text_desc">نص الآية</string>
+    <string name="favorite_button_desc">زر إضافة أو إزالة الآية من المفضلة</string>
+    <string name="play_text">قراءة</string>
+    <string name="play_button_desc">زر لتشغيل تلاوة الآية</string>
+    <string name="ayah_number_desc">رقم السورة والآية</string>
+    <string name="divider_desc">فاصل مرئي بين العناصر</string>
+    <string name="card_quran_desc">بطاقة تحتوي على آية من القرآن الكريم</string>
+    <string name="scroll_area_desc">منطقة قابلة للتمرير لعرض محتوى الآية</string>
+    <string name="quran_container_desc">حاوية تعرض تفاصيل الآية</string>
+    <string name="ayah_number_descr">رقم الآية داخل السورة</string>
+    <string name="swipe_hint_text">← مرر للآية التالية أو السابقة →</string>
+    <string name="swipe_hint_desc">إرشاد للمستخدم: مرر لليمين أو لليسار للتنقل بين الآيات</string>
+    <string name="re_ayet_description">قائمة الآيات المعروضة</string>
+    <string name="stop_button_text">إنهاء</string>
+    <string name="stop_button_description">زر لإنهاء القراءة أو الاستماع الحالي</string>
+    <string name="zakar_category_name_description">اسم فئة الأذكار</string>
+    <string name="zakar_category_icon_description">أيقونة تمثل فئة الأذكار</string>
+    <string name="choose_what_you_need">اختر ما تحتاج إليه</string>\
+    <string name="reader_fav">المقرئ المفضل</string>
+    <string name="sora_fav">السورة المفضلة</string>
+    <string name="reader_fav_icon_description">أيقونة المقرئ المفضل</string>
+    <string name="sora_fav_icon_description">أيقونة السورة المفضلة</string>
+    <string name="listening_to_save_icon_description">أيقونة الاستماع للحفظ</string>
+    <string name="listener_helper_screen_desc">شاشة إعداد المساعد للمستمع</string>
+    <string name="toolbar_listener_helper">شريط الأدوات لشاشة المساعد للمستمع</string>
+    <string name="scroll_area_listener_helper">منطقة قابلة للتمرير لإعداد الخيارات</string>
+    <string name="start_point">البداية</string>
+    <string name="start_point_desc">قسم اختيار بداية القراءة</string>
+    <string name="end_point">النهاية</string>
+    <string name="end_point_desc">قسم اختيار نهاية القراءة</string>
+    <string name="aya_number_input_desc">حقل إدخال رقم الآية (غير قابل للتعديل)</string>
+    <string name="sora_spinner_desc">قائمة منسدلة لاختيار اسم السورة</string>
+    <string name="aya_repeat_label_desc">تسمية حقل تكرار الآية</string>
+    <string name="aya_repeat_edit_desc">حقل إدخال عدد تكرار الآية</string>
+    <string name="cycle_repeat_label_desc">تسمية حقل تكرار الدورة</string>
+    <string name="sura_repeat_edit_desc">حقل إدخال عدد تكرار السورة</string>
+    <string name="start_button_desc">زر لبدء الجلسة</string>
+    <string name="stop_button_desc">زر لإنهاء الجلسة</string>
+    <string name="tasbeh_card_desc">بطاقة تحتوي على حقل إدخال للتسبيح مع أزرار التحديث والحذف</string>
+    <string name="tasbeh_input_desc">حقل إدخال لكتابة نص التسبيح</string>
+    <string name="tasbeh_edit_text_desc">مربع نص لإدخال أو تعديل نص التسبيح</string>
+    <string name="update_button_desc">زر لتحديث نص التسبيح</string>
+    <string name="delete_button_desc">زر لحذف نص التسبيح</string>
+    <string name="favorite_desc">إضافة أو إزالة من المفضلة</string>
+    <string name="desc_fav_button">زر لإضافة أو إزالة من المفضلة</string>
+    <string name="desc_allah_image">صورة لفظ الجلالة (الله)</string>
+    <string name="desc_loading_animation">رسوم متحركة توضيحية للقرآن الكريم</string>
+    <string name="desc_loading_text">رسالة تنبيهية بعدم وجود أذكار مفضلة</string>
+    <string name="desc_azkar_list">قائمة الأذكار المضافة</string>
+    <string name="desc_prayer_widget_bg">خلفية لبطاقة مواقيت الصلاة</string>
+    <string name="desc_qibla_icon">أيقونة اتجاه القبلة</string>
+    <string name="desc_menu_icon">أيقونة القائمة الجانبية</string>
+    <string name="desc_current_location">النص الخاص بالموقع الحالي</string>
+    <string name="desc_salah_name">اسم الصلاة الحالية</string>
+    <string name="desc_prayer_time">وقت الصلاة الحالي</string>
+    <string name="desc_prayer_countdown">العد التنازلي للصلاة القادمة</string>
+    <string name="desc_update_text">زر تحديث البيانات</string>
+    <string name="desc_day_details">تفاصيل اليوم الميلادي</string>
+    <string name="desc_hijri_date">التاريخ الهجري</string>
+    <string name="desc_prayer_notification_icon">أيقونة إشعار الصلاة</string>
+    <string name="desc_cb_fajr">مربع اختيار لتفعيل أو تعطيل تنبيه صلاة الفجر</string>
+    <string name="desc_fajr_time">وقت صلاة الفجر</string>
+    <string name="desc_cb_sunrise">مربع اختيار لتفعيل أو تعطيل تنبيه الشروق</string>
+    <string name="desc_sunrise_time">وقت الشروق</string>
+    <string name="desc_cb_dhuhr">مربع اختيار لتفعيل أو تعطيل تنبيه صلاة الظهر</string>
+    <string name="desc_dhuhr_time">وقت صلاة الظهر</string>
+    <string name="desc_cb_asr">مربع اختيار لتفعيل أو تعطيل تنبيه صلاة العصر</string>
+    <string name="desc_asr_time">وقت صلاة العصر</string>
+    <string name="desc_cb_maghrib">مربع اختيار لتفعيل أو تعطيل تنبيه صلاة المغرب</string>
+    <string name="desc_maghrib_time">وقت صلاة المغرب</string>
+    <string name="desc_cb_isha">مربع اختيار لتفعيل أو تعطيل تنبيه صلاة العشاء</string>
+    <string name="desc_isha_time">وقت صلاة العشاء</string>
+    <string name="desc_quran_icon">أيقونة القرآن الكريم</string>
+    <string name="desc_fire_icon">أيقونة شعلة تشير إلى سلسلة الحفظ</string>
+    <string name="today_progress_default">0/10 آيات</string>
+    <string name="total_progress_default">0٪</string>
+    <string name="current_streak_default">0 أيام</string>
+    <string name="active_schedule_title_default">سورة البقرة - الآيات 1-10</string>
+    <string name="desc_no_schedule_icon">أيقونة كتاب مفتوح - لا يوجد جدول حفظ حالي</string>
+    <string name="desc_btn_start_memorization">زر لبدء جلسة الحفظ</string>
+    <string name="desc_btn_view_details">زر لعرض تفاصيل الجدول</string>
+    <string name="this_week_count_default">5</string>
+    <string name="total_sessions_count_default">23</string>
+    <string name="best_streak_count_default">12</string>
+    <string name="desc_expand_collapse_icon">أيقونة لتوسيع أو طي قسم الإحصائيات</string>
+    <string name="desc_toolbar">شريط الأدوات</string>
+    <string name="desc_memorization_schedule_card">بطاقة الجدول الحالي</string>
+    <string name="desc_schedule_title">عنوان الجدول</string>
+    <string name="desc_today_progress">تقدم اليوم</string>
+    <string name="desc_current_streak">عدد الأيام المتتالية</string>
+    <string name="desc_total_progress">النسبة الكلية للتقدم</string>
+    <string name="desc_total_progress_of_schedule">إجمالي التقدم في الجدول</string>
+    <string name="desc_btn_create_schedule">زر إنشاء جدول جديد</string>
+    <string name="desc_btn_memorization_tracker">زر متابعة الحفظ</string>
+    <string name="desc_btn_start">زر بدء الحفظ</string>
+    <string name="desc_btn_stop">زر إيقاف الحفظ</string>
+    <string name="desc_choose_reader_label">اختيار القارئ</string>
+    <string name="desc_reader_spinner">قائمة اختيار القارئ</string>
+    <string name="desc_reader_list">قائمة بالروايات أو القراء</string>
+    <string name="desc_sora_start_spinner">قائمة اختيار السورة للبداية</string>
+    <string name="desc_list_soura_name">اسم السورة</string>
+    <string name="desc_sora_start_aya_spinner">قائمة اختيار رقم الآية للبداية</string>
+    <string name="desc_nb_aya">رقم الآية للبداية</string>
+    <string name="desc_sora_end_spinner">قائمة اختيار الآية للنهاية</string>
+    <string name="desc_nb_eya_end">رقم الآية للنهاية</string>
+    <string name="desc_aya_repeat_label">إعداد تكرار الآيات</string>
+    <string name="desc_aya_repeat_input">حقل إدخال عدد تكرار الآيات</string>
+    <string name="desc_nb_aya_repeat">عدد مرات تكرار الآية</string>
+    <string name="desc_cycle_repeat_label">إعداد تكرار الدورة</string>
+    <string name="desc_cycle_repeat_input">حقل إدخال عدد تكرار الدورة</string>
+    <string name="desc_sura_repeat">عدد مرات تكرار السورة</string>
+    <string name="desc_main_image_dial">صورة قرص الاتجاهات</string>
+    <string name="desc_sotw_label">تسمية الاتجاه</string>
+    <string name="qibla_direction_text">اتجاه القبلة (سيتغير لون الخلفية عند القبلة الصحيحة)</string>
+    <string name="desc_qibla_text">نص يوضح اتجاه القبلة</string>
+    <string name="desc_recycler_view">قائمة الصور أو العناصر</string>
+    <string name="desc_player_card">بطاقة مشغل الصوت</string>
+    <string name="desc_play_button">زر التشغيل</string>
+    <string name="desc_listening_options">خيارات الاستماع</string>
+    <string name="desc_progress_bar">مؤشر التحميل</string>
+    <string name="desc_reciter_animation">رسوم متحركة للقارئ</string>
+    <string name="desc_reciters_list">قائمة القراء</string>
+    <string name="rewaya">رواية</string>
+    <string name="total_soras">١١٤</string>
+    <string name="reader_char">ب</string>
+    <string name="desc_favorite">إضافة إلى المفضلة</string>
+    <string name="desc_download">تحميل التلاوات</string>
+    <string name="desc_loading_readers">جاري تحميل قائمة القراء</string>
+    <string name="desc_readers_list">قائمة القراء</string>
+    <string name="schedule_name_ar">اسم الجدول الزمني</string>
+    <string name="schedule_description_ar">وصف الجدول الزمني</string>
+    <string name="select_surah_ar">اختر السورة</string>
+    <string name="first_verse_ar">رقم الآية الأولى</string>
+    <string name="last_verse_ar">رقم الآية الأخيرة</string>
+    <string name="select_offline_reciter_ar">اختر القارئ للاستماع بدون إنترنت</string>
+    <string name="daily_verses_hint_ar">عدد الآيات المطلوب حفظها يومياً</string>
+    <string name="start_date_hint_ar">تاريخ بداية الحفظ</string>
+    <string name="desc_favorite_animation">رسوم متحركة توضيحية للمقرئ</string>
+    <string name="desc_no_fav_surah_text">نص يوضح عدم وجود سور مفضلة</string>
+    <string name="desc_favorite_surah_list">قائمة السور المفضلة</string>
+    <string name="song_name_ar">اسم السورة</string>
+    <string name="current_time_ar">الوقت الحالي</string>
+    <string name="playback_progress_ar">شريط تقدم التشغيل</string>
+    <string name="song_duration_ar">مدة السورة</string>
+    <string name="player_controls_ar">أدوات التحكم بالمشغل</string>
+    <string name="play_pause_button_ar">زر التشغيل/الإيقاف المؤقت</string>
+    <string name="previous_track_ar">المقطع السابق</string>
+    <string name="next_track_ar">المقطع التالي</string>
+    <string name="desc_tasbeh_selector">اختيار التسبيحة</string>
+    <string name="desc_add_tasbeh">زر لإضافة تسبيحة جديدة</string>
+    <string name="desc_analyze_tasbeh">زر لتحليل بيانات التسبيح</string>
+    <string name="desc_edit_tasbeh">زر لتعديل التسبيحة</string>
+    <string name="all_tasbeh_data_card_ar">بطاقة جميع بيانات التسبيح</string>
+    <string name="all_tasbeh_data_title_ar">جميع بيانات التسبيح</string>
+    <string name="tasbeh_list_ar">قائمة التسبيحات</string>
+    <string name="days_worked_card_ar">بطاقة أيام العمل</string>
+    <string name="calendar_icon_ar">أيقونة التقويم</string>
+    <string name="days_worked_title_ar">أيام العمل</string>
+    <string name="days_worked_description_ar">عدد الأيام التي تم فيها التسبيح</string>
+    <string name="days_count_ar">عدد الأيام</string>
+    <string name="units_completed_card_ar">بطاقة الوحدات المكتملة</string>
+    <string name="strength_icon_ar">أيقونة القوة</string>
+    <string name="units_completed_title_ar">الوحدات المكتملة</string>
+    <string name="total_tasbeh_count_ar">إجمالي عدد التسبيحات</string>
+    <string name="best_day_card_ar">بطاقة أفضل يوم</string>
+    <string name="lightning_icon_ar">أيقونة البرق</string>
+    <string name="best_day_title_ar">أفضل يوم</string>
+    <string name="best_day_description_ar">وصف أفضل يوم</string>
+    <string name="best_day_label_ar">تسمية أفضل يوم</string>
+    <string name="best_day_count_ar">عدد أفضل يوم</string>
+    <string name="best_tasbeh_card_ar">بطاقة أفضل تسبيح</string>
+    <string name="best_tasbeh_title_ar">أفضل تسبيح</string>
+    <string name="best_tasbeh_description_ar">وصف أفضل تسبيح</string>
+    <string name="best_tasbeh_label_ar">تسمية أفضل تسبيح</string>
+    <string name="best_tasbeh_count_ar">عدد أفضل تسبيح</string>
+    <string name="tasbeh_percentage_card_ar">بطاقة نسبة التسبيح</string>
+    <string name="tasbeh_percentage_title_ar">نسبة التسبيح</string>
+    <string name="tasbeh_percentage_list_ar">قائمة نسب التسبيح</string>
+    <string name="monthly_percentage_card_ar">بطاقة النسبة الشهرية</string>
+    <string name="monthly_percentage_title_ar">النسبة الشهرية</string>
+    <string name="monthly_percentage_list_ar">قائمة النسب الشهرية</string>
+    <string name="desc_letter">الحرف الأول لاسم القارئ</string>
+    <string name="desc_reader_name">اسم السورة أو القارئ</string>
+    <string name="desc_rewaya_info">معلومة عن الرواية وعدد الآيات</string>
+    <string name="surah_item_card_ar">بطاقة السورة</string>
+    <string name="surah_initial_ar">الحرف الأول من اسم السورة</string>
+    <string name="surah_info_container_ar">معلومات السورة</string>
+    <string name="surah_name_ar">اسم السورة</string>
+    <string name="surah_details_ar">تفاصيل السورة (مكان النزول وعدد الآيات)</string>
+    <string name="surah_actions_container_ar">أزرار الإجراءات الخاصة بالسورة</string>
+    <string name="surah_type_label_ar">نوع السورة</string>
+    <string name="favorite_button_ar">زر الإعجاب</string>
+    <string name="desc_reader_fav">عنوان قائمة المقرئين المفضلين</string>
+    <string name="surah_number_ar">رقم السورة</string>
+    <string name="surah_name_container_ar">حاوية اسم السورة</string>
+    <string name="surah_type_ar">نوع السورة (مكية أو مدنية)</string>
+    <string name="read_button_container_ar">حاوية زر القراءة</string>
+    <string name="read_icon_background_ar">خلفية أيقونة القراءة</string>
+    <string name="read_button_ar">زر القراءة</string>
+    <string name="desc_tasbeh_name">اسم التسبيحة المعروضة</string>
+    <string name="desc_tasbeh_number">عدد مرات التسبيح لهذه التسبيحة</string>
+    <string name="download_button_ar">زر التحميل</string>
+    <string name="tasbih_screen_ar">شاشة المسبحة</string>
+    <string name="tasbih_image_ar">صورة المسبحة</string>
+    <string name="counter_container_ar">حاوية العداد</string>
+    <string name="counter_value_ar">قيمة العداد</string>
+    <string name="increase_button_ar">زر زيادة العداد</string>
+    <string name="reset_button_ar">زر إعادة الضبط</string>
+    <string name="session_completed_with_tracking">تم إنهاء وتتبع جلسة الحفظ بنجاح</string>
+    <string name="session_completed_without_tracking">تم إنهاء الجلسة بدون تتبع التقدم</string>
 </resources>

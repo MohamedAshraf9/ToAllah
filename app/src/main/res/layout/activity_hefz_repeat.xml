@@ -11,9 +11,9 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/toolbar_hefz_repeat" />
 
-    <!-- Position indicator -->
     <TextView
         android:id="@+id/position_indicator"
         android:layout_width="wrap_content"
@@ -25,17 +25,17 @@
         android:padding="@dimen/_5sdp"
         android:text="1 / 1"
         android:textColor="@color/text_color"
-        android:textSize="@dimen/_14ssp" />
+        android:textSize="@dimen/_14ssp"
+        android:contentDescription="@string/verse_position_indicator" />
 
-    <!-- ViewPager2 for single verse display with swiping -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/position_indicator"
-        android:layout_above="@+id/control_buttons_layout" />
+        android:layout_above="@+id/control_buttons_layout"
+        android:contentDescription="@string/verses_pager" />
 
-    <!-- Control buttons layout -->
     <LinearLayout
         android:id="@+id/control_buttons_layout"
         android:layout_width="match_parent"
@@ -43,7 +43,8 @@
         android:layout_above="@+id/cancel"
         android:layout_margin="@dimen/_5sdp"
         android:orientation="horizontal"
-        android:weightSum="3">
+        android:weightSum="3"
+        android:contentDescription="@string/memorization_controls" >
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/stop_memorization"
@@ -53,10 +54,11 @@
             android:layout_marginEnd="@dimen/_2sdp"
             android:background="@drawable/custom_button"
             android:padding="@dimen/_5sdp"
-            android:text="إيقاف نهائي"
+            android:text="@string/stop"
             android:textAllCaps="false"
             android:textColor="@color/text_color"
             android:textSize="@dimen/_12ssp"
+            android:contentDescription="@string/stop_memorization_button"
             app:backgroundTint="@null"
             app:iconSize="24dp"
             app:icon="@drawable/ic_stop"
@@ -71,10 +73,11 @@
             android:layout_marginEnd="@dimen/_1sdp"
             android:background="@drawable/custom_button"
             android:padding="@dimen/_5sdp"
-            android:text="إيقاف مؤقت"
+            android:text="@string/pause"
             android:textAllCaps="false"
             android:textColor="@color/text_color"
             android:textSize="@dimen/_12ssp"
+            android:contentDescription="@string/pause_resume_button"
             app:backgroundTint="@null"
             app:iconSize="24dp"
             app:icon="@drawable/ic_pause"
@@ -88,10 +91,11 @@
             android:layout_marginStart="@dimen/_2sdp"
             android:background="@drawable/custom_button"
             android:padding="@dimen/_5sdp"
-            android:text="الآية التالية"
+            android:text="@string/next_verse"
             android:textAllCaps="false"
             android:textColor="@color/text_color"
             android:textSize="@dimen/_12ssp"
+            android:contentDescription="@string/skip_forward_button"
             app:backgroundTint="@null"
             app:iconSize="24dp"
             app:icon="@drawable/ic_skip_next"
@@ -111,6 +115,7 @@
         android:textAllCaps="false"
         android:textColor="@color/text_color"
         android:textSize="@dimen/_16ssp"
+        android:contentDescription="@string/cancel_memorization_button"
         app:backgroundTint="@null" />
 
 </RelativeLayout>

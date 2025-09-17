@@ -1,8 +1,6 @@
 package com.megahed.eqtarebmenalla.db.repository
 
-import androidx.room.*
 import com.megahed.eqtarebmenalla.db.model.Aya
-import com.megahed.eqtarebmenalla.db.model.PrayerTime
 import kotlinx.coroutines.flow.Flow
 
 interface AyaRepository {

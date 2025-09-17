@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_download_all_favorites"
+        android:icon="@drawable/ic_baseline_arrow_circle_down_24"
+        android:title="تحميل جميع المفضلات"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_clear_all_favorites"
+        android:icon="@drawable/ic_baseline_clear_all_24"
+        android:title="حذف جميع المفضلات"
+        app:showAsAction="never" />
+
+</menu>

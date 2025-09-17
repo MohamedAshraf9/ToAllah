@@ -1,34 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="@dimen/_3sdp"
-    app:cardElevation="@dimen/_3sdp"
-    android:padding="@dimen/_2sdp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/_8sdp"
     app:cardCornerRadius="@dimen/_12sdp"
-    android:layout_height="wrap_content">
+    app:cardElevation="@dimen/_2sdp"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="@dimen/_16sdp"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:id="@+id/zakarCatName"
-            android:textSize="@dimen/_16ssp"
-            android:textStyle="bold"
-            android:text="@string/more"
-            android:layout_margin="@dimen/_3sdp"
-            android:padding="@dimen/_3sdp"
-            android:textAlignment="center"
-            android:layout_height="wrap_content"/>
+        <androidx.cardview.widget.CardView
+            android:layout_width="@dimen/_48sdp"
+            android:layout_height="@dimen/_48sdp"
+            app:cardCornerRadius="@dimen/_8sdp"
+            app:cardElevation="0dp"
+            android:backgroundTint="@color/primary_color">
+
+            <ImageView
+                android:id="@+id/categoryIcon"
+                android:layout_width="@dimen/_24sdp"
+                android:layout_height="@dimen/_24sdp"
+                android:layout_gravity="center"
+                android:src="@drawable/prayer_icon"
+                android:contentDescription="@string/zakar_category_icon_description" />
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/_16sdp">
+
+            <TextView
+                android:id="@+id/zakarCatName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/more"
+                android:textSize="@dimen/_16ssp"
+                android:textStyle="bold"
+                android:contentDescription="@string/zakar_category_name_description" />
+
+            <TextView
+                android:id="@+id/categoryDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
         <ImageView
-            android:layout_width="match_parent"
-            android:src="@drawable/prayer_icon"
-            android:layout_margin="@dimen/_3sdp"
-            android:padding="@dimen/_3sdp"
-            android:layout_height="wrap_content"/>
+            android:layout_width="@dimen/_16sdp"
+            android:layout_height="@dimen/_16sdp"
+            android:src="@drawable/ic_arrow_forward"
+            app:tint="@color/text_secondary" />
 
     </LinearLayout>
 

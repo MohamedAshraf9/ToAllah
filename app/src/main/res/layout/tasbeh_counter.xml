@@ -4,8 +4,8 @@
     android:layout_height="match_parent"
     android:background="@drawable/back"
     android:layoutDirection="ltr"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:contentDescription="@string/tasbih_screen_ar">
 
     <ImageView
         android:layout_width="match_parent"
@@ -17,7 +17,8 @@
         app:layout_constraintBaseline_toTopOf="parent"
         app:layout_constraintBaseline_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_height="@dimen/_300sdp"/>
+        android:layout_height="@dimen/_300sdp"
+        android:contentDescription="@string/tasbih_image_ar"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="@dimen/_100sdp"
@@ -28,7 +29,8 @@
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="@+id/tasbehImage"
         app:layout_constraintTop_toTopOf="@+id/tasbehImage"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        android:contentDescription="@string/counter_container_ar">
 
         <TextView
             android:layout_width="wrap_content"
@@ -40,7 +42,8 @@
             android:layout_gravity="center_vertical|end"
             android:textSize="@dimen/_36ssp"
             android:fontFamily="@font/digital"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/counter_value_ar"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -54,9 +57,8 @@
         app:layout_constraintTop_toTopOf="@+id/tasbehImage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/tasbehImage"
-        android:background="@drawable/custom_button_click"/>
-
-
+        android:background="@drawable/custom_button_click"
+        android:contentDescription="@string/increase_button_ar"/>
 
     <ImageButton
         android:layout_marginStart="@dimen/_78sdp"
@@ -68,8 +70,7 @@
         app:layout_constraintTop_toTopOf="@+id/tasbehImage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/tasbehImage"
-        android:background="@drawable/custom_button_click"/>
-
-
+        android:background="@drawable/custom_button_click"
+        android:contentDescription="@string/reset_button_ar"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

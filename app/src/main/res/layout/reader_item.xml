@@ -25,6 +25,7 @@
             android:background="@drawable/id_soura_background"
             android:gravity="center"
             android:text="أ"
+            android:contentDescription="@string/desc_letter"
             android:textAlignment="center"
             android:textColor="@color/text_color"
             android:textSize="20sp"
@@ -54,6 +55,7 @@
                 android:fontFamily="@font/amiri_regular"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/desc_reader_name"
                 android:text="Al-Fatihah" />
 
             <TextView
@@ -63,51 +65,10 @@
                 android:textSize="@dimen/_10ssp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-5dp"
+                android:contentDescription="@string/desc_rewaya_info"
                 android:text="Mecca - 7 Ayah" />
 
         </LinearLayout>
-
-
-     <!--   <LinearLayout
-            android:id="@+id/relative"
-            android:layout_width="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_height="wrap_content">
-
-
-            &lt;!&ndash;<TextView
-                android:id="@+id/count"
-                android:layout_width="@dimen/_55sdp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="@dimen/_1sdp"
-                android:layout_marginStart="@dimen/_12sdp"
-                android:background="@drawable/type_soura_background"
-                android:fontFamily="@font/aref_ruqa_regular"
-                android:gravity="center"
-                android:padding="@dimen/_1sdp"
-                android:text="@string/sora"
-                android:textAlignment="center"
-                android:textColor="@color/text_color"
-
-                android:textStyle="bold" />&ndash;&gt;
-
-            &lt;!&ndash;<ImageView
-                android:id="@+id/fav"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:layout_margin="@dimen/_5sdp"
-                android:padding="@dimen/_2sdp"
-                android:src="@drawable/ic_baseline_favorite_border_24" />&ndash;&gt;
-
-
-
-        </LinearLayout>-->
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,64 +1,204 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:orientation="vertical"
-android:layout_height="match_parent"
-tools:context=".feature_data.presentation.ui.quranListener.QuranListenerFragment">
-
-<include layout="@layout/custom_toolbar"
-    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:id="@+id/toolbar"/>
-
-<RelativeLayout
-    android:id="@+id/loading_container"
-    android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent"
-    android:visibility="gone"
-    android:gravity="center">
+    tools:context=".feature_data.presentation.ui.quranListener.QuranListenerFragment">
 
-    <ProgressBar
-        android:layout_width="wrap_content"
+    <include
+        layout="@layout/custom_toolbar"
         android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:indeterminateTint="@color/primary_color"
-        android:visibility="gone" />
+        android:layout_width="match_parent"
+        android:id="@+id/toolbar"
+        android:contentDescription="@string/desc_toolbar" />
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/lottie_view"
-        android:layout_width="345dp"
-        android:layout_height="423dp"
-        android:layout_centerInParent="true"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/reciter"
-        app:lottie_speed="1.5" />
-
-    <TextView
-        android:id="@+id/loading_text"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/quick_actions_container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/lottie_view"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="@string/no_fav_reciter"
-        android:textSize="24sp"
-        android:fontFamily="sans-serif-medium" />
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="@dimen/_8sdp"
+        android:layout_marginVertical="@dimen/_2sdp"
+        android:background="@drawable/memorization_card_gradient"
+        android:elevation="@dimen/_2sdp"
+        android:padding="@dimen/_4sdp">
 
-</RelativeLayout>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_reader_favorites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/_4sdp"
+            app:cardCornerRadius="@dimen/_12sdp"
+            app:cardElevation="@dimen/_4sdp"
+            app:rippleColor="?attr/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
 
-<androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/recyclerView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:visibility="gone"
-    app:fastScrollEnabled="true"
-    app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
-    app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
-    app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
-    app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="@dimen/_12sdp">
+
+                <ImageView
+                    android:layout_width="@dimen/_24sdp"
+                    android:layout_height="@dimen/_24sdp"
+                    android:src="@drawable/ic_favorite_red_24"
+                    android:contentDescription="@string/reader_fav_icon_description"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_4sdp"
+                    android:text="@string/reader_fav"
+                    android:textSize="@dimen/_10ssp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_sora_favorites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/_4sdp"
+            app:cardCornerRadius="@dimen/_12sdp"
+            app:cardElevation="@dimen/_4sdp"
+            app:rippleColor="?attr/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="@dimen/_12sdp">
+
+                <ImageView
+                    android:layout_width="@dimen/_24sdp"
+                    android:layout_height="@dimen/_24sdp"
+                    android:src="@drawable/baseline_menu_book_24"
+                    android:contentDescription="@string/sora_fav_icon_description"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_4sdp"
+                    android:text="@string/sora_fav"
+                    android:textSize="@dimen/_10ssp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_listening_saved"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/_4sdp"
+            app:cardCornerRadius="@dimen/_12sdp"
+            app:cardElevation="@dimen/_4sdp"
+            app:rippleColor="?attr/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="@dimen/_12sdp">
+
+                <ImageView
+                    android:layout_width="@dimen/_24sdp"
+                    android:layout_height="@dimen/_24sdp"
+                    android:src="@drawable/ic_baseline_hearing_24"
+                    android:contentDescription="@string/listening_to_save_icon_description"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_4sdp"
+                    android:text="@string/listening_to_save"
+                    android:textSize="@dimen/_10ssp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/loading_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:gravity="center">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:indeterminateTint="@color/primary_color"
+            android:visibility="gone"
+            android:contentDescription="@string/desc_progress_bar" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_view"
+            android:layout_width="345dp"
+            android:layout_height="423dp"
+            android:layout_centerInParent="true"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/reciter"
+            app:lottie_speed="1.5"
+            android:contentDescription="@string/desc_reciter_animation" />
+
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/lottie_view"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:text="@string/no_fav_reciter"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif-medium" />
+
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:fastScrollEnabled="true"
+        app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
+        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
+        app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
+        app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
+        android:contentDescription="@string/desc_reciters_list" />
 
 </LinearLayout>

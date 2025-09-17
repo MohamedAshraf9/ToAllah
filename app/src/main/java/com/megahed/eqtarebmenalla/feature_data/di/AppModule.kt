@@ -2,7 +2,6 @@ package com.megahed.eqtarebmenalla.feature_data.di
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -14,8 +13,20 @@ import com.google.gson.Gson
 import com.megahed.eqtarebmenalla.App
 import com.megahed.eqtarebmenalla.R
 import com.megahed.eqtarebmenalla.common.Constants
+import com.megahed.eqtarebmenalla.db.MIGRATION_3_4
+import com.megahed.eqtarebmenalla.db.MIGRATION_4_5
+import com.megahed.eqtarebmenalla.db.MIGRATION_5_6
+import com.megahed.eqtarebmenalla.db.MIGRATION_6_7
+import com.megahed.eqtarebmenalla.db.MIGRATION_7_8
 import com.megahed.eqtarebmenalla.db.MyDatabase
-import com.megahed.eqtarebmenalla.db.MyDatabase.Companion.MIGRATION_1_3
+import com.megahed.eqtarebmenalla.db.dao.AchievementDao
+import com.megahed.eqtarebmenalla.db.dao.CachedRecitersDao
+import com.megahed.eqtarebmenalla.db.dao.DailyTargetDao
+import com.megahed.eqtarebmenalla.db.dao.DownloadedAudioDao
+import com.megahed.eqtarebmenalla.db.dao.MemorizationScheduleDao
+import com.megahed.eqtarebmenalla.db.dao.MemorizationSessionDao
+import com.megahed.eqtarebmenalla.db.dao.OfflineSettingsDao
+import com.megahed.eqtarebmenalla.db.dao.UserStreakDao
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
 import com.megahed.eqtarebmenalla.db.model.Tasbeh
 import com.megahed.eqtarebmenalla.db.repository.*
@@ -29,9 +40,12 @@ import com.megahed.eqtarebmenalla.feature_data.data.local.dto.azkar.toElZekr
 import com.megahed.eqtarebmenalla.feature_data.data.remote.prayerTime.IslamicApi
 import com.megahed.eqtarebmenalla.feature_data.data.remote.quranListen.QuranListenApi
 import com.megahed.eqtarebmenalla.feature_data.data.repository.IslamicRepositoryImp
+import com.megahed.eqtarebmenalla.feature_data.data.repository.MemorizationRepository
 import com.megahed.eqtarebmenalla.feature_data.data.repository.QuranListenerRepositoryImp
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.IslamicRepository
 import com.megahed.eqtarebmenalla.feature_data.domain.repository.QuranListenerRepository
+import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
+import com.megahed.eqtarebmenalla.offline.OfflineUtils.isNetworkAvailable
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,6 +54,8 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Provider
@@ -51,9 +67,33 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideIslamicApi(): IslamicApi {
+    fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+        val cacheSize = 10L * 1024 * 1024
+        val cache = Cache(context.cacheDir, cacheSize)
+
+        return OkHttpClient.Builder()
+            .cache(cache)
+            .addInterceptor { chain ->
+                var request = chain.request()
+                request = if (isNetworkAvailable(context)) {
+                    request.newBuilder()
+                        .header("Cache-Control", "public, max-age=" + 300)
+                        .build()
+                } else {
+                    request.newBuilder()
+                        .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7)
+                        .build()
+                }
+                chain.proceed(request)
+            }
+            .build()
+    }
+    @Provides
+    @Singleton
+    fun provideIslamicApi(okHttpClient: OkHttpClient): IslamicApi {
         return Retrofit.Builder()
             .baseUrl(Constants.PRAYER_TIME_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(IslamicApi::class.java)
@@ -89,70 +129,9 @@ object AppModule {
             app,
             MyDatabase::class.java,
             MyDatabase.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_3)
-            .addCallback(object : RoomDatabase.Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) {
-                super.onCreate(db)
-                /*
-                WHAT GOES HERE?
-                */
-                CoroutineScope(Dispatchers.IO).launch {
-
-
-                    val fileInString: String =
-                        App.getInstance().assets.open("quran.json").bufferedReader().use { it.readText() }
-                    val data= Gson().fromJson(fileInString,AllQuran::class.java)
-                    for (i in 0 until data.surahs.size){
-                        trainDBLazy.get().soraDao.insertSora(
-                           data.surahs[i].toSora(data.surahs[i].ayahs.size)
-                        )
-
-                        //Log.d("MyTagData ", "loop = $i")
-
-                        //Log.d("MyTagData ", data.surahs[i].name)
-                        //Log.d("MyTagData ", "=============================================")
-                        for (j in 0 until data.surahs[i].ayahs.size){
-                           // Log.d("MyTagData ", data.surahs[i].ayahs[j].text)
-                            trainDBLazy.get().ayaDao.insertAya(
-                                data.surahs[i].ayahs[j].toAya(i+1)
-                            )
-                        }
-                    }
-
-
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    val fileInString: String =
-                        App.getInstance().assets.open("azkar.json").bufferedReader().use { it.readText() }
-                    val data= Gson().fromJson(fileInString,Azkar::class.java)
-                    var id=0
-                    for (i in 0 until data.size){
-                       val d= trainDBLazy.get().azkarCategoryDao.insertAzkarCategory(
-                            AzkarCategory(data[i].category)
-                        )
-                        if (d>0&&d.toInt()!=id){
-                            id=d.toInt()
-                        }
-                        Log.d("MyTagData ", "d = $d")
-                        Log.d("MyTagData ", "id = $id")
-                        trainDBLazy.get().elZekrDao.insertElZekr(
-                            data[i].toElZekr(id)
-                        )
-
-                    }
-
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    val tasbeh=App.getInstance().resources.getStringArray(R.array.tasbeh)
-                    for (i in tasbeh.indices){
-                        trainDBLazy.get().tasbehDao.insertTasbeh(
-                            Tasbeh(tasbeh[i])
-                        )
-                    }
-                }
-
-            }
-        }).build()
+            .addMigrations( MIGRATION_3_4, MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7, MIGRATION_7_8)
+            .createFromAsset("prepopulated_db.db")
+            .build()
 
     }
 
@@ -212,7 +191,6 @@ object AppModule {
     }
 
 
-    //for music
     @Singleton
     @Provides
     fun provideMusicServiceConnection(
@@ -233,5 +211,67 @@ object AppModule {
         )
     }
 
+    @Provides
+    fun provideMemorizationScheduleDao(database: MyDatabase): MemorizationScheduleDao =
+        database.memorizationScheduleDao()
 
+    @Provides
+    fun provideDailyTargetDao(database: MyDatabase): DailyTargetDao =
+        database.dailyTargetDao()
+
+    @Provides
+    fun provideMemorizationSessionDao(database: MyDatabase): MemorizationSessionDao =
+        database.memorizationSessionDao()
+
+    @Provides
+    fun provideUserStreakDao(database: MyDatabase): UserStreakDao =
+        database.userStreakDao()
+
+    @Provides
+    fun provideAchievementDao(database: MyDatabase): AchievementDao =
+        database.achievementDao()
+
+    @Provides
+    @Singleton
+    fun provideMemorizationRepository(
+        scheduleDao: MemorizationScheduleDao,
+        dailyTargetDao: DailyTargetDao,
+        sessionDao: MemorizationSessionDao,
+        streakDao: UserStreakDao,
+        achievementDao: AchievementDao
+    ): MemorizationRepository {
+        return MemorizationRepository(
+            scheduleDao = scheduleDao,
+            dailyTargetDao = dailyTargetDao,
+            sessionDao = sessionDao,
+            streakDao = streakDao,
+            achievementDao = achievementDao
+        )
+    }
+    @Provides
+    @Singleton
+    fun provideOfflineAudioManager(
+        @ApplicationContext context: Context,
+        downloadedAudioDao: DownloadedAudioDao,
+        offlineSettingsDao: OfflineSettingsDao,
+        quranListenerReaderRepository: QuranListenerReaderRepository
+    ): OfflineAudioManager {
+        return OfflineAudioManager(context, downloadedAudioDao, offlineSettingsDao)
+    }
+
+
+
+    @Provides
+    fun provideDownloadedAudioDao(database: MyDatabase): DownloadedAudioDao {
+        return database.downloadedAudioDao()
+    }
+
+    @Provides
+    fun provideOfflineSettingsDao(database: MyDatabase): OfflineSettingsDao {
+        return database.offlineSettingsDao()
+    }
+    @Provides
+    fun provideCachedRecitersDao(database: MyDatabase): CachedRecitersDao {
+        return database.cachedRecitersDao()
+    }
 }

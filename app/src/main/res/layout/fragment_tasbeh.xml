@@ -1,146 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    tools:context=".feature_data.presentation.ui.tasbeh.TasbehFragment"
-    android:fitsSystemWindows="true">
+    android:fillViewport="true">
 
-    <ScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:fillViewport="true"
-        android:layout_height="match_parent"
-        tools:ignore="UselessParent">
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_16sdp"
+        tools:context=".feature_data.presentation.ui.tasbeh.TasbehFragment">
 
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/tasbeh"
+            android:textSize="@dimen/_22ssp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_height="wrap_content">
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSelector"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_12sdp"
+            app:cardElevation="@dimen/_2sdp"
+            app:cardCornerRadius="@dimen/_12sdp"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tasbehSpinner"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
-                android:layout_margin="@dimen/_5sdp"
-                android:layout_gravity="center"
                 android:layout_height="wrap_content"
-                android:hint="@string/chooseTasbeh">
+                android:layout_margin="@dimen/_8sdp"
+                android:hint="@string/chooseTasbeh"
+                app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeColor="@color/primary_color">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    />
+                    android:textSize="@dimen/_16ssp"
+                    android:contentDescription="@string/desc_tasbeh_selector" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:id="@+id/actionButtonsLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_12sdp"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/cardSelector"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Add Button -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/_8sdp"
+                app:cardElevation="@dimen/_1sdp"
+                app:cardCornerRadius="@dimen/_16sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:id="@+id/fabAddTasbeh"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/_5sdp"
-                    android:id="@+id/addTasbeh"
-                    android:layout_alignParentStart="true"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp"
+                    android:background="@drawable/memorization_card_gradient"
+                    android:gravity="center">
 
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fabAddTasbeh"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:elevation="@dimen/_5sdp"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        app:fabSize="normal"
+                    <ImageView
+                        android:layout_width="@dimen/_24sdp"
+                        android:layout_height="@dimen/_24sdp"
                         android:src="@drawable/ic_baseline_add_24"
-                        android:transitionName="fab" />
+                        android:contentDescription="@string/desc_add_tasbeh" />
 
                     <TextView
                         android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="@string/addTasbeh"
-                        android:textSize="@dimen/_14ssp"
-                        android:textStyle="bold"
-                        android:textAlignment="center"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:layout_height="wrap_content"/>
+                        android:textSize="@dimen/_11ssp"
+                        android:layout_marginTop="@dimen/_4sdp" />
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/_5sdp"
-                    android:id="@+id/analyzeData"
-                    android:layout_centerInParent="true"
-                    android:orientation="vertical">
+            </com.google.android.material.card.MaterialCardView>
 
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fabAnalyze"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:elevation="@dimen/_5sdp"
-                        android:layout_gravity="center"
-                        android:gravity="center"
+            <!-- Analyze Button -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                app:cardElevation="@dimen/_1sdp"
+                app:cardCornerRadius="@dimen/_16sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:id="@+id/fabAnalyze"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp"
+                    android:background="@drawable/memorization_card_gradient"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="@dimen/_24sdp"
+                        android:layout_height="@dimen/_24sdp"
                         android:src="@drawable/analysis"
-                        android:transitionName="fab" />
+                        android:contentDescription="@string/desc_analyze_tasbeh" />
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:text="@string/analyze"
-                        android:textSize="@dimen/_14ssp"
-                        android:textStyle="bold"
-                        android:textAlignment="center"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:layout_height="wrap_content"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/_5sdp"
-                    android:id="@+id/editTasbeh"
-                    android:layout_alignParentEnd="true"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fabEditTasbeh"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:elevation="@dimen/_5sdp"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:src="@drawable/ic_baseline_edit_24"
-                        android:transitionName="fab" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:text="@string/edit"
-                        android:textSize="@dimen/_14ssp"
-                        android:textStyle="bold"
-                        android:textAlignment="center"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:layout_height="wrap_content"/>
+                        android:text="@string/analyze"
+                        android:textSize="@dimen/_11ssp"
+                        android:layout_marginTop="@dimen/_4sdp" />
 
                 </LinearLayout>
 
-            </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <include layout="@layout/tasbeh_counter"
-                android:layout_width="match_parent"
-                android:id="@+id/tasbeh_counter"
-                android:layout_height="match_parent"/>
+            <!-- Edit Button -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/_8sdp"
+                app:cardElevation="@dimen/_1sdp"
+                app:cardCornerRadius="@dimen/_16sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:id="@+id/fabEditTasbeh"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp"
+                    android:background="@drawable/memorization_card_gradient"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="@dimen/_24sdp"
+                        android:layout_height="@dimen/_24sdp"
+                        android:src="@drawable/ic_baseline_edit_24"
+                        android:contentDescription="@string/desc_edit_tasbeh" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/edit"
+                        android:textSize="@dimen/_11ssp"
+                        android:layout_marginTop="@dimen/_4sdp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-    </ScrollView>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/counterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            app:cardElevation="@dimen/_4sdp"
+            app:cardCornerRadius="@dimen/_20sdp"
+            app:layout_constraintTop_toBottomOf="@id/actionButtonsLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-</LinearLayout>
+            <include
+                android:id="@+id/tasbeh_counter"
+                layout="@layout/tasbeh_counter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/_16sdp" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

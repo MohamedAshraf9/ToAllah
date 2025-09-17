@@ -1,16 +1,23 @@
 package com.megahed.eqtarebmenalla.feature_data.presentation.ui.settings
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import com.megahed.eqtarebmenalla.R
+import com.megahed.eqtarebmenalla.ThemeHelper
 
 class SettingsActivity : AppCompatActivity() {
 
+    private lateinit var preferences: SharedPreferences
     var toolbar: Toolbar? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        ThemeHelper.applyTheme(preferences)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
 
@@ -25,12 +32,20 @@ class SettingsActivity : AppCompatActivity() {
                 .commit()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
+        private lateinit var preferences: SharedPreferences
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
+            preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+            findPreference<androidx.preference.SwitchPreferenceCompat>("pref_dark_mode")?.setOnPreferenceChangeListener { _, newValue ->
+                ThemeHelper.applyTheme(preferences)
+                requireActivity().recreate()
+                true
+            }
         }
     }
 

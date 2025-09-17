@@ -28,6 +28,7 @@
         android:textAlignment="center"
         android:textColor="@color/text_color"
         android:id="@+id/tasbehName"
+        android:contentDescription="@string/desc_tasbeh_name"
         android:text="@string/tasbeh"/>
 
     <TextView
@@ -39,6 +40,7 @@
         android:textAlignment="center"
         android:textColor="@color/text_color"
         android:id="@+id/tasbehNumber"
+        android:contentDescription="@string/desc_tasbeh_number"
         android:text="@string/tasbeh"/>
 
 

@@ -56,13 +56,13 @@ object Constants {
         return list
     }
 
-    fun getSoraLink(link:String,number:Int): String {
-        return if (number<=9)
-            "$link/00$number.mp3"
+    fun getSoraLink(link: String, number: Int): String {
+        return if (number <= 9)
+            "$link/${String.format(Locale.US, "%03d", number)}.mp3"
         else if (number in 10..99)
-            "$link/0$number.mp3"
-        else "$link/$number.mp3"
-
+            "$link/${String.format(Locale.US, "%03d", number)}.mp3"
+        else
+            "$link/${String.format(Locale.US, "%03d", number)}.mp3"
     }
 
 

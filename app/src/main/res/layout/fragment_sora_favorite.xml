@@ -25,6 +25,7 @@
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/reciter"
+            android:contentDescription="@string/desc_favorite_animation"
             app:lottie_speed="1.5" />
 
         <TextView
@@ -35,7 +36,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="16dp"
             android:text="@string/no_fav_surah"
-            android:textColor="@color/primary_color"
+            android:contentDescription="@string/desc_no_fav_surah_text"
             android:textSize="24sp"
             android:fontFamily="sans-serif-medium" />
 
@@ -45,7 +46,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:contentDescription="@string/desc_favorite_surah_list"/>
 
 
 </LinearLayout>

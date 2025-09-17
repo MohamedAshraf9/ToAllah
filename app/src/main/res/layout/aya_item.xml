@@ -8,85 +8,87 @@
     app:cardElevation="@dimen/_3sdp"
     android:padding="@dimen/_2sdp"
     app:cardCornerRadius="@dimen/_12sdp"
-    android:layout_width="match_parent">
-<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="@dimen/_1sdp"
-    android:layout_margin="@dimen/_1sdp">
+    android:contentDescription="@string/card_ayah_desc">
 
-    <TextView
-        android:id="@+id/ayaTitle"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_5sdp"
-        android:fontFamily="@font/kemenag"
-        android:textColor="@color/text_color"
-        android:textSize="@dimen/_20sdp"
-        android:padding="@dimen/_2sdp"
-        android:textStyle="bold"
-        android:layout_marginEnd="@dimen/_2sdp"
-        android:layout_marginStart="@dimen/_2sdp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا" />
-    
-
-    <ImageView
-        android:id="@+id/fav"
-        android:layout_width="@dimen/_25sdp"
-        android:layout_height="@dimen/_25sdp"
-        android:layout_margin="@dimen/_5sdp"
-        android:src="@drawable/ic_baseline_favorite_border_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ayaTitle" />
-
-
-    <TextView
-        android:id="@+id/play"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/_25sdp"
-        android:background="@drawable/type_soura_background"
-        android:fontFamily="@font/aref_ruqa_regular"
-        android:text="قراءه"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:textColor="@color/text_color"
-        android:textSize="@dimen/_12ssp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/fav"
-        app:layout_constraintHorizontal_bias="0.9"
-        app:layout_constraintStart_toEndOf="@id/ayaNumber"
-        app:layout_constraintTop_toBottomOf="@+id/ayaTitle" />
-
-    <TextView
-        android:id="@+id/ayaNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_3sdp"
         android:padding="@dimen/_1sdp"
-        android:textSize="@dimen/_12ssp"
-        android:fontFamily="@font/aref_ruqa_regular"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ayaTitle"
-        tools:text="Al - Faatiha | Ayah 1" />
+        android:layout_margin="@dimen/_1sdp">
 
-    <View
-        android:id="@+id/view"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/ayaTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:fontFamily="@font/kemenag"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/_20sdp"
+            android:padding="@dimen/_2sdp"
+            android:textStyle="bold"
+            android:layout_marginEnd="@dimen/_2sdp"
+            android:layout_marginStart="@dimen/_2sdp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/ayah_text_desc"
+            tools:text="وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/fav"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
+            android:layout_margin="@dimen/_5sdp"
+            android:src="@drawable/ic_baseline_favorite_border_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ayaTitle"
+            android:contentDescription="@string/favorite_button_desc" />
 
+        <TextView
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/_25sdp"
+            android:background="@drawable/type_soura_background"
+            android:fontFamily="@font/aref_ruqa_regular"
+            android:text="@string/play_text"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/_12ssp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fav"
+            app:layout_constraintHorizontal_bias="0.9"
+            app:layout_constraintStart_toEndOf="@id/ayaNumber"
+            app:layout_constraintTop_toBottomOf="@+id/ayaTitle"
+            android:contentDescription="@string/play_button_desc" />
 
+        <TextView
+            android:id="@+id/ayaNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_3sdp"
+            android:padding="@dimen/_1sdp"
+            android:textSize="@dimen/_12ssp"
+            android:fontFamily="@font/aref_ruqa_regular"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ayaTitle"
+            android:contentDescription="@string/ayah_number_desc"
+            tools:text="Al - Faatiha | Ayah 1" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:contentDescription="@string/divider_desc"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".feature_data.presentation.ui.elzekr.ElzekrFragment">
 
-    <include layout="@layout/custom_toolbar"
-        android:layout_height="wrap_content"
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/custom_toolbar"
         android:layout_width="match_parent"
-        android:id="@+id/toolbar"/>
+        android:layout_height="wrap_content" />
+
     <RelativeLayout
         android:id="@+id/loading_container"
         android:layout_width="match_parent"
@@ -25,7 +27,8 @@
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/holy_quran"
-            app:lottie_speed="1.5" />
+            app:lottie_speed="1.5"
+            android:contentDescription="@string/desc_loading_animation" />
 
         <TextView
             android:id="@+id/loading_text"
@@ -36,13 +39,15 @@
             android:layout_marginTop="16dp"
             android:text="@string/no_fav_azkar"
             android:textSize="24sp"
-            android:fontFamily="sans-serif-medium" />
+            android:fontFamily="sans-serif-medium"
+            android:contentDescription="@string/desc_loading_text" />
 
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:contentDescription="@string/desc_azkar_list" />
 
 </LinearLayout>

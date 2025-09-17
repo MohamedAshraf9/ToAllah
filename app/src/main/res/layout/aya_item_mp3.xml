@@ -7,18 +7,21 @@
     android:layout_margin="@dimen/_5sdp"
     android:padding="@dimen/_5sdp"
     app:cardCornerRadius="@dimen/_10sdp"
-    app:cardElevation="@dimen/_5sdp">
+    app:cardElevation="@dimen/_5sdp"
+    android:contentDescription="@string/card_quran_desc">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:contentDescription="@string/scroll_area_desc">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/_10sdp">
+            android:padding="@dimen/_10sdp"
+            android:contentDescription="@string/quran_container_desc">
 
             <TextView
                 android:id="@+id/aya_id"
@@ -31,6 +34,7 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/_18ssp"
                 android:textStyle="bold"
+                android:contentDescription="@string/ayah_number_descr"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,6 +54,7 @@
                 android:textColor="@color/text_color"
                 android:textSize="32sp"
                 android:minHeight="400dp"
+                android:contentDescription="@string/ayah_text_desc"
                 app:layout_constraintBottom_toTopOf="@+id/swipe_hint"
                 app:layout_constraintEnd_toStartOf="@+id/aya_id"
                 app:layout_constraintStart_toStartOf="parent"
@@ -63,9 +68,10 @@
                 android:layout_marginBottom="@dimen/_10sdp"
                 android:alpha="0.6"
                 android:gravity="center"
-                android:text="← مرر للآية التالية أو السابقة →"
+                android:text="@string/swipe_hint_text"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/_11ssp"
+                android:contentDescription="@string/swipe_hint_desc"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />

@@ -16,7 +16,7 @@
             android:padding="@dimen/_12sdp"
             android:textSize="@dimen/_16ssp"
             android:textStyle="bold"
-            android:text="@string/chooseWhatYouNeed"
+            android:text="@string/choose_what_you_need"
             android:textColor="?attr/colorOnSurface"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -27,6 +27,7 @@
             android:layout_marginTop="@dimen/_16sdp"
             android:gravity="center"
             android:src="@drawable/ic_favorite_red_24"
+            android:contentDescription="@string/reader_fav_icon_description"
             app:layout_constraintEnd_toStartOf="@+id/soraFav"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed" />
@@ -38,6 +39,7 @@
             android:layout_marginTop="@dimen/_16sdp"
             android:gravity="center"
             android:src="@drawable/ic_favorite_red_24"
+            android:contentDescription="@string/sora_fav_icon_description"
             app:layout_constraintEnd_toStartOf="@+id/listeningToSave"
             app:layout_constraintStart_toEndOf="@+id/readerFav"
             app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed" />
@@ -49,6 +51,7 @@
             android:layout_marginTop="@dimen/_16sdp"
             android:gravity="center"
             android:src="@drawable/ic_baseline_hearing_24"
+            android:contentDescription="@string/listening_to_save_icon_description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/soraFav"
             app:layout_constraintTop_toBottomOf="@id/chooseWhatYouNeed" />
@@ -61,7 +64,7 @@
             android:gravity="center"
             android:layout_marginBottom="@dimen/_25sdp"
             android:textSize="@dimen/_12ssp"
-            android:text="@string/readerFav"
+            android:text="@string/reader_fav"
             android:textColor="?attr/colorOnSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/readerFav"
@@ -76,7 +79,7 @@
             android:gravity="center"
             android:layout_marginBottom="@dimen/_25sdp"
             android:textSize="@dimen/_12ssp"
-            android:text="@string/soraFav"
+            android:text="@string/sora_fav"
             android:textColor="?attr/colorOnSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/soraFav"
@@ -91,7 +94,7 @@
             android:gravity="center"
             android:layout_marginBottom="@dimen/_25sdp"
             android:textSize="@dimen/_12ssp"
-            android:text="@string/listeningToSave"
+            android:text="@string/listening_to_save"
             android:textColor="?attr/colorOnSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/listeningToSave"
