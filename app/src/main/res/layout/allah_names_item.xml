@@ -11,8 +11,9 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:padding="@dimen/_5sdp"
+        android:background="@drawable/memorization_card_gradient"
         android:orientation="vertical">
 
         <TextView

@@ -8,17 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
-import androidx.navigation.Navigation
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.megahed.eqtarebmenalla.adapter.AzkarCategoryAdapter
 import com.megahed.eqtarebmenalla.databinding.FragmentAzkarBinding
-import com.megahed.eqtarebmenalla.db.model.Aya
 import com.megahed.eqtarebmenalla.db.model.AzkarCategory
-import com.megahed.eqtarebmenalla.feature_data.presentation.ui.quran.QuranFragmentDirections
 import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import java.text.FieldPosition
+import androidx.navigation.findNavController
 
 
 @AndroidEntryPoint
@@ -30,7 +26,7 @@ class AzkarFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         val azkarCategoryAzkarViewModel =
             ViewModelProvider(this).get(AzkarCategoryViewModel::class.java)
@@ -38,7 +34,7 @@ class AzkarFragment : Fragment() {
         binding = FragmentAzkarBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.setHasFixedSize(true)
 
 
@@ -46,7 +42,7 @@ class AzkarFragment : Fragment() {
 
             override fun onItemClick(itemObject: AzkarCategory, view: View?,position: Int) {
                 val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(itemObject.id,itemObject.catName,false)
-                Navigation.findNavController(requireView()).navigate(action)
+                requireView().findNavController().navigate(action)
             }
 
             override fun onItemLongClick(itemObject: AzkarCategory, view: View?,position: Int) {
@@ -63,12 +59,12 @@ class AzkarFragment : Fragment() {
 
         binding.namesOfAllah.setOnClickListener {
             val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToNamesOfAllahFragment()
-            Navigation.findNavController(requireView()).navigate(action)
+            requireView().findNavController().navigate(action)
         }
 
         binding.fabFavorite.setOnClickListener {
             val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(0,"",true)
-            Navigation.findNavController(requireView()).navigate(action)
+            requireView().findNavController().navigate(action)
         }
 
 

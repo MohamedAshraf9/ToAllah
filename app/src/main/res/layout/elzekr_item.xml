@@ -14,6 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/_2sdp"
+        android:background="@drawable/memorization_card_gradient"
         android:layout_margin="@dimen/_1sdp">
 
         <TextView
