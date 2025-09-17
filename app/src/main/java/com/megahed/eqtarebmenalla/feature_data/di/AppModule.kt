@@ -130,62 +130,8 @@ object AppModule {
             MyDatabase::class.java,
             MyDatabase.DATABASE_NAME)
             .addMigrations( MIGRATION_3_4, MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7, MIGRATION_7_8)
-            .addCallback(object : RoomDatabase.Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) {
-                super.onCreate(db)
-                /*
-                WHAT GOES HERE?
-                */
-                CoroutineScope(Dispatchers.IO).launch {
-
-
-                    val fileInString: String =
-                        App.getInstance().assets.open("quran.json").bufferedReader().use { it.readText() }
-                    val data= Gson().fromJson(fileInString,AllQuran::class.java)
-                    for (i in 0 until data.surahs.size){
-                        trainDBLazy.get().soraDao.insertSora(
-                           data.surahs[i].toSora(data.surahs[i].ayahs.size)
-                        )
-
-                        for (j in 0 until data.surahs[i].ayahs.size){
-                            trainDBLazy.get().ayaDao.insertAya(
-                                data.surahs[i].ayahs[j].toAya(i+1)
-                            )
-                        }
-                    }
-
-
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    val fileInString: String =
-                        App.getInstance().assets.open("azkar.json").bufferedReader().use { it.readText() }
-                    val data= Gson().fromJson(fileInString,Azkar::class.java)
-                    var id=0
-                    for (i in 0 until data.size){
-                       val d= trainDBLazy.get().azkarCategoryDao.insertAzkarCategory(
-                            AzkarCategory(data[i].category)
-                        )
-                        if (d>0&&d.toInt()!=id){
-                            id=d.toInt()
-                        }
-                        trainDBLazy.get().elZekrDao.insertElZekr(
-                            data[i].toElZekr(id)
-                        )
-
-                    }
-
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    val tasbeh=App.getInstance().resources.getStringArray(R.array.tasbeh)
-                    for (i in tasbeh.indices){
-                        trainDBLazy.get().tasbehDao.insertTasbeh(
-                            Tasbeh(tasbeh[i])
-                        )
-                    }
-                }
-
-            }
-        }).build()
+            .createFromAsset("prepopulated_db.db")
+            .build()
 
     }
 
