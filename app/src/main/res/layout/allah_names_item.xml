@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="match_parent"
             android:id="@+id/name"
-            android:textSize="@dimen/_17ssp"
+            android:textSize="@dimen/_14ssp"
             android:textStyle="bold"
             android:text="@string/more"
             android:layout_margin="@dimen/_3sdp"

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -16,12 +17,12 @@ import com.megahed.eqtarebmenalla.myListener.OnMyItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.findNavController
 
-
 @AndroidEntryPoint
 class AzkarFragment : Fragment() {
 
     private lateinit var binding: FragmentAzkarBinding
     private lateinit var azkarCategoryAdapter: AzkarCategoryAdapter
+    private var allAzkarCategories = listOf<AzkarCategory>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,27 +35,14 @@ class AzkarFragment : Fragment() {
         binding = FragmentAzkarBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.setHasFixedSize(true)
-
-
-        azkarCategoryAdapter= AzkarCategoryAdapter(requireContext(), object : OnMyItemClickListener<AzkarCategory> {
-
-            override fun onItemClick(itemObject: AzkarCategory, view: View?,position: Int) {
-                val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(itemObject.id,itemObject.catName,false)
-                requireView().findNavController().navigate(action)
-            }
-
-            override fun onItemLongClick(itemObject: AzkarCategory, view: View?,position: Int) {
-            }
-        })
-        binding.recyclerView.adapter = azkarCategoryAdapter
+        setupRecyclerView()
+        setupSearchView()
 
         lifecycleScope.launchWhenStarted {
-            azkarCategoryAzkarViewModel.getAllAzkarCategory().collect{
-                azkarCategoryAdapter.setData(it)
+            azkarCategoryAzkarViewModel.getAllAzkarCategory().collect { categories ->
+                allAzkarCategories = categories
+                azkarCategoryAdapter.setData(categories)
             }
-
         }
 
         binding.namesOfAllah.setOnClickListener {
@@ -63,15 +51,41 @@ class AzkarFragment : Fragment() {
         }
 
         binding.fabFavorite.setOnClickListener {
-            val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(0,"",true)
+            val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(0, "", true)
             requireView().findNavController().navigate(action)
         }
-
-
 
         return root
     }
 
+    private fun setupRecyclerView() {
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.setHasFixedSize(true)
 
+        azkarCategoryAdapter = AzkarCategoryAdapter(requireContext(), object : OnMyItemClickListener<AzkarCategory> {
+            override fun onItemClick(itemObject: AzkarCategory, view: View?, position: Int) {
+                val action: NavDirections = AzkarFragmentDirections.actionNavigationAzkarToElzekrFragment(
+                    itemObject.id, itemObject.catName, false
+                )
+                requireView().findNavController().navigate(action)
+            }
 
+            override fun onItemLongClick(itemObject: AzkarCategory, view: View?, position: Int) {
+            }
+        })
+        binding.recyclerView.adapter = azkarCategoryAdapter
+    }
+
+    private fun setupSearchView() {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                azkarCategoryAdapter.filter(newText.orEmpty())
+                return true
+            }
+        })
+    }
 }

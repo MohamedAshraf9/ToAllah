@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".feature_data.presentation.ui.azkar.AzkarFragment">
 
@@ -17,69 +17,85 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/_8sdp"
-            android:gravity="center_vertical"
+            android:orientation="vertical"
             android:background="@drawable/memorization_card_gradient">
 
-            <LinearLayout
-                android:id="@+id/namesOfAllah"
-                android:layout_width="0dp"
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:paddingHorizontal="@dimen/_8sdp"
+                android:queryHint="ابحث عن الأذكار..." />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:background="?android:attr/selectableItemBackground"
-                android:padding="@dimen/_8sdp">
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/_8sdp">
 
-                <ImageView
-                    android:id="@+id/allah"
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    android:src="@drawable/allah"
-                    android:contentDescription="@string/desc_allah_image"
-                    android:layout_marginEnd="@dimen/_12sdp" />
+                <LinearLayout
+                    android:id="@+id/namesOfAllah"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/_8sdp">
 
-                <TextView
-                    android:id="@+id/zakarCatName"
+                    <ImageView
+                        android:id="@+id/allah"
+                        android:layout_width="@dimen/_50sdp"
+                        android:layout_height="@dimen/_50sdp"
+                        android:layout_marginEnd="@dimen/_12sdp"
+                        android:contentDescription="@string/desc_allah_image"
+                        android:src="@drawable/allah" />
+
+                    <TextView
+                        android:id="@+id/zakarCatName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/namesOfAllah"
+                        android:textSize="@dimen/_16ssp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/favorites"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/namesOfAllah"
-                    android:textSize="@dimen/_16ssp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_8sdp">
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fabFavorite"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/colorAccent"
+                        android:contentDescription="@string/desc_fav_button"
+                        android:src="@drawable/ic_baseline_favorite_border_24"
+                        app:borderWidth="0dp"
+                        app:fabSize="mini"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_4sdp"
+                        android:text="@string/favorite"
+                        android:textSize="@dimen/_12ssp" />
+
+                </LinearLayout>
 
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/favorites"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_marginTop="@dimen/_6sdp"
-                android:background="?android:attr/selectableItemBackground"
-                android:padding="@dimen/_8sdp">
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabFavorite"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_baseline_favorite_border_24"
-                    android:backgroundTint="@color/colorAccent"
-                    app:tint="@color/white"
-                    app:fabSize="mini"
-                    app:borderWidth="0dp"
-                    android:contentDescription="@string/desc_fav_button" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/favorite"
-                    android:textSize="@dimen/_12ssp"
-                    android:layout_marginTop="@dimen/_4sdp" />
-
-            </LinearLayout>
-
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
@@ -87,21 +103,21 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/azkar"
-        android:textSize="@dimen/_18ssp"
-        android:textStyle="bold"
-        android:gravity="center"
         android:layout_marginStart="@dimen/_16sdp"
         android:layout_marginEnd="@dimen/_16sdp"
-        android:layout_marginBottom="@dimen/_8sdp" />
+        android:layout_marginBottom="@dimen/_8sdp"
+        android:gravity="center"
+        android:text="@string/azkar"
+        android:textSize="@dimen/_18ssp"
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:paddingStart="@dimen/_8sdp"
         android:paddingEnd="@dimen/_8sdp"
-        android:clipToPadding="false"
         app:fastScrollEnabled="true"
         app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
         app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
