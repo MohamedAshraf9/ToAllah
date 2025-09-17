@@ -1,5 +1,6 @@
 package com.megahed.eqtarebmenalla.db
 
+import android.annotation.SuppressLint
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -167,7 +168,50 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 val MIGRATION_7_8 = object : Migration(7, 8) {
+    @SuppressLint("Range")
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE daily_targets ADD COLUMN completedVerses INTEGER NOT NULL DEFAULT 0")
+        // Always create the table with IF NOT EXISTS to handle missing table scenarios
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS `daily_targets` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `scheduleId` INTEGER NOT NULL,
+                `targetDate` INTEGER NOT NULL,
+                `surahId` INTEGER NOT NULL,
+                `surahName` TEXT NOT NULL,
+                `startVerse` INTEGER NOT NULL,
+                `endVerse` INTEGER NOT NULL,
+                `estimatedDurationMinutes` INTEGER NOT NULL DEFAULT 30,
+                `isCompleted` INTEGER NOT NULL DEFAULT 0,
+                `completedAt` INTEGER,
+                `completedVerses` INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY(`scheduleId`) REFERENCES `memorization_schedules`(`id`) ON DELETE CASCADE
+            )
+        """.trimIndent())
+
+        // Create indices if they don't exist
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_targets_scheduleId` ON `daily_targets` (`scheduleId`)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_targets_targetDate` ON `daily_targets` (`targetDate`)")
+
+        // For existing tables, we need to check if completedVerses column exists and add it if not
+        val cursor = database.query("PRAGMA table_info(daily_targets)")
+        var hasCompletedVerses = false
+        while (cursor.moveToNext()) {
+            val columnName = cursor.getString(cursor.getColumnIndex("name"))
+            if (columnName == "completedVerses") {
+                hasCompletedVerses = true
+                break
+            }
+        }
+        cursor.close()
+
+        // If the table existed but doesn't have completedVerses column, add it
+        if (!hasCompletedVerses) {
+            try {
+                database.execSQL("ALTER TABLE daily_targets ADD COLUMN completedVerses INTEGER NOT NULL DEFAULT 0")
+            } catch (e: Exception) {
+                // Column might already exist or table structure is different
+                android.util.Log.w("Migration", "Could not add completedVerses column: ${e.message}")
+            }
+        }
     }
 }
