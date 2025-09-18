@@ -18,10 +18,13 @@ import com.megahed.eqtarebmenalla.feature_data.states.MemorizationUiState
 import com.megahed.eqtarebmenalla.feature_data.states.VerseProgress
 import com.megahed.eqtarebmenalla.offline.OfflineAudioManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -48,6 +51,8 @@ class MemorizationViewModel @Inject constructor(
 
     private val _todayTargetProgress = MutableStateFlow<DailyTargetProgress?>(null)
     val todayTargetProgress: StateFlow<DailyTargetProgress?> = _todayTargetProgress.asStateFlow()
+
+    private val progressMutex = Mutex()
 
     init {
         loadCurrentSchedule()
@@ -136,79 +141,87 @@ class MemorizationViewModel @Inject constructor(
 
     fun updateVerseProgress(versesCompleted: Int) {
         viewModelScope.launch {
-            try {
-                val todayTarget = _todayTarget.value
-                if (todayTarget != null) {
-                    memorizationRepository.updateVerseProgress(
-                        targetId = todayTarget.id,
-                        completedVerses = versesCompleted
-                    )
-
-                    loadTodayTargetProgress()
-                    refreshAllData()
-
-                    val totalVerses = todayTarget.getTotalVerses()
-                    if (versesCompleted >= totalVerses) {
-                        _uiState.value = _uiState.value.copy(
-                            showCelebration = true,
-                            message = "تهانينا! لقد أكملت هدف اليوم بنجاح!"
+            progressMutex.withLock {
+                try {
+                    val todayTarget = _todayTarget.value
+                    if (todayTarget != null) {
+                        memorizationRepository.updateVerseProgress(
+                            targetId = todayTarget.id,
+                            completedVerses = versesCompleted
                         )
+
+                        delay(50)
+
+                        loadTodayTargetProgress()
+                        refreshAllData()
+
+                        val totalVerses = todayTarget.getTotalVerses()
+                        if (versesCompleted >= totalVerses) {
+                            _uiState.value = _uiState.value.copy(
+                                showCelebration = true,
+                                message = "تهانينا! لقد أكملت هدف اليوم بنجاح!"
+                            )
+                        }
                     }
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        error = "فشل في حفظ التقدم: ${e.message}"
+                    )
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = "فشل في حفظ التقدم: ${e.message}"
-                )
             }
         }
     }
 
     fun completeSession(versesCompleted: Int, notes: String?, markAsCompleted: Boolean = false) {
         viewModelScope.launch {
-            try {
-                val sessionId = _uiState.value.currentSessionId
-                if (sessionId != null) {
-                    memorizationRepository.completeSession(
-                        sessionId = sessionId,
-                        versesCompleted = versesCompleted,
-                        notes = notes
-                    )
+            progressMutex.withLock {
+                try {
+                    val sessionId = _uiState.value.currentSessionId
+                    if (sessionId != null) {
+                        memorizationRepository.completeSession(
+                            sessionId = sessionId,
+                            versesCompleted = versesCompleted,
+                            notes = notes
+                        )
 
-                    val todayTarget = _todayTarget.value
-                    if (todayTarget != null) {
-                        if (markAsCompleted) {
-                            memorizationRepository.markTargetCompleted(todayTarget.id)
-                        } else {
-                            val currentProgress =
-                                maxOf(todayTarget.completedVerses, versesCompleted)
-                            memorizationRepository.updateVerseProgress(
-                                todayTarget.id,
-                                currentProgress
-                            )
-                        }
+                        delay(50)
 
-                        loadTodayTargetProgress()
+                        val todayTarget = _todayTarget.value
+                        if (todayTarget != null) {
+                            if (markAsCompleted) {
+                                memorizationRepository.markTargetCompleted(todayTarget.id)
+                            } else {
+                                val currentProgress = maxOf(todayTarget.completedVerses, versesCompleted)
+                                memorizationRepository.updateVerseProgress(
+                                    todayTarget.id,
+                                    currentProgress
+                                )
+                            }
 
-                        val totalVerses = todayTarget.getTotalVerses()
-                        val completionMessage =
-                            if (markAsCompleted || versesCompleted >= totalVerses) {
+                            delay(50)
+
+                            loadTodayTargetProgress()
+
+                            val totalVerses = todayTarget.getTotalVerses()
+                            val completionMessage = if (markAsCompleted || versesCompleted >= totalVerses) {
                                 "تهانينا! لقد أكملت هدف اليوم بنجاح!"
                             } else {
                                 "تم حفظ تقدمك: ${versesCompleted} من $totalVerses آية"
                             }
 
-                        _uiState.value = _uiState.value.copy(
-                            isSessionActive = false,
-                            currentSessionId = null,
-                            message = completionMessage,
-                            showCelebration = markAsCompleted || versesCompleted >= totalVerses
-                        )
+                            _uiState.value = _uiState.value.copy(
+                                isSessionActive = false,
+                                currentSessionId = null,
+                                message = completionMessage,
+                                showCelebration = markAsCompleted || versesCompleted >= totalVerses
+                            )
+                        }
+                    } else {
+                        _uiState.value = _uiState.value.copy(error = "لا يوجد جلسات حفظ نشطة")
                     }
-                } else {
-                    _uiState.value = _uiState.value.copy(error = "لا يوجد جلسات حفظ نشطة")
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(error = "فشل في إكمال الجلسة: ${e.message}")
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = "فشل في إكمال الجلسة: ${e.message}")
             }
         }
     }

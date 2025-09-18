@@ -52,6 +52,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.util.Date
 import java.util.Locale
@@ -110,6 +112,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     private var userWantsAutoComplete = false
     private var completionDialogShown = false
 
+    private var shouldSaveProgress = true
+    private var sessionStartProgress = 0
+    private var pendingProgressUpdates = mutableListOf<Int>()
+    private val progressUpdateMutex = Mutex()
+    private var isExitingWithoutSave = false
+    private var lastSavedProgress = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -784,9 +792,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     isProgressTrackingEnabled = hasOverlap
 
                     if (isProgressTrackingEnabled) {
-                        val modeText = if (isOfflineMode) " (وضع عدم الاتصال)" else ""
-                        binding.toolbar.toolbar.subtitle = "تتبع التقدم نشط - ${target.surahName}$modeText"
-                        showProgressTrackingConfirmation(target.surahName, sessionStartVerse, sessionEndVerse, target)
+                        showProgressTrackingConfirmation(
+                            target.surahName,
+                            sessionStartVerse,
+                            sessionEndVerse,
+                            target
+                        )
                     } else if (isOfflineMode) {
                         binding.toolbar.toolbar.subtitle = getString(R.string.offline_mode_active)
                     }
@@ -796,7 +807,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
 
-    private fun showProgressTrackingConfirmation(surahName: String, startVerse: Int, endVerse: Int, target: DailyTarget) {
+    private fun showProgressTrackingConfirmation(
+        surahName: String,
+        startVerse: Int,
+        endVerse: Int,
+        target: DailyTarget,
+    ) {
         if (isDialogShowing || completionDialogShown) return
 
         val overlapStart = maxOf(sessionStartVerse, target.startVerse)
@@ -832,7 +848,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .setNegativeButton("بدون تتبع") { _, _ ->
                 isDialogShowing = false
                 isProgressTrackingEnabled = false
-                binding.toolbar.toolbar.subtitle = if (isOfflineMode) getString(R.string.offline_mode_active) else ""
+                binding.toolbar.toolbar.subtitle =
+                    if (isOfflineMode) getString(R.string.offline_mode_active) else ""
             }
             .setCancelable(false)
             .show()
@@ -844,11 +861,14 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 sessionStartTime = Date()
                 totalVersesInTarget = target.getTotalVerses()
 
-                val currentProgress = memorizationViewModel.getCurrentProgress() ?: target.completedVerses
+                val currentProgress =
+                    memorizationViewModel.getCurrentProgress() ?: target.completedVerses
                 initialCompletedVerses = currentProgress
+                sessionStartProgress = currentProgress
                 accumulatedVersesCompleted = currentProgress
 
                 versesCompleted = 0
+                shouldSaveProgress = true
 
                 memorizationViewModel.startMemorizationSession(SessionType.LISTENING)
                 memorizationViewModel.uiState.collect { state ->
@@ -859,7 +879,11 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     }
                 }
             } catch (e: Exception) {
-                Snackbar.make(binding.root, "فشل في بدء تتبع التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(
+                    binding.root,
+                    "فشل في بدء تتبع التقدم: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
                 isProgressTrackingEnabled = false
             }
         }
@@ -892,11 +916,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             return
         }
 
-        val message = if (userChoiceMade && userWantsAutoComplete) {
-            "تقدمك في هذه الجلسة: $progressInThisSession آية\nالتقدم الإجمالي: $accumulatedVersesCompleted/$totalVersesInTarget آية\n\nسيتم حفظ التقدم وإكمال الهدف إذا وصلت للنهاية.\n\nهل تريد الخروج؟"
-        } else {
+        val message =
             "تقدمك في هذه الجلسة: $progressInThisSession آية\nالتقدم الإجمالي: $accumulatedVersesCompleted/$totalVersesInTarget آية\n\nهل تريد حفظ التقدم قبل الخروج؟"
-        }
 
         isDialogShowing = true
         MaterialAlertDialogBuilder(this)
@@ -904,21 +925,100 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             .setMessage(message)
             .setPositiveButton("حفظ والخروج") { _, _ ->
                 isDialogShowing = false
-                completeProgressTracking(markAsCompleted = false, forceComplete = false)
-                stopMemorization()
-                finish()
+                shouldSaveProgress = true
+                isExitingWithoutSave = false
+
+                saveProgressAndExit()
             }
             .setNeutralButton("خروج بدون حفظ") { _, _ ->
                 isDialogShowing = false
-                stopMemorization()
-                finish()
+                shouldSaveProgress = false
+                isExitingWithoutSave = true
+
+                cancelProgressAndExit()
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 isDialogShowing = false
                 dialog.dismiss()
             }
             .show()
+
     }
+    private fun saveProgressAndExit() {
+        lifecycleScope.launch {
+            try {
+                binding.toolbar.toolbar.subtitle = "جاري حفظ التقدم..."
+
+                progressUpdateMutex.withLock {
+                    if (pendingProgressUpdates.isNotEmpty()) {
+                        val finalProgress = pendingProgressUpdates.last()
+                        memorizationViewModel.updateVerseProgress(finalProgress)
+
+                        delay(500)
+                    }
+                }
+
+                completeProgressTracking(markAsCompleted = false, forceComplete = false)
+
+                delay(300)
+
+                stopMemorization()
+                finish()
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "فشل في حفظ التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
+                stopMemorization()
+                finish()
+            }
+        }
+    }
+
+    private fun cancelProgressAndExit() {
+        lifecycleScope.launch {
+            try {
+                binding.toolbar.toolbar.subtitle = "جاري إلغاء التغييرات..."
+                progressUpdateMutex.withLock {
+                    pendingProgressUpdates.clear()
+
+                    if (isProgressTrackingEnabled && sessionId != null) {
+                        memorizationViewModel.updateVerseProgress(initialCompletedVerses)
+
+                        memorizationViewModel.completeSession(
+                            versesCompleted = initialCompletedVerses,
+                            notes = "جلسة ملغية - لم يتم حفظ التقدم",
+                            markAsCompleted = false
+                        )
+
+                        delay(500)
+                    }
+                }
+
+                stopMemorization()
+                finish()
+            } catch (_: Exception) {
+                stopMemorization()
+                finish()
+            }
+        }
+    }
+
+
+    private fun restoreOriginalProgress() {
+        if (isProgressTrackingEnabled && sessionId != null) {
+            lifecycleScope.launch {
+                try {
+                    memorizationViewModel.updateVerseProgress(initialCompletedVerses)
+
+                    memorizationViewModel.completeSession(
+                        versesCompleted = initialCompletedVerses,
+                        notes = "جلسة ملغية - لم يتم حفظ التقدم",
+                        markAsCompleted = false
+                    )
+                } catch (_: Exception) {
+                }
+            }
+        }
+    }
+
     private fun showManualCompletionDialog() {
         if (isDialogShowing) return
 
@@ -927,12 +1027,14 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
         isDialogShowing = true
         MaterialAlertDialogBuilder(this)
             .setTitle("إنهاء الجلسة")
-            .setMessage("""
+            .setMessage(
+                """
             تقدمك في هذه الجلسة: $progressInThisSession آية
             التقدم الإجمالي: $accumulatedVersesCompleted/$totalVersesInTarget آية
             
             كيف تريد إنهاء هذه الجلسة؟
-        """.trimIndent())
+        """.trimIndent()
+            )
             .setPositiveButton("إكمال الهدف") { _, _ ->
                 isDialogShowing = false
                 completeProgressTracking(markAsCompleted = true, forceComplete = true)
@@ -951,9 +1053,12 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     override fun onDestroy() {
-        if (isProgressTrackingEnabled && sessionId != null) {
-            completeProgressTracking(false, false)
+        if (isProgressTrackingEnabled && sessionId != null && shouldSaveProgress) {
+            completeProgressTracking(markAsCompleted = false, forceComplete = false)
+        } else if (isProgressTrackingEnabled && sessionId != null) {
+            restoreOriginalProgress()
         }
+
         stopMemorization()
         exoPlayer?.release()
         exoPlayer = null
@@ -990,11 +1095,10 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             }
         })
     }
-    private fun onVerseCompleted(versePosition: Int) {
-        if (isProgressTrackingEnabled && userChoiceMade) {
-           
-            val currentVerseNumber = sessionStartVerse + versePosition
 
+    private fun onVerseCompleted(versePosition: Int) {
+        if (isProgressTrackingEnabled && userChoiceMade && !isExitingWithoutSave) {
+            val currentVerseNumber = sessionStartVerse + versePosition
             val resumeFromVerseNumber = targetStartVerse + initialCompletedVerses
 
             if (currentVerseNumber >= resumeFromVerseNumber) {
@@ -1005,12 +1109,16 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                     accumulatedVersesCompleted = newAccumulatedProgress
                     versesCompleted = progressBeyondResumePoint
                     updateProgressDisplay()
-                    saveProgressSilently()
-                    checkForAutoCompletion()
+
+                    if (shouldSaveProgress && !isExitingWithoutSave) {
+                        saveProgressSilently()
+                        checkForAutoCompletion()
+                    }
                 }
             }
         }
     }
+
 
 
     private fun checkForAutoCompletion() {
@@ -1033,6 +1141,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             }
         }
     }
+
     private fun showCompletionToast(message: String) {
         if (!completionDialogShown) {
             completionDialogShown = true
@@ -1041,6 +1150,7 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 .show()
         }
     }
+
     private fun checkForCompletion() {
         if (isProgressTrackingEnabled && !hasShownCompletionDialog) {
             val targetOverlapStart = maxOf(sessionStartVerse, targetStartVerse)
@@ -1048,7 +1158,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             val sessionVerseNumber = sessionStartVerse + versesCompleted - 1
 
             if (sessionVerseNumber >= targetOverlapEnd) {
-                val newCompletedInTarget = initialCompletedVerses + (targetOverlapEnd - targetOverlapStart + 1)
+                val newCompletedInTarget =
+                    initialCompletedVerses + (targetOverlapEnd - targetOverlapStart + 1)
                 if (newCompletedInTarget >= totalVersesInTarget) {
                     hasShownCompletionDialog = true
                     showAutoCompletionDialog()
@@ -1058,11 +1169,23 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
     }
 
     private fun saveProgressSilently() {
+        if (!shouldSaveProgress || isExitingWithoutSave) return
+
         if (accumulatedVersesCompleted > initialCompletedVerses) {
             lifecycleScope.launch {
-                try {
-                    memorizationViewModel.updateVerseProgress(accumulatedVersesCompleted)
-                } catch (_: Exception) {
+                progressUpdateMutex.withLock {
+                    try {
+                        pendingProgressUpdates.add(accumulatedVersesCompleted)
+
+                        if (!isExitingWithoutSave && shouldSaveProgress) {
+                            memorizationViewModel.updateVerseProgress(accumulatedVersesCompleted)
+                            lastSavedProgress = accumulatedVersesCompleted
+                            delay(100)
+                        }
+                    } catch (_: Exception) {
+
+                        pendingProgressUpdates.remove(accumulatedVersesCompleted)
+                    }
                 }
             }
         }
@@ -1074,7 +1197,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 (accumulatedVersesCompleted * 100) / totalVersesInTarget
             } else 0
 
-            binding.toolbar.toolbar.subtitle = "تتبع التقدم: $accumulatedVersesCompleted/$totalVersesInTarget آية ($percentageProgress%)"
+            binding.toolbar.toolbar.subtitle =
+                "تتبع التقدم: $accumulatedVersesCompleted/$totalVersesInTarget آية ($percentageProgress%)"
         }
     }
 
@@ -1130,24 +1254,37 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
     private fun completeProgressTracking(markAsCompleted: Boolean, forceComplete: Boolean = false) {
         lifecycleScope.launch {
-            try {
-                sessionId?.let { id ->
-                    val notes = when {
-                        forceComplete -> "هدف مكتمل - تم وضع علامة اكتمال يدوياً"
-                        markAsCompleted -> "جلسة مكتملة - المجموع: $accumulatedVersesCompleted من $totalVersesInTarget آية"
-                        else -> "تقدم محفوظ - المجموع: $accumulatedVersesCompleted من $totalVersesInTarget آية"
-                    }
+            progressUpdateMutex.withLock {
+                try {
+                    sessionId?.let { id ->
+                        val finalProgress = if (shouldSaveProgress && !isExitingWithoutSave) {
+                            accumulatedVersesCompleted
+                        } else {
+                            initialCompletedVerses
+                        }
 
-                    memorizationViewModel.completeSession(
-                        versesCompleted = accumulatedVersesCompleted,
-                        notes = notes,
-                        markAsCompleted = forceComplete || accumulatedVersesCompleted >= totalVersesInTarget
-                    )
+                        val notes = when {
+                            isExitingWithoutSave -> "جلسة ملغية - لم يتم حفظ التقدم"
+                            forceComplete -> "هدف مكتمل - تم وضع علامة اكتمال يدوياً"
+                            markAsCompleted -> "جلسة مكتملة - المجموع: $finalProgress من $totalVersesInTarget آية"
+                            else -> "تقدم محفوظ - المجموع: $finalProgress من $totalVersesInTarget آية"
+                        }
+
+                        memorizationViewModel.completeSession(
+                            versesCompleted = finalProgress,
+                            notes = notes,
+                            markAsCompleted = shouldSaveProgress && !isExitingWithoutSave && (forceComplete || accumulatedVersesCompleted >= totalVersesInTarget)
+                        )
+
+                        delay(200)
+                    }
+                    isProgressTrackingEnabled = false
+                    sessionId = null
+                } catch (e: Exception) {
+                    if (shouldSaveProgress && !isExitingWithoutSave) {
+                        Snackbar.make(binding.root, "فشل في حفظ التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
+                    }
                 }
-                isProgressTrackingEnabled = false
-                sessionId = null
-            } catch (e: Exception) {
-                Snackbar.make(binding.root, "فشل في حفظ التقدم: ${e.message}", Snackbar.LENGTH_LONG).show()
             }
         }
     }
@@ -1187,7 +1324,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 player.playbackState != Player.STATE_BUFFERING &&
                 waitCount < maxWaitCount &&
                 !isMemorizationStopped &&
-                !skipToNext) {
+                !skipToNext
+            ) {
                 delay(100)
                 waitCount++
             }
@@ -1201,7 +1339,8 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
             while (player.playbackState != Player.STATE_ENDED &&
                 waitCount < maxWaitCount &&
                 !isMemorizationStopped &&
-                !skipToNext) {
+                !skipToNext
+            ) {
                 while (isMemorizationPaused && !isMemorizationStopped && !skipToNext) {
                     delay(100)
                 }
