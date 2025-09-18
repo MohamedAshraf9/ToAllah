@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -135,6 +136,17 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
 
         setupProgressObservers()
         checkProgressTrackingEligibility()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (isProgressTrackingEnabled && sessionId != null) {
+                    showExitConfirmationDialog()
+                } else {
+                    stopMemorization()
+                    finish()
+                }
+            }
+        })
     }
 
     private fun extractIntentExtras() {
@@ -936,15 +948,6 @@ class HefzRepeatActivity : AppCompatActivity(), MenuProvider, Player.Listener {
                 dialog.dismiss()
             }
             .show()
-    }
-
-    override fun onBackPressed() {
-        if (isProgressTrackingEnabled && sessionId != null) {
-            showExitConfirmationDialog()
-        } else {
-            stopMemorization()
-            super.onBackPressed()
-        }
     }
 
     override fun onDestroy() {
